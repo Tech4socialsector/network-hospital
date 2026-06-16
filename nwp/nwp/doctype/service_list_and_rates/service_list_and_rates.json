@@ -1,0 +1,105 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "SLR-.###",
+ "creation": "2026-06-15 15:50:40.007945",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "hospital_name",
+  "organization_name",
+  "name_of_service",
+  "nwp_percentage",
+  "from_date",
+  "end_date",
+  "aplicable_percentage_of_nwp_history_section",
+  "rate_history"
+ ],
+ "fields": [
+  {
+   "fetch_from": "organization_name.hospital",
+   "fieldname": "hospital_name",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Hospital name",
+   "options": "Hospital With Organization"
+  },
+  {
+   "fetch_from": "hospital_name.organization",
+   "fieldname": "organization_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Organization Name"
+  },
+  {
+   "fieldname": "name_of_service",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Package of service",
+   "options": "List of Service"
+  },
+  {
+   "fieldname": "nwp_percentage",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Applicable percentage Of NWP"
+  },
+  {
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "label": "From Date"
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "End Date"
+  },
+  {
+   "fieldname": "aplicable_percentage_of_nwp_history_section",
+   "fieldtype": "Section Break",
+   "label": "Aplicable Percentage of NWP History"
+  },
+  {
+   "fieldname": "rate_history",
+   "fieldtype": "Table",
+   "label": "Rate History",
+   "options": "Service log"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-06-15 16:49:21.820195",
+ "modified_by": "Administrator",
+ "module": "NWP",
+ "name": "Service List and Rates",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "search_fields": "name_of_service",
+ "show_title_field_in_link": 1,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "name_of_service"
+}

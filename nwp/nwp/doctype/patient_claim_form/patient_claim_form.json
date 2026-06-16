@@ -1,0 +1,357 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "PCID-.###",
+ "creation": "2026-06-15 15:46:59.220919",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "treatment_details_section",
+  "prid",
+  "name1",
+  "gender",
+  "age",
+  "patient_id",
+  "organization_copy",
+  "organization",
+  "why_this_patient_is_eligible_for_subsidy_for_this_service",
+  "column_break_bamp",
+  "date_of_visit",
+  "date_of_discharge",
+  "treating_doctor_name",
+  "type_of_service",
+  "treatment_category",
+  "if_other_treatment_please_mention",
+  "final_diagnosis",
+  "section_break_jbjm",
+  "total_actual_final_bill_in_rs",
+  "column_break_mban",
+  "does_it_require_apf_contribution",
+  "section_break_kock",
+  "service_and_rate",
+  "section_break_jjgq",
+  "total_bill_at_apf_agreed_rates_mou",
+  "agreed_method_for_subsidy",
+  "justification",
+  "existing_hospital_contribution",
+  "additional_hospital_contribution",
+  "patient_contribution_yes",
+  "apf_contribution",
+  "other_donor_contribution",
+  "other_donor_name",
+  "section_break_viym",
+  "column_break_ktvh",
+  "upload_prescription",
+  "column_break_pfie",
+  "upload_final_bill",
+  "invoice_date",
+  "invoice_number",
+  "section_break_kosa",
+  "approval_status",
+  "comment",
+  "column_break_yklj",
+  "document_status"
+ ],
+ "fields": [
+  {
+   "fieldname": "treatment_details_section",
+   "fieldtype": "Section Break",
+   "label": "Treatment details"
+  },
+  {
+   "fieldname": "prid",
+   "fieldtype": "Link",
+   "label": "PRID",
+   "options": "Patient Registration",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "prid.name1",
+   "fieldname": "name1",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Name"
+  },
+  {
+   "fetch_from": "prid.gender",
+   "fieldname": "gender",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Gender",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "prid.age",
+   "fieldname": "age",
+   "fieldtype": "Data",
+   "label": "Age",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "prid.patient_id",
+   "fieldname": "patient_id",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Patient ID"
+  },
+  {
+   "fetch_from": "prid.hospital_name",
+   "fieldname": "organization_copy",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Hospital Name",
+   "options": "Hospital With Organization",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "prid.organization",
+   "fieldname": "organization",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Organization",
+   "options": "Organization Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "why_this_patient_is_eligible_for_subsidy_for_this_service",
+   "fieldtype": "Small Text",
+   "label": "Why this patient is eligible for subsidy for this service?",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_bamp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date_of_visit",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date of visit / admission",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval: doc.type_of_service == \"In Patient Service\"",
+   "fieldname": "date_of_discharge",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date of discharge"
+  },
+  {
+   "fieldname": "treating_doctor_name",
+   "fieldtype": "Data",
+   "label": "Treating doctor name"
+  },
+  {
+   "fieldname": "type_of_service",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Type of Service",
+   "options": "\nIn Patient Service\nOut Patient Service\nDay Care Service",
+   "reqd": 1
+  },
+  {
+   "fieldname": "treatment_category",
+   "fieldtype": "Link",
+   "label": "Treatment Category",
+   "options": "Department",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval: doc.treatment_category == \"Others\"",
+   "fieldname": "if_other_treatment_please_mention",
+   "fieldtype": "Data",
+   "label": "If Other, please mention"
+  },
+  {
+   "fieldname": "final_diagnosis",
+   "fieldtype": "Small Text",
+   "label": "Final diagnosis"
+  },
+  {
+   "fieldname": "section_break_jbjm",
+   "fieldtype": "Section Break",
+   "label": "Bill"
+  },
+  {
+   "fieldname": "total_actual_final_bill_in_rs",
+   "fieldtype": "Int",
+   "label": "Total Bill"
+  },
+  {
+   "fieldname": "column_break_mban",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "does_it_require_apf_contribution",
+   "fieldtype": "Select",
+   "label": "Does it require NWP contribution",
+   "options": "\nYes\nNo"
+  },
+  {
+   "fieldname": "section_break_kock",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "service_and_rate",
+   "fieldtype": "Table",
+   "label": "Display agreed service and rate (add adjustments to match with actual bill amount)",
+   "options": "Service List and Percentage"
+  },
+  {
+   "fieldname": "section_break_jjgq",
+   "fieldtype": "Section Break",
+   "label": "Subsidy details"
+  },
+  {
+   "depends_on": "eval: doc.does_it_require_apf_contribution == \"Yes\"",
+   "fieldname": "total_bill_at_apf_agreed_rates_mou",
+   "fieldtype": "Int",
+   "label": "Total bill at NWP agreed rates"
+  },
+  {
+   "depends_on": "eval: doc.does_it_require_apf_contribution == \"Yes\"",
+   "fieldname": "agreed_method_for_subsidy",
+   "fieldtype": "HTML",
+   "label": "Agreed method for subsidy"
+  },
+  {
+   "depends_on": "eval: doc.does_it_require_apf_contribution == \"Yes\"",
+   "fieldname": "justification",
+   "fieldtype": "Small Text",
+   "label": "Calculation for Total bill (NWP agreed rates)"
+  },
+  {
+   "depends_on": "eval: doc.does_it_require_apf_contribution == \"Yes\"",
+   "fieldname": "existing_hospital_contribution",
+   "fieldtype": "Int",
+   "label": "Hospital contribution (default)"
+  },
+  {
+   "depends_on": "eval: doc.does_it_require_apf_contribution == \"Yes\" || doc.does_it_require_apf_contribution == \"No\"",
+   "fieldname": "additional_hospital_contribution",
+   "fieldtype": "Int",
+   "label": "Hospital contribution (additional)"
+  },
+  {
+   "depends_on": "eval: doc.does_it_require_apf_contribution == \"Yes\" || doc.does_it_require_apf_contribution == \"No\"",
+   "fieldname": "patient_contribution_yes",
+   "fieldtype": "Int",
+   "label": "Patient contribution"
+  },
+  {
+   "depends_on": "eval: doc.does_it_require_apf_contribution == \"Yes\"",
+   "fieldname": "apf_contribution",
+   "fieldtype": "Int",
+   "label": "NWP contribution"
+  },
+  {
+   "depends_on": "eval: doc.does_it_require_apf_contribution == \"No\"",
+   "fieldname": "other_donor_contribution",
+   "fieldtype": "Data",
+   "label": "Other Donor Contribution",
+   "mandatory_depends_on": "eval: doc.does_it_require_apf_contribution == \"No\""
+  },
+  {
+   "depends_on": "eval: doc.does_it_require_apf_contribution == \"No\"",
+   "fieldname": "other_donor_name",
+   "fieldtype": "Data",
+   "label": "Other Donor Name"
+  },
+  {
+   "fieldname": "section_break_viym",
+   "fieldtype": "Section Break",
+   "label": "Upload relevant documents"
+  },
+  {
+   "fieldname": "column_break_ktvh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "upload_prescription",
+   "fieldtype": "Attach",
+   "label": "Upload relevant documents (prescription, discharge summary etc.)"
+  },
+  {
+   "fieldname": "column_break_pfie",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "upload_final_bill",
+   "fieldtype": "Attach",
+   "label": "Upload final bill",
+   "reqd": 1
+  },
+  {
+   "fieldname": "invoice_date",
+   "fieldtype": "Date",
+   "label": "Invoice date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "invoice_number",
+   "fieldtype": "Int",
+   "label": "Invoice number",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_kosa",
+   "fieldtype": "Section Break",
+   "label": "Document and approval status"
+  },
+  {
+   "fieldname": "approval_status",
+   "fieldtype": "Select",
+   "label": "Approval Status",
+   "options": "\nRejected\nSent back for revision\nApproved"
+  },
+  {
+   "depends_on": "eval: doc.approval_status == \"Sent back for revision\"",
+   "fieldname": "comment",
+   "fieldtype": "Small Text",
+   "label": "Comment (if sent back for revision)"
+  },
+  {
+   "fieldname": "column_break_yklj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "document_status",
+   "fieldtype": "Select",
+   "label": "Document Status",
+   "options": "Claim form partially filled\nClaim form fully filled"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-06-15 16:49:44.988520",
+ "modified_by": "Administrator",
+ "module": "NWP",
+ "name": "Patient Claim Form",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}
