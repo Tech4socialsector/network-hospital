@@ -244,10 +244,23 @@ app_license = "mit"
 # Fixtures
 # --------
 # Export these records so other sites/team members get them via `bench migrate`
+#
+# Order matters: Desktop Icon links to a Workspace Sidebar record, and Workspace
+# Sidebar items link to a Workspace/Page, so they must import in this sequence.
+# fixture_auto_order numbers the exported filenames so import (which is otherwise
+# alphabetical) follows this list instead of the doctype name.
+
+fixture_auto_order = 1
 
 fixtures = [
 	{
 		"dt": "Workspace",
+		"filters": [
+			["name", "in", ["Network Hospital", "Master", "Budget Summary", "View Dashboard"]]
+		],
+	},
+	{
+		"dt": "Workspace Sidebar",
 		"filters": [
 			["name", "in", ["Network Hospital", "Master", "Budget Summary", "View Dashboard"]]
 		],

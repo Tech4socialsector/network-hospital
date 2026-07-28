@@ -47,12 +47,12 @@
     "icon": null,
     "kanban_board": null,
     "label": "APF Hospital Dashboard",
-    "link_to": "network-hospital",
+    "link_to": null,
     "report_ref_doctype": null,
     "restrict_to_domain": null,
     "stats_filter": null,
-    "type": "Page",
-    "url": ""
+    "type": "URL",
+    "url": "/network-hospital"
    }
   ],
   "title": "Network Hospital",

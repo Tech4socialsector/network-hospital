@@ -2,7 +2,8 @@ frappe.pages['nwp-dashboard'].on_page_load = function(wrapper) {
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
 		title: 'APF Hospital Programme Dashboard',
-		single_column: true
+		single_column: true,
+		hide_sidebar: true
 	});
 
 	// Inject styles
