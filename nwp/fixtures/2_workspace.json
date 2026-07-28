@@ -92,7 +92,7 @@
     "number_card_name": "Total Utilisation"
    }
   ],
-  "parent_page": "Network Hospital",
+  "parent_page": null,
   "public": 1,
   "quick_lists": [],
   "restrict_to_domain": null,
@@ -138,7 +138,7 @@
   "module": null,
   "name": "Master",
   "number_cards": [],
-  "parent_page": "Network Hospital",
+  "parent_page": null,
   "public": 1,
   "quick_lists": [],
   "restrict_to_domain": null,
@@ -212,7 +212,7 @@
   "module": null,
   "name": "View Dashboard",
   "number_cards": [],
-  "parent_page": "Network Hospital",
+  "parent_page": null,
   "public": 1,
   "quick_lists": [],
   "restrict_to_domain": null,
