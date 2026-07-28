@@ -114,25 +114,9 @@
     "show_arrow": 0,
     "type": "Link",
     "url": null
-   },
-   {
-    "child": 0,
-    "collapsible": 1,
-    "filters": null,
-    "icon": null,
-    "indent": 0,
-    "keep_closed": 0,
-    "label": "View Dashboard",
-    "link_to": "View Dashboard",
-    "link_type": "Workspace",
-    "navigate_to_tab": null,
-    "route_options": null,
-    "show_arrow": 0,
-    "type": "Link",
-    "url": null
    }
   ],
-  "modified": "2026-06-17 11:13:33.374704",
+  "modified": "2026-07-28 20:56:45.496620",
   "module": "NWP",
   "module_onboarding": null,
   "name": "View Dashboard",

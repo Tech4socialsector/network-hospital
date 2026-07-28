@@ -254,6 +254,23 @@ fixture_auto_order = 1
 
 fixtures = [
 	{
+		"dt": "Number Card",
+		"filters": [
+			[
+				"name",
+				"in",
+				[
+					"Network Hospital",
+					"Patient Registration",
+					"Patient Claim Form",
+					"Total Aproved Budget",
+					"Budget Disbursement",
+					"Total Utilisation",
+				],
+			]
+		],
+	},
+	{
 		"dt": "Workspace",
 		"filters": [
 			["name", "in", ["Network Hospital", "Master", "Budget Summary", "View Dashboard"]]
