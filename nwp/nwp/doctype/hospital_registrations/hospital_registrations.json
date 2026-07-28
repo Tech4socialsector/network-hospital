@@ -228,7 +228,7 @@
   },
   {
    "fieldname": "key_services_in_the_hospital",
-   "fieldtype": "Link",
+   "fieldtype": "Table MultiSelect",
    "label": "Departments in the hospital",
    "options": "Departments",
    "reqd": 1
@@ -445,7 +445,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-06-15 16:51:39.577548",
+ "modified": "2026-06-16 17:13:00.487587",
  "modified_by": "Administrator",
  "module": "NWP",
  "name": "Hospital Registrations",

@@ -1,0 +1,522 @@
+{% extends "templates/web.html" %}
+{% block title %}APF Hospital Programme Dashboard{% endblock %}
+{% block page_content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<title>APF Hospital Programme Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Epilogue:wght@300;400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="https://apf-network-hospitals.m.frappe.cloud/assets/frappe/images/favicon.png" type="image/png">
+<style>
+:root{
+  --ink:#0d1117;--ink-mid:#3d4a5c;--ink-soft:#7a8899;--ink-pale:#b8c4d0;
+  --surface:#f4f6f9;--white:#fff;--border:#e3e8ef;
+  --green:#0e7a5f;--green-2:#12a07a;--green-bg:#e6f5f1;
+  --blue:#1a5fa8;--blue-bg:#e8f0fb;
+  --amber:#b45309;--amber-bg:#fef3e2;
+  --violet:#5b21b6;
+  --r:14px;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 2px 8px rgba(0,0,0,.05);
+  --sh2:0 2px 8px rgba(0,0,0,.08),0 8px 24px rgba(0,0,0,.06);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Epilogue',sans-serif;background:var(--surface);color:var(--ink);min-height:100vh;font-size:14px;}
+footer,.footer,.web-footer,.page-footer,.footer-section,#footer,.web-page-footer,.site-footer,[class*="footer"]{display:none !important;}
+navbar,.navbar,#navbar,.web-navbar,.navbar-home,nav.navbar,[class*="navbar"],header.navbar,.sticky-top{display:none !important;}
+.topbar{background:#e8f5f1;border-bottom:2px solid #b2ddd4;padding:0 32px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.tb-left{display:flex;align-items:center;gap:12px;}
+.tb-logo{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,var(--green-2),#0a5e47);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;font-family:'Syne',sans-serif;flex-shrink:0;}
+.tb-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--green);letter-spacing:-.3px;}
+.tb-sub{font-size:11px;color:var(--ink-soft);margin-top:1px;}
+.tb-live{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-soft);}
+.ldot{width:6px;height:6px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.55;transform:scale(1.35);}}
+.fstrip{background:var(--white);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;}
+.fg{display:flex;flex-direction:column;gap:5px;min-width:140px;flex:1;}
+.fg label{font-size:10px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;color:var(--ink-soft);}
+.fg select,.fg input{padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'Epilogue',sans-serif;font-size:13px;color:var(--ink);background:var(--surface);outline:none;transition:border-color .2s,box-shadow .2s;}
+.fg select:focus,.fg input:focus{border-color:var(--green-2);box-shadow:0 0 0 3px rgba(18,160,122,.12);}
+.fbtns{display:flex;gap:8px;padding-bottom:1px;}
+.btn{padding:8px 18px;border-radius:8px;font-family:'Epilogue',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .18s;}
+.btn-p{background:var(--green);color:#fff;}
+.btn-p:hover{background:#0a5e47;transform:translateY(-1px);box-shadow:0 4px 12px rgba(14,122,95,.3);}
+.btn-g{background:transparent;color:var(--ink-mid);border:1px solid var(--border);}
+.btn-g:hover{background:var(--surface);}
+.page{padding:22px 32px;max-width:1500px;margin:0 auto;}
+.slabel{font-family:'Inter',sans-serif;font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink-soft);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.slabel::after{content:'';flex:1;height:1px;background:var(--border);}
+.card-row{display:flex;justify-content:center;gap:10px;margin-bottom:20px;flex-wrap:nowrap;align-items:stretch;}
+.card-divider{width:1px;background:var(--border);margin:4px 4px;flex-shrink:0;}
+.card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:12px 14px 10px;box-shadow:var(--sh);cursor:pointer;transition:transform .2s,box-shadow .2s;border-top:3px solid var(--cc,var(--green));user-select:none;display:flex;flex-direction:column;justify-content:flex-end;width:160px;height:80px;flex-shrink:0;}
+.card:hover{transform:translateY(-2px);box-shadow:var(--sh2);}
+.cv{font-family:'Inter',sans-serif;font-size:14px;font-weight:700;line-height:1.2;color:var(--ink);margin-bottom:3px;font-variant-numeric:tabular-nums;letter-spacing:-0.3px;}
+.cl{font-family:'Inter',sans-serif;font-size:10px;color:var(--ink-soft);font-weight:500;line-height:1.3;}
+.msum{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;padding:12px 14px;background:var(--surface);border-radius:10px;border:1px solid var(--border);}
+.msi{display:flex;flex-direction:column;gap:2px;min-width:100px;}
+.msil{font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-soft);}
+.msiv{font-family:'Inter',sans-serif;font-size:15px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;}
+.contrib-table-wrap{background:var(--white);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:28px;display:block;width:100%;}
+.contrib-table{width:100%;border-collapse:collapse;font-family:'Inter',sans-serif;font-size:12px;}
+.contrib-table thead th{padding:7px 10px;text-align:right;font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-soft);background:var(--surface);border-bottom:2px solid var(--border);}
+.contrib-table thead th:first-child{text-align:left;white-space:nowrap;width:1%;}
+.contrib-table thead th.col-nwp{color:var(--green);background:#f0faf6;}
+.contrib-table thead th.col-out{color:var(--blue);background:#eef4fd;}
+.contrib-table thead th.col-total{color:var(--ink-mid);}
+.contrib-table tr.clickable{cursor:pointer;transition:background .1s;}
+.contrib-table tr.clickable:hover{background:#e6f5f1;}
+.contrib-table tr.clickable td{padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;}
+.contrib-table tr.clickable td:first-child{text-align:left;white-space:nowrap;width:1%;}
+.contrib-table td.row-label{font-weight:500;color:var(--ink);padding-left:6px !important;white-space:nowrap;}
+.contrib-table td.amount{font-weight:600;font-variant-numeric:tabular-nums;}
+.contrib-table td.col-nwp.amount{color:var(--green);}
+.contrib-table td.col-out.amount{color:var(--blue);}
+.contrib-table td.col-total.amount{color:var(--ink-mid);}
+.contrib-table td.muted{color:var(--ink-pale);}
+.contrib-table tr.grand-total td{padding:7px 10px;background:var(--surface);border-top:2px solid var(--border);font-weight:700;text-align:right;font-size:12.5px;font-variant-numeric:tabular-nums;}
+.contrib-table tr.grand-total td:first-child{text-align:left;font-weight:700;color:var(--ink);white-space:nowrap;width:1%;}
+.contrib-table tr.grand-total td.col-nwp{color:var(--green);}
+.contrib-table tr.grand-total td.col-out{color:var(--blue);}
+.contrib-table tr.grand-total td.col-total{color:var(--ink-mid);}
+@media(max-width:700px){.page,.fstrip,.topbar{padding-left:16px;padding-right:16px;}.card-row{flex-wrap:wrap;}}
+
+.ms-wrap{position:relative;}
+.ms-trigger{padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'Epilogue',sans-serif;font-size:13px;color:var(--ink);background:var(--surface);cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;transition:border-color .2s,box-shadow .2s;min-width:0;}
+.ms-trigger:hover,.ms-trigger.open{border-color:var(--green-2);box-shadow:0 0 0 3px rgba(18,160,122,.12);}
+.ms-trigger-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0;}
+.ms-arrow{font-size:10px;color:var(--ink-soft);margin-left:6px;transition:transform .2s;flex-shrink:0;}
+.ms-trigger.open .ms-arrow{transform:rotate(180deg);}
+.ms-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;min-width:100%;width:max-content;max-width:320px;background:var(--white);border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:200;max-height:220px;overflow-y:auto;display:none;}
+.ms-dropdown.open{display:block;}
+.ms-opt{display:flex;align-items:center;gap:8px;padding:7px 12px;cursor:pointer;font-size:13px;color:var(--ink);transition:background .1s;user-select:none;}
+.ms-opt:hover{background:var(--green-bg);}
+.ms-opt input[type=checkbox]{accent-color:var(--green);width:13px;height:13px;cursor:pointer;flex-shrink:0;}
+.ms-empty{padding:10px 12px;font-size:12px;color:var(--ink-soft);}
+/* Disabled state for Division when no hospital selected */
+.fg select:disabled{opacity:.5;cursor:not-allowed;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-left">
+    <div class="tb-logo">H</div>
+    <div><div class="tb-name">Network Hospital Programme</div><div class="tb-sub">Patient Claims &amp; Grant Tracking Dashboard</div></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <a href="/desk" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;background:var(--green);color:#fff;font-family:'Epilogue',sans-serif;font-size:12px;font-weight:600;text-decoration:none;transition:background .18s;" onmouseover="this.style.background='#0a5e47'" onmouseout="this.style.background='var(--green)'">&#8599; Open Workspace</a>
+    <div class="tb-live"><div class="ldot"></div><span>Live</span></div>
+  </div>
+</div>
+
+<div class="fstrip">
+  <!-- Hospital comes first -->
+  <div class="fg">
+    <label>Hospital</label>
+    <select id="f-hosp" onchange="onHospChange()"><option value="">All Hospitals</option></select>
+  </div>
+  <!-- Division (formerly Organization) comes second, filtered by hospital -->
+  <div class="fg">
+    <label>Division</label>
+    <select id="f-org"><option value="">All Divisions</option></select>
+  </div>
+  <div class="fg"><label>Department</label><select id="f-dept"><option value="">All Departments</option></select></div>
+  <div class="fg"><label>Service Type</label>
+    <select id="f-svc">
+      <option value="">All Service Types</option>
+      <option value="In Patient Service">In Patient (IPD)</option>
+      <option value="Out Patient Service">Out Patient (OPD)</option>
+      <option value="Day Care Service">Day Care</option>
+    </select>
+  </div>
+  <div class="fg"><label>Financial Year</label><select id="f-fy"><option value="">All Years</option></select></div>
+  <div class="fbtns">
+    <button class="btn btn-g" onclick="clearFilters()">Clear</button>
+    <button class="btn btn-p" onclick="applyFilters()">Apply</button>
+  </div>
+</div>
+
+<div class="page">
+  <div style="width:fit-content;margin:0 auto;">
+  <div class="slabel">Overview</div>
+
+  <div class="card-row" id="card-row-ref">
+    <div class="card" style="--cc:var(--green)" onclick="drill('all')"><div class="cv" id="m-total"></div><div class="cl">Total Patients Supported</div></div>
+    <div class="card" style="--cc:var(--blue)"  onclick="drill('nwh')"><div class="cv" id="m-nwh"></div><div class="cl">Patients Supported under NWP</div></div>
+    <div class="card-divider"></div>
+    <div class="card" style="--cc:var(--blue)"   onclick="drill('g-approved')"><div class="cv" id="g-approved"></div><div class="cl">Grant Approved</div></div>
+    <div class="card" style="--cc:var(--amber)"  onclick="drill('g-disbursed')"><div class="cv" id="g-disbursed"></div><div class="cl">Grant Disbursed</div></div>
+    <div class="card" style="--cc:var(--green)"  onclick="drill('g-utilized')"><div class="cv" id="g-utilized"></div><div class="cl">Grant Utilized</div></div>
+    <div class="card" style="--cc:var(--violet)" onclick="drill('g-balance')"><div class="cv" id="g-balance"></div><div class="cl">Balance Amount</div></div>
+  </div>
+
+  <div class="slabel">Contribution Summary</div>
+  <div class="contrib-table-wrap">
+    <table class="contrib-table">
+      <thead>
+        <tr>
+          <th>Contribution Type</th>
+          <th class="col-nwp">NWP</th>
+          <th class="col-out">Others</th>
+          <th class="col-total">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr onclick="drill('hosp-default')" class="clickable">
+          <td class="row-label">Default Hospital Contribution</td>
+          <td class="col-nwp amount" id="ct-hosp-default-nwp">—</td><td class="col-out muted">—</td>
+          <td class="col-total amount" id="ct-hosp-default-total">—</td>
+        </tr>
+        <tr onclick="drill('hosp-add')" class="clickable">
+          <td class="row-label">Additional Hospital Contribution</td>
+          <td class="col-nwp amount" id="ct-hosp-add-nwp">—</td><td class="col-out amount" id="ct-hosp-add-out">—</td>
+          <td class="col-total amount" id="ct-hosp-add-total">—</td>
+        </tr>
+        <tr onclick="drill('apf-sub')" class="clickable">
+          <td class="row-label">NWP Contribution</td>
+          <td class="col-nwp amount" id="ct-nwp-nwp">—</td><td class="col-out muted">—</td>
+          <td class="col-total amount" id="ct-nwp-total">—</td>
+        </tr>
+        <tr onclick="drill('other-donor')" class="clickable">
+          <td class="row-label">Other Donor Contribution</td>
+          <td class="col-nwp muted">—</td><td class="col-out amount" id="ct-donor-out">—</td>
+          <td class="col-total amount" id="ct-donor-total">—</td>
+        </tr>
+        <tr class="grand-total">
+          <td class="row-label">Total Subsidy</td>
+          <td class="col-nwp" id="ct-grand-nwp">—</td><td class="col-out" id="ct-grand-out">—</td>
+          <td class="col-total" id="ct-grand-total">—</td>
+        </tr>
+        <tr onclick="drill('pat-contrib')" class="clickable">
+          <td class="row-label">Patient Contribution</td>
+          <td class="col-nwp amount" id="ct-pat-nwp">—</td><td class="col-out amount" id="ct-pat-out">—</td>
+          <td class="col-total amount" id="ct-pat-total">—</td>
+        </tr>
+        <tr class="grand-total">
+          <td class="row-label">Total Bill</td>
+          <td class="col-nwp" id="ct-bill-nwp">—</td><td class="col-out" id="ct-bill-out">—</td>
+          <td class="col-total" id="ct-bill-total">—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  </div><!-- end fit-content wrapper -->
+</div>
+
+<script>
+var C=[], B=[], D=[];
+/* Cache all hospitals with their organization for cross-filtering */
+var ALL_HOSPS=[];
+var FBASE=window.location.origin;
+
+function fdb(dt,fields,filters,limit){
+  return new Promise(function(resolve){
+    if(typeof frappe==='undefined'){resolve(mockData(dt));return;}
+    var csrf=(frappe.csrf_token&&frappe.csrf_token!=='No')?frappe.csrf_token:'';
+    fetch('/api/resource/'+encodeURIComponent(dt)+'?fields='+encodeURIComponent(JSON.stringify(fields))+'&filters='+encodeURIComponent(JSON.stringify(filters||[]))+'&limit_page_length='+(limit||2000)+'&order_by=creation+desc',{
+      headers:{'X-Frappe-CSRF-Token':csrf,'Accept':'application/json'}
+    })
+    .then(function(r){return r.json();})
+    .then(function(d){resolve((d&&d.data)?d.data:(d&&d.message)?d.message:[]);})
+    .catch(function(e){console.warn('[APF]['+dt+'] skipped:',e);resolve([]);});
+  });
+}
+
+async function init(){
+  /* Load all hospitals (with their linked organization) upfront */
+  var hosps=await fdb('Hospital With Organization',['name','organization'],[],500).catch(function(){return[];});
+  ALL_HOSPS=hosps||[];
+
+  var depts=await fdb('Department',['name'],[],200).catch(function(){return[];});
+  var fys  =await fdb('Financial Year',['name'],[],50).catch(function(){return[];});
+
+  /* Populate Hospital dropdown with all hospitals */
+  pop('f-hosp', ALL_HOSPS);
+  pop('f-dept', depts);
+  pop('f-fy',   fys);
+
+  /* Populate Division with all unique organizations from hospital list */
+  populateAllDivisions();
+
+  await loadAll();
+}
+
+/* Populate Division dropdown with all distinct organizations */
+function populateAllDivisions(){
+  var sel=document.getElementById('f-org');
+  sel.innerHTML='<option value="">All Divisions</option>';
+  var seen={};
+  ALL_HOSPS.forEach(function(h){
+    if(h.organization&&!seen[h.organization]){
+      seen[h.organization]=true;
+      var opt=document.createElement('option');
+      opt.value=opt.text=h.organization;
+      sel.appendChild(opt);
+    }
+  });
+}
+
+function pop(id,list){
+  var sel=document.getElementById(id);
+  (list||[]).forEach(function(o){
+    var opt=document.createElement('option');
+    opt.value=opt.text=o.name;
+    sel.appendChild(opt);
+  });
+}
+
+/* When a hospital is selected, filter the Division dropdown to only
+   show the division(s) that belong to that hospital */
+function onHospChange(){
+  var hosp=gv('f-hosp');
+  var sel=document.getElementById('f-org');
+  sel.innerHTML='<option value="">All Divisions</option>';
+
+  if(!hosp){
+    /* No hospital selected — show all divisions */
+    populateAllDivisions();
+    return;
+  }
+
+  /* Find the organization(s) linked to the selected hospital */
+  var matched=ALL_HOSPS.filter(function(h){return h.name===hosp;});
+  var seen={};
+  matched.forEach(function(h){
+    if(h.organization&&!seen[h.organization]){
+      seen[h.organization]=true;
+      var opt=document.createElement('option');
+      opt.value=opt.text=h.organization;
+      sel.appendChild(opt);
+    }
+  });
+
+  /* If exactly one division, auto-select it for convenience */
+  var opts=sel.options;
+  if(opts.length===2){
+    sel.value=opts[1].value;
+  }
+}
+
+async function loadAll(){
+  var org=gv('f-org'),dept=gv('f-dept'),fy=gv('f-fy'),svc=gv('f-svc'),hosp=gv('f-hosp');
+  var cf=[],bf=[],df=[];
+
+  /* Hospital filter applied first (maps to organization_copy in claims) */
+  if(hosp){ cf.push(['organization_copy','=',hosp]); bf.push(['hospital_name','=',hosp]); df.push(['hospital_name','=',hosp]); }
+  /* Division filter */
+  if(org){  cf.push(['organization','=',org]);        bf.push(['organization_name','=',org]);  df.push(['organization','=',org]); }
+  if(dept){ cf.push(['treatment_category','=',dept]); }
+  if(svc){  cf.push(['type_of_service','=',svc]);     }
+  if(fy){   bf.push(['financial_year','=',fy]);        }
+
+  var cf2=['name','prid','patient_id','organization','organization_copy','name1','age','gender','type_of_service','date_of_visit','date_of_discharge','treating_doctor_name','treatment_category','final_diagnosis','total_actual_final_bill_in_rs','does_it_require_apf_contribution','justification','total_bill_at_apf_agreed_rates_mou','existing_hospital_contribution','other_donor_contribution','other_donor_name','patient_contribution_yes','additional_hospital_contribution','apf_contribution','document_status','approval_status','comment','why_this_patient_is_eligible_for_subsidy_for_this_service','if_other_treatment_please_mention'];
+  var res=await Promise.all([
+    fdb('Patient Claim Form',cf2,cf,2000),
+    fdb('Network Hospital Budget',['name','organization_name','hospital_name','date_of_approval','financial_year','start_date','end_date','grant_id','total_budget'],bf,500),
+    fdb('Budget Disbursement',['name','date','organization','hospital_name','disbursed_amount'],df,500),
+  ]);
+  C=res[0];B=res[1];D=res[2];
+  render();
+}
+
+function render(){
+  var n=function(v){return Number(v)||0;};
+  var CA=C.filter(function(r){return r.approval_status==='Approved';});
+  var yes=CA.filter(function(r){return r.does_it_require_apf_contribution==='Yes';});
+  var no =CA.filter(function(r){return r.does_it_require_apf_contribution==='No';});
+  cu('m-total',CA.length,false);
+  cu('m-nwh',yes.length,false);
+  var hDef =yes.reduce(function(s,r){return s+n(r.existing_hospital_contribution);},0);
+  var hAddY=yes.reduce(function(s,r){return s+n(r.additional_hospital_contribution);},0);
+  var hAddN=no.reduce(function(s,r) {return s+n(r.additional_hospital_contribution);},0);
+  var patY =yes.reduce(function(s,r){return s+n(r.patient_contribution_yes);},0);
+  var patN =no.reduce(function(s,r) {return s+n(r.patient_contribution_yes);},0);
+  var donor=no.reduce(function(s,r) {return s+n(r.other_donor_contribution);},0);
+  var nwp  =yes.reduce(function(s,r){return s+n(r.apf_contribution);},0);
+  setCell('ct-hosp-default-nwp',hDef);setCell('ct-hosp-default-total',hDef);
+  setCell('ct-hosp-add-nwp',hAddY);setCell('ct-hosp-add-out',hAddN);setCell('ct-hosp-add-total',hAddY+hAddN);
+  setCell('ct-nwp-nwp',nwp);setCell('ct-nwp-total',nwp);
+  setCell('ct-donor-out',donor);setCell('ct-donor-total',donor);
+  var gN=hDef+hAddY+nwp,gO=hAddN+donor;
+  setCell('ct-grand-nwp',gN);setCell('ct-grand-out',gO);setCell('ct-grand-total',gN+gO);
+  setCell('ct-pat-nwp',patY);setCell('ct-pat-out',patN);setCell('ct-pat-total',patY+patN);
+  setCell('ct-bill-nwp',gN+patY);setCell('ct-bill-out',gO+patN);setCell('ct-bill-total',gN+gO+patY+patN);
+  var approved=B.reduce(function(s,b){return s+(Number(b.total_budget)||0);},0);
+  var disbursed=D.reduce(function(s,d){return s+(Number(d.disbursed_amount)||0);},0);
+  cu('g-approved',approved,true);cu('g-disbursed',disbursed,true);
+  cu('g-utilized',nwp,true);cu('g-balance',approved-nwp,true);
+}
+
+function setCell(id,val){
+  var el=document.getElementById(id);if(!el)return;
+  var dur=700,t0=performance.now(),target=val;
+  (function tick(now){var p=Math.min((now-t0)/dur,1),v=Math.round(p*target);el.textContent='₹'+fmt(v);if(p<1)requestAnimationFrame(tick);})(t0);
+}
+
+var DRILLS={
+  'all':         {title:'Total Patients Supported',        sub:'All approved patient claim records',src:'C',f:null},
+  'nwh':         {title:'Patients Supported under NWP',    sub:'NWP required = Yes',               src:'C',f:function(r){return r.does_it_require_apf_contribution==='Yes';}},
+  'apf-sub':     {title:'NWP Contribution',                sub:'Claims with NWP contribution',     src:'C',f:function(r){return (Number(r.apf_contribution)||0)>0;}},
+  'pat-contrib': {title:'Patient Contribution',            sub:'All approved claims',              src:'C',f:null},
+  'hosp-default':{title:'Default Hospital Contribution',   sub:'NWP = Yes claims',                 src:'C',f:function(r){return r.does_it_require_apf_contribution==='Yes';}},
+  'other-donor': {title:'Other Donor Contribution',        sub:'NWP = No claims',                  src:'C',f:function(r){return r.does_it_require_apf_contribution==='No';}},
+  'hosp-add':    {title:'Additional Hospital Contribution',sub:'All approved claims',              src:'C',f:null},
+  'g-approved':  {title:'Grant Approved',                  sub:'Network Hospital Budget records',  src:'B',f:null},
+  'g-disbursed': {title:'Grant Disbursed',                 sub:'Budget Disbursement records',      src:'D',f:null},
+  'g-utilized':  {title:'Grant Utilized',                  sub:'Claims with NWP contribution',     src:'C',f:function(r){return (Number(r.apf_contribution)||0)>0;}},
+  'g-balance':   {title:'Balance Amount',                  sub:'Grant Approved − Grant Utilized',  src:'B',f:null},
+};
+
+function drill(key){
+  var cfg=DRILLS[key];if(!cfg)return;
+  var CA=C.filter(function(r){return r.approval_status==='Approved';});
+  var rows=cfg.src==='C'?(cfg.f?CA.filter(cfg.f):CA.slice()):cfg.src==='B'?B.slice():D.slice();
+  window.open(FBASE+'/network-hospital#drill='+btoa(unescape(encodeURIComponent(JSON.stringify({key:key,rows:rows})))),'_blank');
+}
+
+function detailPageHTML(r){
+  var n=function(v){return Number(v)||0;};
+  var dv=function(v){return(v===undefined||v===null||v==='')?'—':String(v);};
+  var rs=function(v){return '₹'+(Math.round(n(v))||0).toLocaleString('en-IN');};
+  var isYes=r.does_it_require_apf_contribution==='Yes';
+  var sl=r.type_of_service==='In Patient Service'?'IPD':r.type_of_service==='Out Patient Service'?'OPD':r.type_of_service==='Day Care Service'?'Day Care':dv(r.type_of_service);
+  var sc=r.type_of_service==='In Patient Service'?'#1d4ed8':r.type_of_service==='Out Patient Service'?'#0e7a5f':'#b45309';
+  var sb=r.type_of_service==='In Patient Service'?'#dbeafe':r.type_of_service==='Out Patient Service'?'#e6f5f1':'#fef3e2';
+  var row=function(l,v){return '<tr><td style="padding:8px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#7a8899;width:40%;border-bottom:1px solid #f0f2f5;white-space:nowrap;">'+l+'</td><td style="padding:8px 14px;font-size:13px;color:#0d1117;font-weight:500;border-bottom:1px solid #f0f2f5;">'+v+'</td></tr>';};
+  var rowAmt=function(l,v){return '<tr><td style="padding:8px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#7a8899;width:40%;border-bottom:1px solid #f0f2f5;white-space:nowrap;">'+l+'</td><td style="padding:8px 14px;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;color:#0d1117;border-bottom:1px solid #f0f2f5;">'+v+'</td></tr>';};
+  var sec=function(t,c){return '<div style="background:#fff;border:1px solid #e3e8ef;border-radius:8px;overflow:hidden;margin-bottom:12px;"><div style="padding:8px 14px;background:#f4f6f9;border-bottom:1px solid #e3e8ef;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#7a8899;">'+t+'</div><table style="width:100%;border-collapse:collapse;">'+c+'</table></div>';};
+  var pill=function(v){if(v==='Approved')return '<span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">Approved</span>';if(v==='Rejected')return '<span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">Rejected</span>';if(v==='Sent back for revision')return '<span style="background:#fef3e2;color:#b45309;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">Revision</span>';if(v==='Claim form fully filled')return '<span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">Fully Filled</span>';if(v==='Claim form partially filled')return '<span style="background:#fef9c3;color:#854d0e;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">Partially Filled</span>';return dv(v);};
+  return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>'+dv(r.name)+' — '+dv(r.name1)+'</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box;}html,body{height:100%;overflow:hidden;}body{font-family:Inter,system-ui,sans-serif;background:#f4f6f9;color:#0d1117;font-size:13px;display:flex;flex-direction:column;}</style></head><body>'
+    +'<div style="background:#fff;border-bottom:1px solid #e3e8ef;padding:0 20px;height:46px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;"><div style="display:flex;align-items:center;gap:8px;"><div style="width:24px;height:24px;border-radius:5px;background:linear-gradient(135deg,#12a07a,#0a5e47);display:flex;align-items:center;justify-content:center;font-size:12px;">🏥</div><div style="font-size:13px;font-weight:700;color:#0e7a5f;">Network Hospital Programme</div><div style="font-size:10px;color:#7a8899;margin-left:4px;">— Patient Claim Detail</div></div><div style="display:flex;align-items:center;gap:8px;"><a href="'+FBASE+'/app/patient-claim-form/'+encodeURIComponent(r.name)+'" target="_blank" style="padding:4px 12px;border-radius:6px;background:#0e7a5f;color:#fff;font-size:11px;font-weight:600;text-decoration:none;">Open in Frappe ↗</a><button onclick="window.close()" style="padding:4px 12px;border-radius:6px;border:1px solid #e3e8ef;background:#f4f6f9;font-size:11px;cursor:pointer;color:#3d4a5c;">✕ Close</button></div></div>'
+    +'<div style="background:linear-gradient(135deg,#e6f5f1,#f0f9f6);border-bottom:1px solid #c8e8e0;padding:10px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0;"><span style="font-size:11px;background:#fff;border:1px solid #e3e8ef;border-radius:20px;padding:2px 9px;color:#7a8899;">'+dv(r.patient_id)+'</span><span style="font-size:11px;background:#fff;border:1px solid #e3e8ef;border-radius:20px;padding:2px 9px;color:#7a8899;">'+dv(r.age)+' yrs, '+dv(r.gender)+'</span><span style="font-size:11px;background:#fff;border:1px solid #e3e8ef;border-radius:20px;padding:2px 9px;color:#7a8899;">'+dv(r.organization_copy)+'</span><span style="font-size:11px;background:'+sb+';border-radius:20px;padding:2px 9px;color:'+sc+';font-weight:600;">'+sl+'</span><span style="font-size:11px;background:'+(isYes?'#dcfce7':'#f4f6f9')+';border-radius:20px;padding:2px 9px;color:'+(isYes?'#166534':'#7a8899')+';font-weight:600;">NWP: '+(isYes?'Yes':'No')+'</span></div>'
+    +'<div style="flex:1;overflow:hidden;display:flex;gap:12px;padding:12px 20px;"><div style="display:flex;flex-direction:column;gap:12px;flex:1;min-width:0;overflow:hidden;">'
+    +sec('Patient Information',row('PRID',dv(r.prid))+row('Patient ID',dv(r.patient_id))+row('Age',dv(r.age)+' years')+row('Gender',dv(r.gender))+row('Division',dv(r.organization))+row('Hospital',dv(r.organization_copy)))
+    +sec('Visit Information',row('Date of Visit',dv(r.date_of_visit))+row('Date of Discharge',dv(r.date_of_discharge))+row('Service Type',sl)+row('Department',dv(r.treatment_category))+(r.if_other_treatment_please_mention?row('Other Treatment',dv(r.if_other_treatment_please_mention)):'')+( r.treating_doctor_name?row('Doctor',dv(r.treating_doctor_name)):'')+row('NWP Required',dv(r.does_it_require_apf_contribution))+(r.justification?row('Remarks',dv(r.justification)):''))
+    +'</div><div style="display:flex;flex-direction:column;gap:12px;flex:1;min-width:0;overflow:hidden;">'
+    +sec('Financial Details',rowAmt('Total Actual Bill',rs(r.total_actual_final_bill_in_rs))+(isYes?rowAmt('Bill @ NWP Rate',rs(r.total_bill_at_apf_agreed_rates_mou)):'')+rowAmt('Default Hosp Contribution',rs(r.existing_hospital_contribution))+rowAmt('Add. Hosp Contribution',rs(r.additional_hospital_contribution))+rowAmt('Patient Contribution',rs(r.patient_contribution_yes))+(isYes?rowAmt('NWP Contribution',rs(r.apf_contribution)):'')+row('Other Donor Name',dv(r.other_donor_name))+rowAmt('Other Donor Contribution',rs(r.other_donor_contribution)))
+    +sec('Status',row('Document Status',pill(r.document_status))+row('Approval Status',pill(r.approval_status))+(r.comment?row('Comment',dv(r.comment)):''))
+    +'</div></div></body></html>';
+}
+
+(function(){
+  var hash=window.location.hash;
+  if(hash&&hash.indexOf('#claim=')===0){
+    document.documentElement.style.visibility='hidden';
+    function renderDetail(){
+      try{
+        var r=JSON.parse(decodeURIComponent(escape(atob(hash.replace('#claim=','')))));
+        if(!r||!r.name){document.documentElement.style.visibility='';init();return;}
+        document.title=(r.name||'')+' — '+(r.name1||'');
+        document.open();document.write(detailPageHTML(r));document.close();
+        document.documentElement.style.visibility='';
+      }catch(e){document.documentElement.style.visibility='';if(typeof frappe!=='undefined'){frappe.ready(function(){init();});}else{init();}}
+    }
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',renderDetail);else renderDetail();
+    return;
+  }
+  if(hash&&hash.indexOf('#drill=')===0){
+    document.documentElement.style.visibility='hidden';
+    function renderDrill(){
+      try{
+        var payload=JSON.parse(decodeURIComponent(escape(atob(hash.replace('#drill=','')))));
+        var key=payload.key,rows=payload.rows,cfg=DRILLS[key];
+        if(!cfg){document.documentElement.style.visibility='';init();return;}
+        document.title=cfg.title;
+        var PS=50,page=0;
+        var f2=function(v){return Math.round(Number(v)||0).toLocaleString('en-IN');};
+        var dv=function(v){return(v===undefined||v===null||v==='')?'':String(v);};
+        var rs=function(v){return '₹'+f2(Number(v)||0);};
+        var svcP=function(s){if(s==='In Patient Service')return '<span style="background:#e8f0fb;color:#1a5fa8;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;">IPD</span>';if(s==='Out Patient Service')return '<span style="background:#e6f5f1;color:#0e7a5f;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;">OPD</span>';if(s==='Day Care Service')return '<span style="background:#fef3e2;color:#b45309;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;">Daycare</span>';return dv(s);};
+        var aprP=function(v){if(v==='Approved')return '<span style="background:#dcfce7;color:#16a34a;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;">Approved</span>';if(v==='Rejected')return '<span style="background:#fee2e2;color:#dc2626;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;">Rejected</span>';if(v==='Sent back for revision')return '<span style="background:#fef3e2;color:#b45309;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;">Revision</span>';return dv(v);};
+        var nwpP=function(v){return v==='Yes'?'<span style="background:#e6f5f1;color:#0e7a5f;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;">Yes</span>':v==='No'?'<span style="background:#f4f6f9;color:#7a8899;border:1px solid #e3e8ef;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;">No</span>':dv(v);};
+        var ths='style="padding:9px 11px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#7a8899;background:#f4f6f9;border-bottom:1px solid #e3e8ef;white-space:nowrap;position:sticky;top:0;z-index:2;"';
+        var tds='style="padding:9px 11px;border-bottom:1px solid #e3e8ef;white-space:nowrap;vertical-align:middle;"';
+        var hov='onmouseover="this.style.background=\'#e6f5f1\'" onmouseout="this.style.background=\'\'"';
+        function buildTable(pr,offset){
+          if(cfg.src==='C'){
+            var th='<thead><tr><th '+ths+'>#</th><th '+ths+'>PRID</th><th '+ths+'>Hospital</th><th '+ths+'>Division</th><th '+ths+'>Age</th><th '+ths+'>Gender</th><th '+ths+'>Service Type</th><th '+ths+'>Department</th><th '+ths+'>NWP Required</th><th '+ths+'>Default Hosp (₹)</th><th '+ths+'>Add. Hosp (₹)</th><th '+ths+'>Patient Contrib (₹)</th><th '+ths+'>NWP Contribution (₹)</th><th '+ths+'>Other Donor Name</th><th '+ths+'>Other Donor Contrib (₹)</th><th '+ths+'>Approval Status</th></tr></thead>';
+            var tb='<tbody>'+pr.map(function(r,i){var idx=offset+i;return '<tr style="cursor:pointer;" '+hov+' onclick="openDet('+idx+')">'+'<td style="padding:9px 11px;border-bottom:1px solid #e3e8ef;color:#b8c4d0;font-size:11px;">'+(idx+1)+'</td>'+'<td '+tds+'>'+dv(r.prid)+'</td><td '+tds+'>'+dv(r.organization_copy)+'</td><td '+tds+'>'+dv(r.organization)+'</td>'+'<td '+tds+'>'+dv(r.age)+'</td><td '+tds+'>'+dv(r.gender)+'</td>'+'<td '+tds+'>'+svcP(r.type_of_service)+'</td><td '+tds+'>'+dv(r.treatment_category)+'</td>'+'<td '+tds+'>'+nwpP(r.does_it_require_apf_contribution)+'</td>'+'<td '+tds+'>'+rs(r.existing_hospital_contribution)+'</td>'+'<td '+tds+'>'+rs(r.additional_hospital_contribution)+'</td>'+'<td '+tds+'>'+rs(r.patient_contribution_yes)+'</td>'+'<td '+tds+'><strong style="color:#1a5fa8;">'+rs(r.apf_contribution)+'</strong></td>'+'<td '+tds+'>'+dv(r.other_donor_name)+'</td>'+'<td '+tds+'>'+rs(r.other_donor_contribution)+'</td>'+'<td '+tds+'>'+aprP(r.approval_status)+'</td></tr>';}).join('')+'</tbody>';
+            return '<div style="overflow-x:auto;"><table style="border-collapse:collapse;font-size:12px;font-family:Inter,sans-serif;width:max-content;min-width:100%;">'+th+tb+'</table></div>';
+          }
+          if(cfg.src==='B'){
+            var th='<thead><tr><th '+ths+'>#</th><th '+ths+'>Record ID</th><th '+ths+'>Division</th><th '+ths+'>Hospital</th><th '+ths+'>Date of Approval</th><th '+ths+'>Financial Year</th><th '+ths+'>Start Date</th><th '+ths+'>End Date</th><th '+ths+'>Grant ID</th><th '+ths+'>Total Budget (₹)</th></tr></thead>';
+            var tb='<tbody>'+pr.map(function(r,i){return '<tr><td style="padding:9px 11px;border-bottom:1px solid #e3e8ef;color:#b8c4d0;font-size:11px;">'+(offset+i+1)+'</td><td '+tds+'><strong>'+dv(r.name)+'</strong></td><td '+tds+'>'+dv(r.organization_name)+'</td><td '+tds+'>'+dv(r.hospital_name)+'</td><td '+tds+'>'+dv(r.date_of_approval)+'</td><td '+tds+'>'+dv(r.financial_year)+'</td><td '+tds+'>'+dv(r.start_date)+'</td><td '+tds+'>'+dv(r.end_date)+'</td><td '+tds+'>'+dv(r.grant_id)+'</td><td '+tds+'><strong>₹'+f2(r.total_budget)+'</strong></td></tr>';}).join('')+'</tbody>';
+            return '<div style="overflow-x:auto;"><table style="border-collapse:collapse;font-size:12px;font-family:Inter,sans-serif;width:max-content;min-width:100%;">'+th+tb+'</table></div>';
+          }
+          var th='<thead><tr><th '+ths+'>#</th><th '+ths+'>Record ID</th><th '+ths+'>Date</th><th '+ths+'>Division</th><th '+ths+'>Hospital</th><th '+ths+'>Disbursed Amount (₹)</th></tr></thead>';
+          var tb='<tbody>'+pr.map(function(r,i){return '<tr><td style="padding:9px 11px;border-bottom:1px solid #e3e8ef;color:#b8c4d0;font-size:11px;">'+(offset+i+1)+'</td><td '+tds+'><strong>'+dv(r.name)+'</strong></td><td '+tds+'>'+dv(r.date)+'</td><td '+tds+'>'+dv(r.organization)+'</td><td '+tds+'>'+dv(r.hospital_name)+'</td><td '+tds+'><strong>₹'+f2(r.disbursed_amount)+'</strong></td></tr>';}).join('')+'</tbody>';
+          return '<div style="overflow-x:auto;"><table style="border-collapse:collapse;font-size:12px;font-family:Inter,sans-serif;width:max-content;min-width:100%;">'+th+tb+'</table></div>';
+        }
+        function sumBar(){
+          var nn=function(v){return Number(v)||0;};
+          var si=function(l,v){return '<div style="display:flex;flex-direction:column;gap:2px;min-width:100px;"><span style="font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#7a8899;">'+l+'</span><span style="font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;">'+v+'</span></div>';};
+          var w='<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;padding:12px 14px;background:#f4f6f9;border-radius:10px;border:1px solid #e3e8ef;">';
+          if(cfg.src==='C'){var tA=0,tAg=0,tP=0,tN=0,tHD=0,tHA=0;rows.forEach(function(r){tA+=nn(r.total_actual_final_bill_in_rs);tAg+=nn(r.total_bill_at_apf_agreed_rates_mou);tP+=nn(r.patient_contribution_yes);tN+=nn(r.apf_contribution);tHD+=nn(r.existing_hospital_contribution);tHA+=nn(r.additional_hospital_contribution);});return w+si('Records',rows.length)+si('Total Actual Bill','₹'+f2(tA))+si('Bill @ NWP Rates','₹'+f2(tAg))+si('Default Hosp','₹'+f2(tHD))+si('Add. Hosp','₹'+f2(tHA))+si('Patient Contrib','₹'+f2(tP))+si('NWP Contrib','₹'+f2(tN))+'</div>';}
+          if(cfg.src==='B'){var t=rows.reduce(function(s,b){return s+nn(b.total_budget);},0);return w+si('Records',rows.length)+si('Total Budget','₹'+f2(t))+'</div>';}
+          var t=rows.reduce(function(s,d){return s+nn(d.disbursed_amount);},0);return w+si('Records',rows.length)+si('Total Disbursed','₹'+f2(t))+'</div>';
+        }
+        function renderP(){
+          var s=page*PS,e=Math.min(s+PS,rows.length);
+          document.getElementById('dbody').innerHTML=sumBar()+buildTable(rows.slice(s,e),s);
+          var tot=Math.ceil(rows.length/PS),pg=document.getElementById('dpager');
+          if(tot>1){pg.style.display='flex';document.getElementById('dinfo').textContent='Showing '+(s+1)+'–'+e+' of '+rows.length+' | Page '+(page+1)+' of '+tot;document.getElementById('dprev').disabled=page===0;document.getElementById('dnext').disabled=page>=tot-1;}else{pg.style.display='none';}
+        }
+        document.body.style.cssText='margin:0;padding:0;font-family:Inter,system-ui,sans-serif;background:#f4f6f9;color:#0d1117;font-size:14px;display:flex;flex-direction:column;height:100vh;';
+        document.body.innerHTML='<div style="background:#fff;border-bottom:1px solid #e3e8ef;padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;"><div><div style="font-size:15px;font-weight:700;color:#0d1117;">'+cfg.title+'</div><div style="font-size:12px;color:#7a8899;margin-top:2px;">'+cfg.sub+' ('+rows.length+' records)</div></div><button onclick="dlExcel()" style="padding:7px 14px;border-radius:8px;border:1px solid #0e7a5f;background:#e6f5f1;color:#0e7a5f;font-size:12px;font-weight:600;cursor:pointer;">&#8681; Download Excel</button></div><div id="dbody" style="padding:16px 24px;overflow:auto;flex:1;"></div><div id="dpager" style="display:none;align-items:center;justify-content:center;gap:16px;padding:12px 24px;border-top:1px solid #e3e8ef;background:#fff;"><button id="dprev" onclick="chgPage(-1)" style="padding:7px 16px;border-radius:8px;border:1px solid #e3e8ef;background:#f4f6f9;cursor:pointer;font-size:13px;">&#8592; Prev</button><span id="dinfo" style="font-size:12px;color:#7a8899;"></span><button id="dnext" onclick="chgPage(1)" style="padding:7px 16px;border-radius:8px;border:1px solid #e3e8ef;background:#f4f6f9;cursor:pointer;font-size:13px;">Next &#8594;</button></div>';
+        window.chgPage=function(dir){page=Math.max(0,Math.min(page+dir,Math.ceil(rows.length/PS)-1));renderP();document.getElementById('dbody').scrollTop=0;};
+        window.openDet=function(idx){var r=rows[idx];if(!r)return;window.open(FBASE+'/network-hospital#claim='+btoa(unescape(encodeURIComponent(JSON.stringify(r)))),'_blank');};
+        window.dlExcel=function(){
+          if(!window.XLSX){alert('XLSX not loaded');return;}
+          var data=[];
+          if(cfg.src==='C'){data.push(['PRID','Hospital','Division','Age','Gender','Service Type','Department','NWP Required','Default Hosp (Rs)','Add. Hosp (Rs)','Patient Contrib (Rs)','NWP Contribution (Rs)','Other Donor Name','Other Donor Contrib (Rs)','Approval Status']);rows.forEach(function(r){data.push([r.prid,r.organization_copy,r.organization,r.age,r.gender,r.type_of_service,r.treatment_category,r.does_it_require_apf_contribution,Number(r.existing_hospital_contribution)||0,Number(r.additional_hospital_contribution)||0,Number(r.patient_contribution_yes)||0,Number(r.apf_contribution)||0,r.other_donor_name,Number(r.other_donor_contribution)||0,r.approval_status]);});}
+          else if(cfg.src==='B'){data.push(['Record ID','Division','Hospital','Date of Approval','Financial Year','Start Date','End Date','Grant ID','Total Budget (Rs)']);rows.forEach(function(r){data.push([r.name,r.organization_name,r.hospital_name,r.date_of_approval,r.financial_year,r.start_date,r.end_date,r.grant_id,Number(r.total_budget)||0]);});}
+          else{data.push(['Record ID','Date','Division','Hospital','Disbursed Amount (Rs)']);rows.forEach(function(r){data.push([r.name,r.date,r.organization,r.hospital_name,Number(r.disbursed_amount)||0]);});}
+          var ws=XLSX.utils.aoa_to_sheet(data);var wb=XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb,ws,cfg.title.replace(/[^a-zA-Z0-9 ]/g,'').substring(0,31));
+          ws['!cols']=data[0].map(function(h,ci){var mx=String(h).length;data.slice(1).forEach(function(row){var l=String(row[ci]||'').length;if(l>mx)mx=l;});return{wch:Math.min(mx+2,40)};});
+          XLSX.writeFile(wb,cfg.title.replace(/[^a-zA-Z0-9 ]/g,'_')+'.xlsx');
+        };
+        var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';document.head.appendChild(s);
+        renderP();
+        document.documentElement.style.visibility='';
+      }catch(e){console.error('Drill render error',e);document.documentElement.style.visibility='';if(typeof frappe!=='undefined'){frappe.ready(function(){init();});}else{init();}}
+    }
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',renderDrill);else renderDrill();
+    return;
+  }
+  if(typeof frappe!=='undefined'){frappe.ready(function(){init();});}else{init();}
+})();
+
+function cu(id,target,currency){var el=document.getElementById(id);if(!el)return;var dur=700,t0=performance.now();(function tick(now){var p=Math.min((now-t0)/dur,1),v=Math.round(p*target);el.textContent=currency?'₹'+fmt(v):v.toLocaleString('en-IN');if(p<1)requestAnimationFrame(tick);})(t0);}
+function fmt(v){return Math.round(Number(v)||0).toLocaleString('en-IN');}
+function gv(id){return document.getElementById(id).value;}
+function applyFilters(){loadAll();}
+function clearFilters(){
+  ['f-hosp','f-org','f-dept','f-svc','f-fy'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.value='';
+  });
+  /* Reset Division dropdown to show all divisions again */
+  populateAllDivisions();
+  loadAll();
+}
+
+function mockData(dt){
+  if(dt==='Hospital With Organization')return[{name:'City Hospital',organization:'APF Bengaluru'},{name:'General Hospital',organization:'APF Bengaluru'},{name:'Apollo Hospital',organization:'APF Hyderabad'}];
+  if(dt==='Department')return[{name:'General medicine'},{name:'Cardiology'},{name:'Orthopaedics'}];
+  if(dt==='Financial Year')return[{name:'2025-26'},{name:'2024-25'}];
+  if(dt==='Patient Claim Form'){
+    var svcs=['In Patient Service','Out Patient Service','Day Care Service'];
+    return Array.from({length:4},function(_,i){var apf=i%2===0?'Yes':'No',bill=15000+i*5000,agreed=apf==='Yes'?Math.round(bill*.85):0;return{name:'PCID-00'+(i+1),prid:'PR-00'+(i+1),patient_id:'PAT-'+(100+i),name1:['Ravi Kumar','Priya S','Mohan Das','Lakshmi B'][i],age:String(30+i*10),gender:i%2===0?'Male':'Female',organization:'APF Bengaluru',organization_copy:'City Hospital',type_of_service:svcs[i%3],date_of_visit:'2026-04-0'+(i+1),date_of_discharge:svcs[i%3]==='In Patient Service'?'2026-04-05':null,treating_doctor_name:'Dr. Sharma',treatment_category:'General medicine',final_diagnosis:'Test diagnosis',total_actual_final_bill_in_rs:bill,does_it_require_apf_contribution:apf,total_bill_at_apf_agreed_rates_mou:agreed,justification:null,existing_hospital_contribution:apf==='Yes'?Math.round(bill*.2):0,additional_hospital_contribution:Math.round(bill*.05),patient_contribution_yes:Math.round(bill*.15),apf_contribution:apf==='Yes'?Math.round(bill*.3):0,other_donor_name:apf==='No'?'Donor Trust':null,other_donor_contribution:apf==='No'?String(Math.round(bill*.1)):null,document_status:i===0?'Claim form fully filled':'Claim form partially filled',approval_status:'Approved',comment:null,why_this_patient_is_eligible_for_subsidy_for_this_service:'BPL patient',if_other_treatment_please_mention:null};});
+  }
+  if(dt==='Network Hospital Budget')return[{name:'1',organization_name:'APF Bengaluru',hospital_name:'City Hospital',date_of_approval:'2025-04-01',financial_year:'2025-26',start_date:'2025-04-01',end_date:'2026-03-31',grant_id:'GR-001',total_budget:500000}];
+  if(dt==='Budget Disbursement')return[{name:'1',date:'2026-01-10',organization:'APF Bengaluru',hospital_name:'City Hospital',disbursed_amount:200000}];
+  return[];
+}
+</script>
+</body>
+</html>
+{% endblock %}

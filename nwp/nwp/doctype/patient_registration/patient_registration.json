@@ -254,8 +254,13 @@
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
- "links": [],
- "modified": "2026-06-15 16:50:16.382478",
+ "links": [
+  {
+   "link_doctype": "Patient Claim Form",
+   "link_fieldname": "prid"
+  }
+ ],
+ "modified": "2026-06-17 11:00:47.488062",
  "modified_by": "Administrator",
  "module": "NWP",
  "name": "Patient Registration",

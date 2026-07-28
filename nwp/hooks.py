@@ -241,6 +241,25 @@ app_license = "mit"
 # Automatically update python controller files with type annotations for this app.
 # export_python_type_annotations = True
 
+# Fixtures
+# --------
+# Export these records so other sites/team members get them via `bench migrate`
+
+fixtures = [
+	{
+		"dt": "Workspace",
+		"filters": [
+			["name", "in", ["Network Hospital", "Master", "Budget Summary", "View Dashboard"]]
+		],
+	},
+	{
+		"dt": "Desktop Icon",
+		"filters": [
+			["name", "in", ["Network Hospital", "Master", "Budget Summary", "View Dashboard"]]
+		],
+	},
+]
+
 # default_log_clearing_doctypes = {
 # 	"Logging DocType Name": 30  # days to retain logs
 # }

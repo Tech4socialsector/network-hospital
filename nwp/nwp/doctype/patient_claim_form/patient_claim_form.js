@@ -13,9 +13,8 @@ frappe.ui.form.on("Patient Claim Form", {
     refresh: function (frm) {
         load_subsidy(frm);
         apply_nwp_css(frm);
-        if (frm.is_dirty()) {
-            calculate_all(frm);
-        }
+        frm.set_df_property('existing_hospital_contribution', 'read_only', 1);
+        calculate_all(frm);
     },
 
     organization_copy: function (frm) {
@@ -115,12 +114,13 @@ function apply_nwp_css(frm) {
     }
 }
 
-// ── safe_set: only set if value changed ───────────────────────────────────
+// ── safe_set: set value and refresh field (works on read-only fields too) ─
 function safe_set(frm, fieldname, new_value) {
     const current  = flt(frm.doc[fieldname]) || 0;
     const incoming = flt(new_value) || 0;
     if (current !== incoming) {
-        frm.set_value(fieldname, incoming);
+        frm.doc[fieldname] = incoming;
+        frm.refresh_field(fieldname);
     }
 }
 
