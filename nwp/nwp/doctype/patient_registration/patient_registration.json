@@ -15,9 +15,10 @@
   "gender",
   "column_break_xwjs",
   "village_name",
-  "block",
+  "pincode",
   "state",
   "district",
+  "block",
   "pmjay_registered",
   "mode_of_identification",
   "assessment_form",
@@ -101,9 +102,10 @@
    "reqd": 1
   },
   {
-   "fieldname": "block",
+   "fieldname": "pincode",
    "fieldtype": "Data",
-   "label": "Block",
+   "label": "Pincode",
+   "length": 6,
    "reqd": 1
   },
   {
@@ -118,6 +120,12 @@
    "fieldtype": "Link",
    "label": "District",
    "options": "District List",
+   "reqd": 1
+  },
+  {
+   "fieldname": "block",
+   "fieldtype": "Data",
+   "label": "Taluk",
    "reqd": 1
   },
   {

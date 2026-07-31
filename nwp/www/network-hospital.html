@@ -9,7 +9,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <title>APF Hospital Programme Dashboard</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" integrity="sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw" crossorigin="anonymous"></script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Epilogue:wght@300;400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="icon" href="https://apf-network-hospitals.m.frappe.cloud/assets/frappe/images/favicon.png" type="image/png">
 <style>
@@ -213,6 +213,13 @@ var C=[], B=[], D=[];
 var ALL_HOSPS=[];
 var FBASE=window.location.origin;
 
+/* Escape a value for safe interpolation into HTML markup strings */
+function escHtml(v){
+  return String(v).replace(/[&<>"']/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
 function fdb(dt,fields,filters,limit){
   return new Promise(function(resolve){
     if(typeof frappe==='undefined'){resolve(mockData(dt));return;}
@@ -375,12 +382,14 @@ function drill(key){
   var cfg=DRILLS[key];if(!cfg)return;
   var CA=C.filter(function(r){return r.approval_status==='Approved';});
   var rows=cfg.src==='C'?(cfg.f?CA.filter(cfg.f):CA.slice()):cfg.src==='B'?B.slice():D.slice();
-  window.open(FBASE+'/network-hospital#drill='+btoa(unescape(encodeURIComponent(JSON.stringify({key:key,rows:rows})))),'_blank');
+  var id='d'+Date.now()+Math.random().toString(36).slice(2);
+  sessionStorage.setItem(id,JSON.stringify({key:key,rows:rows}));
+  window.open(FBASE+'/network-hospital#drill='+id,'_blank');
 }
 
 function detailPageHTML(r){
   var n=function(v){return Number(v)||0;};
-  var dv=function(v){return(v===undefined||v===null||v==='')?'—':String(v);};
+  var dv=function(v){return(v===undefined||v===null||v==='')?'—':escHtml(v);};
   var rs=function(v){return '₹'+(Math.round(n(v))||0).toLocaleString('en-IN');};
   var isYes=r.does_it_require_apf_contribution==='Yes';
   var sl=r.type_of_service==='In Patient Service'?'IPD':r.type_of_service==='Out Patient Service'?'OPD':r.type_of_service==='Day Care Service'?'Day Care':dv(r.type_of_service);
@@ -408,7 +417,8 @@ function detailPageHTML(r){
     document.documentElement.style.visibility='hidden';
     function renderDetail(){
       try{
-        var r=JSON.parse(decodeURIComponent(escape(atob(hash.replace('#claim=','')))));
+        var raw=sessionStorage.getItem(hash.replace('#claim=',''));
+        var r=raw?JSON.parse(raw):null;
         if(!r||!r.name){document.documentElement.style.visibility='';init();return;}
         document.title=(r.name||'')+' — '+(r.name1||'');
         document.open();document.write(detailPageHTML(r));document.close();
@@ -422,13 +432,14 @@ function detailPageHTML(r){
     document.documentElement.style.visibility='hidden';
     function renderDrill(){
       try{
-        var payload=JSON.parse(decodeURIComponent(escape(atob(hash.replace('#drill=','')))));
-        var key=payload.key,rows=payload.rows,cfg=DRILLS[key];
+        var raw=sessionStorage.getItem(hash.replace('#drill=',''));
+        var payload=raw?JSON.parse(raw):null;
+        var key=payload&&payload.key,rows=(payload&&payload.rows)||[],cfg=DRILLS[key];
         if(!cfg){document.documentElement.style.visibility='';init();return;}
         document.title=cfg.title;
         var PS=50,page=0;
         var f2=function(v){return Math.round(Number(v)||0).toLocaleString('en-IN');};
-        var dv=function(v){return(v===undefined||v===null||v==='')?'':String(v);};
+        var dv=function(v){return(v===undefined||v===null||v==='')?'':escHtml(v);};
         var rs=function(v){return '₹'+f2(Number(v)||0);};
         var svcP=function(s){if(s==='In Patient Service')return '<span style="background:#e8f0fb;color:#1a5fa8;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;">IPD</span>';if(s==='Out Patient Service')return '<span style="background:#e6f5f1;color:#0e7a5f;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;">OPD</span>';if(s==='Day Care Service')return '<span style="background:#fef3e2;color:#b45309;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;">Daycare</span>';return dv(s);};
         var aprP=function(v){if(v==='Approved')return '<span style="background:#dcfce7;color:#16a34a;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;">Approved</span>';if(v==='Rejected')return '<span style="background:#fee2e2;color:#dc2626;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;">Rejected</span>';if(v==='Sent back for revision')return '<span style="background:#fef3e2;color:#b45309;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;">Revision</span>';return dv(v);};
@@ -468,7 +479,7 @@ function detailPageHTML(r){
         document.body.style.cssText='margin:0;padding:0;font-family:Inter,system-ui,sans-serif;background:#f4f6f9;color:#0d1117;font-size:14px;display:flex;flex-direction:column;height:100vh;';
         document.body.innerHTML='<div style="background:#fff;border-bottom:1px solid #e3e8ef;padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;"><div><div style="font-size:15px;font-weight:700;color:#0d1117;">'+cfg.title+'</div><div style="font-size:12px;color:#7a8899;margin-top:2px;">'+cfg.sub+' ('+rows.length+' records)</div></div><button onclick="dlExcel()" style="padding:7px 14px;border-radius:8px;border:1px solid #0e7a5f;background:#e6f5f1;color:#0e7a5f;font-size:12px;font-weight:600;cursor:pointer;">&#8681; Download Excel</button></div><div id="dbody" style="padding:16px 24px;overflow:auto;flex:1;"></div><div id="dpager" style="display:none;align-items:center;justify-content:center;gap:16px;padding:12px 24px;border-top:1px solid #e3e8ef;background:#fff;"><button id="dprev" onclick="chgPage(-1)" style="padding:7px 16px;border-radius:8px;border:1px solid #e3e8ef;background:#f4f6f9;cursor:pointer;font-size:13px;">&#8592; Prev</button><span id="dinfo" style="font-size:12px;color:#7a8899;"></span><button id="dnext" onclick="chgPage(1)" style="padding:7px 16px;border-radius:8px;border:1px solid #e3e8ef;background:#f4f6f9;cursor:pointer;font-size:13px;">Next &#8594;</button></div>';
         window.chgPage=function(dir){page=Math.max(0,Math.min(page+dir,Math.ceil(rows.length/PS)-1));renderP();document.getElementById('dbody').scrollTop=0;};
-        window.openDet=function(idx){var r=rows[idx];if(!r)return;window.open(FBASE+'/network-hospital#claim='+btoa(unescape(encodeURIComponent(JSON.stringify(r)))),'_blank');};
+        window.openDet=function(idx){var r=rows[idx];if(!r)return;var id='c'+Date.now()+Math.random().toString(36).slice(2);sessionStorage.setItem(id,JSON.stringify(r));window.open(FBASE+'/network-hospital#claim='+id,'_blank');};
         window.dlExcel=function(){
           if(!window.XLSX){alert('XLSX not loaded');return;}
           var data=[];
@@ -480,7 +491,7 @@ function detailPageHTML(r){
           ws['!cols']=data[0].map(function(h,ci){var mx=String(h).length;data.slice(1).forEach(function(row){var l=String(row[ci]||'').length;if(l>mx)mx=l;});return{wch:Math.min(mx+2,40)};});
           XLSX.writeFile(wb,cfg.title.replace(/[^a-zA-Z0-9 ]/g,'_')+'.xlsx');
         };
-        var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';document.head.appendChild(s);
+        if(!window.XLSX){var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';s.integrity='sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw';s.crossOrigin='anonymous';document.head.appendChild(s);}
         renderP();
         document.documentElement.style.visibility='';
       }catch(e){console.error('Drill render error',e);document.documentElement.style.visibility='';if(typeof frappe!=='undefined'){frappe.ready(function(){init();});}else{init();}}
