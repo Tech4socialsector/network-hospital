@@ -9,11 +9,44 @@
 //   - nwp_percentage field: fetch_from = "procedure_name.nwp_percentage"
 // ============================================================
 
+// This organization's NWP Settings: use_nwp_agreed_rate_model = 0 means
+// there's no separately negotiated rate — the agreed rate is just the
+// actual bill, and the hospital's default contribution is always zero.
+// Cached after first fetch so every refresh/field-change isn't a round trip.
+let _use_agreed_rate_model = null;
+
+function with_agreed_rate_setting(callback) {
+    if (_use_agreed_rate_model !== null) {
+        callback(_use_agreed_rate_model);
+        return;
+    }
+    frappe.db.get_single_value('NWP Settings', 'use_nwp_agreed_rate_model').then(function (value) {
+        _use_agreed_rate_model = cint(value) ? 1 : 0;
+        callback(_use_agreed_rate_model);
+    });
+}
+
+function apply_agreed_rate_model(frm) {
+    with_agreed_rate_setting(function (use_model) {
+        frm.set_df_property('total_bill_at_apf_agreed_rates_mou', 'hidden', !use_model);
+        frm.set_df_property('existing_hospital_contribution', 'hidden', !use_model);
+        if (!use_model) {
+            frm.set_value(
+                'total_bill_at_apf_agreed_rates_mou',
+                frm.doc.total_actual_final_bill_in_rs
+            );
+        } else {
+            calculate_all(frm);
+        }
+    });
+}
+
 frappe.ui.form.on("Patient Claim Form", {
     refresh: function (frm) {
         load_subsidy(frm);
         apply_nwp_css(frm);
         frm.set_df_property('existing_hospital_contribution', 'read_only', 1);
+        apply_agreed_rate_model(frm);
         calculate_all(frm);
     },
 
@@ -32,6 +65,7 @@ frappe.ui.form.on("Patient Claim Form", {
     },
 
     total_actual_final_bill_in_rs: function (frm) {
+        apply_agreed_rate_model(frm);
         calculate_all(frm);
         calculate_other_donor_contribution(frm);
     },

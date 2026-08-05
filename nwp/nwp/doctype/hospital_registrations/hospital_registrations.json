@@ -9,7 +9,6 @@
  "field_order": [
   "general_information_section",
   "hospital_name",
-  "organization_name",
   "city",
   "state",
   "pin",
@@ -22,11 +21,6 @@
   "column_break_unwb",
   "other_insurance_tie_up",
   "insurance_tie_up_name",
-  "additional_information_about_the_hospital",
-  "program_manager_name",
-  "key_contact_person_designation",
-  "email",
-  "phone_number",
   "hospital_services_section",
   "number_of_bed",
   "number_of_icu_beds",
@@ -80,43 +74,31 @@
    "fieldname": "hospital_name",
    "fieldtype": "Link",
    "label": "Hospital Name",
-   "options": "Hospital With Organization",
-   "reqd": 1
-  },
-  {
-   "fetch_from": "hospital_name.organization",
-   "fieldname": "organization_name",
-   "fieldtype": "Data",
-   "label": "Organization Name",
-   "reqd": 1
+   "options": "Hospital With Organization"
   },
   {
    "fieldname": "city",
    "fieldtype": "Data",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "City",
-   "reqd": 1
+   "label": "City"
   },
   {
    "fieldname": "state",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "State",
-   "reqd": 1
+   "label": "State"
   },
   {
    "fieldname": "pin",
    "fieldtype": "Data",
-   "label": "PIN",
-   "reqd": 1
+   "label": "PIN"
   },
   {
    "fieldname": "nabh_accreditation",
    "fieldtype": "Select",
    "label": "NABH Accreditation",
-   "options": "\nNo\nEntry\nFull",
-   "reqd": 1
+   "options": "\nNo\nEntry\nFull"
   },
   {
    "depends_on": "eval: doc.nabh_accreditation == \"Full\"",
@@ -128,23 +110,20 @@
    "fieldname": "esi_registration",
    "fieldtype": "Select",
    "label": "ESI Registration",
-   "options": "\nYes\nNo",
-   "reqd": 1
+   "options": "\nYes\nNo"
   },
   {
    "fieldname": "cghs_registration",
    "fieldtype": "Select",
    "label": "CGHS Registration",
-   "options": "\nYes\nNo",
-   "reqd": 1
+   "options": "\nYes\nNo"
   },
   {
    "fieldname": "empanelled_in_pmjay",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Empanelled in PMJAY",
-   "options": "\nYes\nNo",
-   "reqd": 1
+   "options": "\nYes\nNo"
   },
   {
    "depends_on": "eval: doc.empanelled_in_pmjay == \"Yes\"",
@@ -162,8 +141,7 @@
    "fieldname": "other_insurance_tie_up",
    "fieldtype": "Select",
    "label": "Other Insurance Tie-ups",
-   "options": "\nYes\nNo",
-   "reqd": 1
+   "options": "\nYes\nNo"
   },
   {
    "depends_on": "eval: doc.other_insurance_tie_up == \"Yes\"",
@@ -173,35 +151,6 @@
    "options": "Insurance"
   },
   {
-   "fieldname": "additional_information_about_the_hospital",
-   "fieldtype": "Long Text",
-   "label": "Additional information about the Hospital"
-  },
-  {
-   "fieldname": "program_manager_name",
-   "fieldtype": "Data",
-   "label": "Key contact person name",
-   "reqd": 1
-  },
-  {
-   "fieldname": "key_contact_person_designation",
-   "fieldtype": "Data",
-   "label": "Key contact person designation",
-   "reqd": 1
-  },
-  {
-   "fieldname": "email",
-   "fieldtype": "Data",
-   "label": "Key contact person email",
-   "reqd": 1
-  },
-  {
-   "fieldname": "phone_number",
-   "fieldtype": "Data",
-   "label": "Key contact person contact",
-   "reqd": 1
-  },
-  {
    "fieldname": "hospital_services_section",
    "fieldtype": "Section Break",
    "label": "Hospital Services"
@@ -209,54 +158,46 @@
   {
    "fieldname": "number_of_bed",
    "fieldtype": "Data",
-   "label": "Number of bed",
-   "reqd": 1
+   "label": "Number of bed"
   },
   {
    "fieldname": "number_of_icu_beds",
    "fieldtype": "Int",
    "label": "Number of ICU beds",
-   "non_negative": 1,
-   "reqd": 1
+   "non_negative": 1
   },
   {
    "fieldname": "number_of_working_operation_theatres",
    "fieldtype": "Int",
    "label": "Number of working operation theatres",
-   "non_negative": 1,
-   "reqd": 1
+   "non_negative": 1
   },
   {
    "fieldname": "key_services_in_the_hospital",
    "fieldtype": "Table MultiSelect",
    "label": "Departments in the hospital",
-   "options": "Departments",
-   "reqd": 1
+   "options": "Departments"
   },
   {
    "fieldname": "number_of_full_time_general_doctors",
    "fieldtype": "Int",
    "label": "Number of full time general doctors",
-   "non_negative": 1,
-   "reqd": 1
+   "non_negative": 1
   },
   {
    "fieldname": "number_of_full_time_specialist_doctors",
    "fieldtype": "Data",
-   "label": "Number of full time specialist doctors",
-   "reqd": 1
+   "label": "Number of full time specialist doctors"
   },
   {
    "fieldname": "number_of_nurses",
    "fieldtype": "Data",
-   "label": "Number of nurses",
-   "reqd": 1
+   "label": "Number of nurses"
   },
   {
    "fieldname": "describe_existing_community_outreach_work",
    "fieldtype": "Small Text",
-   "label": "Describe existing community outreach work",
-   "reqd": 1
+   "label": "Describe existing community outreach work"
   },
   {
    "fieldname": "hospital_stats_section",
@@ -266,14 +207,12 @@
   {
    "fieldname": "data_twdi",
    "fieldtype": "Data",
-   "label": "OPD patients in 2025-26",
-   "reqd": 1
+   "label": "OPD patients in 2025-26"
   },
   {
    "fieldname": "data_ipd",
    "fieldtype": "Data",
-   "label": "IPD admissions in 2025-26",
-   "reqd": 1
+   "label": "IPD admissions in 2025-26"
   },
   {
    "fieldname": "ndel",
@@ -288,8 +227,7 @@
   {
    "fieldname": "data_surgeries",
    "fieldtype": "Data",
-   "label": "Surgeries (excluding minor procedures) in 2025-26",
-   "reqd": 1
+   "label": "Surgeries (excluding minor procedures) in 2025-26"
   },
   {
    "fieldname": "hospital_finances_section",
@@ -304,38 +242,32 @@
    "description": "Patient fees and pharmacy income",
    "fieldname": "income_from_patient",
    "fieldtype": "Currency",
-   "label": "Income from patient",
-   "reqd": 1
+   "label": "Income from patient"
   },
   {
    "fieldname": "data_wafl",
    "fieldtype": "Currency",
-   "label": "Income from nursing school/college",
-   "reqd": 1
+   "label": "Income from nursing school/college"
   },
   {
    "fieldname": "grants_donations_govt_supportreimburse",
    "fieldtype": "Currency",
-   "label": "Grants, Donations",
-   "reqd": 1
+   "label": "Grants, Donations"
   },
   {
    "fieldname": "supportreimbursements_from_government",
    "fieldtype": "Currency",
-   "label": "Support/Reimbursements from Government",
-   "reqd": 1
+   "label": "Support/Reimbursements from Government"
   },
   {
    "fieldname": "bankinterest",
    "fieldtype": "Currency",
-   "label": "Bank interest (savings + FD)",
-   "reqd": 1
+   "label": "Bank interest (savings + FD)"
   },
   {
    "fieldname": "other_income",
    "fieldtype": "Data",
-   "label": "Other income",
-   "reqd": 1
+   "label": "Other income"
   },
   {
    "fieldname": "add_details_of_other_income_below",
@@ -345,8 +277,7 @@
   {
    "fieldname": "last_3_years_average_hospital_expenditure_in_rs_copy",
    "fieldtype": "Currency",
-   "label": "Total income in Rs. (2025-26)",
-   "reqd": 1
+   "label": "Total income in Rs. (2025-26)"
   },
   {
    "fieldname": "column_break_vpec",
@@ -356,44 +287,37 @@
    "description": "Salaries of medical team like doctors, nurses, technicians etc., Medicines & consumables, Hospital renovation expenses etc.",
    "fieldname": "opex",
    "fieldtype": "Currency",
-   "label": "Hospital operating expenses",
-   "reqd": 1
+   "label": "Hospital operating expenses"
   },
   {
    "fieldname": "charity",
    "fieldtype": "Currency",
-   "label": "Charity / Discount for patients",
-   "reqd": 1
+   "label": "Charity / Discount for patients"
   },
   {
    "fieldname": "adminex",
    "fieldtype": "Currency",
-   "label": "Admin expense",
-   "reqd": 1
+   "label": "Admin expense"
   },
   {
    "fieldname": "other_expenses_school_nursing_college_agriculture_etc",
    "fieldtype": "Currency",
-   "label": "Other expenses (school, nursing college, agriculture etc.)",
-   "reqd": 1
+   "label": "Other expenses (school, nursing college, agriculture etc.)"
   },
   {
    "fieldname": "comm_work",
    "fieldtype": "Currency",
-   "label": "Community work",
-   "reqd": 1
+   "label": "Community work"
   },
   {
    "fieldname": "last_3_years_average_hospital_expenditure_in_rs",
    "fieldtype": "Currency",
-   "label": "Total expenditure in Rs. (2025-26)",
-   "reqd": 1
+   "label": "Total expenditure in Rs. (2025-26)"
   },
   {
    "fieldname": "last_3_year_average_annual_surplus__deficit_in_rs",
    "fieldtype": "Currency",
-   "label": "Surplus / Deficit",
-   "reqd": 1
+   "label": "Surplus / Deficit"
   },
   {
    "fieldname": "hospital_balance_sheet_section",
@@ -432,20 +356,18 @@
    "description": "Hospital stats, financials and capacities to be updated every year",
    "fieldname": "information_updated_on",
    "fieldtype": "Date",
-   "label": "Information updated on",
-   "reqd": 1
+   "label": "Information updated on"
   },
   {
    "fieldname": "agreed_method_for_subsidy",
    "fieldtype": "Small Text",
-   "label": "Agreed method for subsidy",
-   "reqd": 1
+   "label": "Agreed method for subsidy"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-06-16 17:13:00.487587",
+ "modified": "2026-08-05 12:10:40.956996",
  "modified_by": "Administrator",
  "module": "NWP",
  "name": "Hospital Registrations",

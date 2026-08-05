@@ -2,7 +2,7 @@
  {
   "app": "nwp",
   "charts": [],
-  "content": "[{\"id\":\"fHiNFnbi0m\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Welcome to the Network Hospital workspace</span>\",\"col\":12}},{\"id\":\"0wqJXDTkVz\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Hospital Registration\",\"col\":4}},{\"id\":\"KUeYpLBm7G\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Patient Registration\",\"col\":4}},{\"id\":\"yFqULVAAAu\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Patient Claim Form\",\"col\":4}}]",
+  "content": "[{\"id\": \"fHiNFnbi0m\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\">Welcome to the Network Hospital workspace</span>\", \"col\": 12}}, {\"id\": \"0wqJXDTkVz\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Hospital Registration\", \"col\": 4}}, {\"id\": \"KUeYpLBm7G\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Patient Registration\", \"col\": 4}}, {\"id\": \"yFqULVAAAu\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Patient Claim Form\", \"col\": 4}}, {\"id\": \"pApRvL0card\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Pending Approval\", \"col\": 4}}]",
   "custom_blocks": [],
   "docstatus": 0,
   "doctype": "Workspace",
@@ -16,7 +16,7 @@
   "link_to": null,
   "link_type": "DocType",
   "links": [],
-  "modified": "2026-06-16 14:58:09.599678",
+  "modified": "2026-08-05 11:22:49.671983",
   "module": null,
   "name": "Network Hospital",
   "number_cards": [
@@ -31,6 +31,10 @@
    {
     "label": "Patient Claim Form",
     "number_card_name": "Patient Claim Form"
+   },
+   {
+    "label": "Pending Approval",
+    "number_card_name": "Pending Approval"
    }
   ],
   "parent_page": null,

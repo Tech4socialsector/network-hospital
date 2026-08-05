@@ -4,10 +4,23 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
+from frappe.utils import flt
 
 
 class PatientRegistration(Document):
-	pass
+	def validate(self):
+		self.total_score = sum(flt(d.score) for d in self.assessment_answers)
+
+	@frappe.whitelist()
+	def get_assessment_questions(self):
+		"""Populate one answer row per question currently defined in
+		Assessment Question — the organization's question list is managed
+		directly there (add/remove questions any time), not through a
+		separate template."""
+		self.set("assessment_answers", [])
+		questions = frappe.get_all("Assessment Question", order_by="creation", fields=["name"])
+		for q in questions:
+			self.append("assessment_answers", {"question": q.name})
 
 
 def get_or_create_location(doctype, value, filters=None):

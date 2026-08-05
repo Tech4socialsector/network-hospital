@@ -86,7 +86,7 @@ app_license = "mit"
 # ------------
 
 # before_install = "nwp.install.before_install"
-# after_install = "nwp.install.after_install"
+after_install = "nwp.install.after_install"
 
 # Uninstallation
 # ------------
@@ -266,6 +266,7 @@ fixtures = [
 					"Total Aproved Budget",
 					"Budget Disbursement",
 					"Total Utilisation",
+					"Pending Approval",
 				],
 			]
 		],
@@ -287,6 +288,10 @@ fixtures = [
 		"filters": [
 			["name", "in", ["Network Hospital", "Master", "Budget Summary", "View Dashboard"]]
 		],
+	},
+	{
+		"dt": "Role",
+		"filters": [["name", "in", ["NWP Data Entry", "NWP Approver"]]],
 	},
 ]
 

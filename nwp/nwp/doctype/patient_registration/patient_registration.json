@@ -3,7 +3,7 @@
  "allow_import": 1,
  "allow_rename": 1,
  "autoname": "PID-.###",
- "creation": "2026-06-15 15:42:38.354070",
+ "creation": "2026-07-30 10:42:12.040337",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -22,19 +22,8 @@
   "pmjay_registered",
   "mode_of_identification",
   "assessment_form",
-  "caste",
-  "house",
-  "domestic_animal",
-  "land_holding",
-  "assets",
-  "education_level_of_head_of_the_house",
-  "no_of_daily_working_members_in_the_family",
-  "family_member_on_monthly_income",
-  "food_eaten_last_night",
-  "debt_for_medical_treatment",
-  "other_factors",
+  "assessment_answers",
   "total_score",
-  "column_break_nhit",
   "remarks",
   "assessed_by",
   "assessed_on",
@@ -48,38 +37,19 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "Patient ID",
-   "reqd": 1
-  },
-  {
-   "fetch_from": "organization.hospital",
-   "fieldname": "hospital_name",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Hospital Name",
-   "options": "Hospital With Organization",
-   "reqd": 1
-  },
-  {
-   "fetch_from": "hospital_name.organization",
-   "fieldname": "organization",
-   "fieldtype": "Data",
-   "label": "Organization",
-   "reqd": 1
+   "label": "Patient ID"
   },
   {
    "fieldname": "name1",
    "fieldtype": "Data",
-   "hidden": 1,
-   "label": "Name"
+   "label": "Patient Name",
+   "reqd": 1
   },
   {
    "fieldname": "age",
    "fieldtype": "Int",
    "in_list_view": 1,
-   "label": "Age",
-   "reqd": 1
+   "label": "Age"
   },
   {
    "fieldname": "gender",
@@ -87,8 +57,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Gender",
-   "options": "\nMale\nFemale\nOthers",
-   "reqd": 1
+   "options": "\nMale\nFemale\nOthers"
   },
   {
    "fieldname": "column_break_xwjs",
@@ -98,49 +67,42 @@
    "fieldname": "village_name",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Village name",
-   "reqd": 1
+   "label": "Village name"
   },
   {
    "fieldname": "pincode",
    "fieldtype": "Data",
    "label": "Pincode",
-   "length": 6,
-   "reqd": 1
+   "length": 6
   },
   {
    "fieldname": "state",
    "fieldtype": "Link",
    "label": "State",
-   "options": "State List",
-   "reqd": 1
+   "options": "State List"
   },
   {
    "fieldname": "district",
    "fieldtype": "Link",
    "label": "District",
-   "options": "District List",
-   "reqd": 1
+   "options": "District List"
   },
   {
    "fieldname": "block",
    "fieldtype": "Data",
-   "label": "Taluk",
-   "reqd": 1
+   "label": "Taluk"
   },
   {
    "fieldname": "pmjay_registered",
    "fieldtype": "Select",
    "label": "PMJAY Registered",
-   "options": "\nYes\nNo",
-   "reqd": 1
+   "options": "\nYes\nNo"
   },
   {
    "fieldname": "mode_of_identification",
    "fieldtype": "Select",
    "label": "Mode of Identification",
-   "options": "\nCommunity-based\nHospital-based",
-   "reqd": 1
+   "options": "\nCommunity-based\nHospital-based"
   },
   {
    "fieldname": "assessment_form",
@@ -148,116 +110,62 @@
    "label": "Socio-economic assessment form"
   },
   {
-   "fieldname": "caste",
-   "fieldtype": "Select",
-   "label": "Caste",
-   "options": "\nSC/ST - (1 \u2013 Very poor/ Poor)\nOBC \u2013 (2 - Middle Class)\nGeneral \u2013 (3 \u2013 Well off)"
-  },
-  {
-   "fieldname": "house",
-   "fieldtype": "Select",
-   "label": "House",
-   "options": "\nKaccha - (1 - Very poor/ Poor)\nSemi-Pukka - (2 - Middle Class)\nPukka - (3 \u2013 Well off)"
-  },
-  {
-   "fieldname": "domestic_animal",
-   "fieldtype": "Select",
-   "label": "Domestic Animal",
-   "options": "\nNil - (0 \u2013 Very Poor)\n<5 goats & 2 cows/buffalos (1 \u2013 Poor)\n<5 goats & 2 cows/buffalos but <20 goats & 4 cows/buffalos - (2 \u2013 Middle Class)\n>20 goats & 4 cows/buffalos - (3 \u2013 Well off)"
-  },
-  {
-   "fieldname": "land_holding",
-   "fieldtype": "Select",
-   "label": "Land holding",
-   "options": "\n0-2 acres \u2013 (1 - Very Poor)\n2.1-5 acres \u2013 (2 \u2013 Poor)\n5.1-10 acres \u2013 (3 \u2013 Middle Class)\n>10 acres - (4 \u2013 Well off)"
-  },
-  {
-   "fieldname": "assets",
-   "fieldtype": "Select",
-   "label": "Assets (T.V, Fridge, Motor Bike, Four-Wheeler, Tractor)",
-   "options": "\nNil \u2013 (0 - Very Poor)\nAny One \u2013 (1 \u2013 Poor)\nAny Two or Three \u2013 (2 \u2013 Middle Class)\nAll Four - (3 \u2013 Well off)"
-  },
-  {
-   "fieldname": "education_level_of_head_of_the_house",
-   "fieldtype": "Select",
-   "label": "Education level of head of the house",
-   "options": "\nIlliterate \u2013 (0 - Very Poor)\nUp to primary \u2013 (1 \u2013 Poor)\nUp to high school \u2013 (2 \u2013 Middle Class)\n12 & Above - (3 \u2013 Well off)"
-  },
-  {
-   "fieldname": "no_of_daily_working_members_in_the_family",
-   "fieldtype": "Select",
-   "label": "No. of daily working members in the family",
-   "options": "\nOne or two adults \u2013 (1 - Very Poor)\nThree adults \u2013 (2 \u2013 Poor)\nFour to five adults \u2013 (3 \u2013 Middle Class)\nMore than 6 adults - (4 \u2013 Well off)"
-  },
-  {
-   "fieldname": "family_member_on_monthly_income",
-   "fieldtype": "Select",
-   "label": "Family member on monthly income",
-   "options": "\nNil \u2013 0 (\u2013 Very poor/ Poor)\nOne person \u2013 (1 \u2013 Middle Class)\nMore than one person - (2 \u2013 Well off)"
-  },
-  {
-   "fieldname": "food_eaten_last_night",
-   "fieldtype": "Select",
-   "label": "Food eaten last night",
-   "options": "\nRoti with pickle \u2013 (1 - Very Poor)\nRoti, Pickle, onion \u2013 (2 \u2013 Poor)\nRoti, Dal, Curry \u2013 (3 \u2013 Middle Class)\nMore than four items - (4 \u2013 Well off)"
-  },
-  {
-   "fieldname": "debt_for_medical_treatment",
-   "fieldtype": "Select",
-   "label": "Debt for medical treatment",
-   "options": "\n> Rs. 50,000/ - (0 - Very Poor)\nRs. 25,001/ to Rs. 50,000/ - (1 \u2013 Poor)\n< Rs. 25,000/ - (2 \u2013 Middle Class)\nNil - (3 \u2013 Well off)"
-  },
-  {
-   "fieldname": "other_factors",
-   "fieldtype": "Select",
-   "label": "Other Factors",
-   "options": "\nWidow/ Abandoned - (-1 - Very Poor)\nAny PwD > 79% Disability - (-2 \u2013 Poor)\nMinus points (Middle Class/ Well off)"
-  },
-  {
    "fieldname": "total_score",
-   "fieldtype": "Data",
-   "label": "Total score"
-  },
-  {
-   "fieldname": "column_break_nhit",
-   "fieldtype": "Column Break"
+   "fieldtype": "Int",
+   "label": "Total score",
+   "read_only": 1
   },
   {
    "fieldname": "remarks",
    "fieldtype": "Long Text",
-   "label": "Remarks \u2013 Other justification for eligibility",
-   "reqd": 1
+   "label": "Remarks \u2013 Other justification for eligibility"
   },
   {
    "fieldname": "assessed_by",
    "fieldtype": "Data",
-   "label": "Assessed by",
-   "reqd": 1
+   "label": "Assessed by"
   },
   {
    "fieldname": "assessed_on",
    "fieldtype": "Date",
-   "label": "Assessed on",
-   "reqd": 1
+   "label": "Assessed on"
   },
   {
    "fieldname": "verified_by",
    "fieldtype": "Data",
-   "label": "Verified by",
-   "reqd": 1
+   "label": "Verified by"
   },
   {
    "fieldname": "verified_on",
    "fieldtype": "Date",
-   "label": "Verified on",
-   "reqd": 1
+   "label": "Verified on"
   },
   {
    "fieldname": "document_status",
    "fieldtype": "Select",
    "label": "Document Status",
-   "options": "Registration In-Progress\nRegistration Complete",
-   "reqd": 1
+   "options": "Registration In-Progress\nRegistration Complete"
+  },
+  {
+   "fieldname": "assessment_answers",
+   "fieldtype": "Table",
+   "label": "Assessment Answers",
+   "options": "Patient Assessment Answer"
+  },
+  {
+   "fetch_from": "organization.hospital",
+   "fieldname": "hospital_name",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Hospital Name",
+   "options": "Hospital With Organization"
+  },
+  {
+   "fetch_from": "hospital_name.organization",
+   "fieldname": "organization",
+   "fieldtype": "Data",
+   "label": "Organization"
   }
  ],
  "grid_page_length": 50,
@@ -268,7 +176,7 @@
    "link_fieldname": "prid"
   }
  ],
- "modified": "2026-06-17 11:00:47.488062",
+ "modified": "2026-08-05 16:01:00.819243",
  "modified_by": "Administrator",
  "module": "NWP",
  "name": "Patient Registration",
@@ -284,6 +192,27 @@
    "read": 1,
    "report": 1,
    "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "NWP Data Entry",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "NWP Approver",
    "share": 1,
    "write": 1
   }

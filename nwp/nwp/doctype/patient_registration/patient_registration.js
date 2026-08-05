@@ -1,6 +1,14 @@
 // Copyright (c) 2026, TFSS and contributors
 // For license information, please see license.txt
 
+function calculate_assessment_total(frm) {
+    var total = 0;
+    (frm.doc.assessment_answers || []).forEach(function(row) {
+        total += flt(row.score);
+    });
+    frm.set_value('total_score', total);
+}
+
 frappe.ui.form.on('Patient Registration', {
     setup: function(frm) {
         frm.set_query('district', function() {
@@ -10,10 +18,44 @@ frappe.ui.form.on('Patient Registration', {
                 }
             };
         });
+
+        // Each assessment question has its own option list, so the choices
+        // for 'selected_option' differ per row — scope the query to this
+        // row's own question.
+        frm.set_query('selected_option', 'assessment_answers', function(doc, cdt, cdn) {
+            var row = locals[cdt][cdn];
+            return {
+                filters: {
+                    question: row.question
+                }
+            };
+        });
+    },
+
+    onload: function(frm) {
+        // The organization's question list lives in Assessment Question —
+        // populate one answer row per question currently defined there as
+        // soon as a new registration is opened.
+        if (frm.is_new() && !(frm.doc.assessment_answers || []).length) {
+            frm.call({
+                method: 'get_assessment_questions',
+                doc: frm.doc,
+                freeze: true,
+                freeze_message: __('Loading assessment questions...'),
+                callback: function() {
+                    frm.refresh_field('assessment_answers');
+                    calculate_assessment_total(frm);
+                }
+            });
+        }
     },
 
     state: function(frm) {
         frm.set_value('district', '');
+    },
+
+    assessment_answers_remove: function(frm) {
+        calculate_assessment_total(frm);
     },
 
     pincode: function(frm) {
@@ -61,5 +103,13 @@ frappe.ui.form.on('Patient Registration', {
                 frm.set_value('verified_on', '');
             }
         }
+    }
+});
+
+frappe.ui.form.on('Patient Assessment Answer', {
+    // 'score' is fetch_from'd off 'selected_option' the moment a row picks
+    // one, so this fires right after the score lands on the row.
+    score: function(frm) {
+        calculate_assessment_total(frm);
     }
 });

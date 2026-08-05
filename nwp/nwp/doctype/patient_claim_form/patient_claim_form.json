@@ -30,6 +30,7 @@
   "does_it_require_apf_contribution",
   "section_break_kock",
   "service_and_rate",
+  "package_and_service",
   "section_break_jjgq",
   "total_bill_at_apf_agreed_rates_mou",
   "agreed_method_for_subsidy",
@@ -63,15 +64,13 @@
    "fieldname": "prid",
    "fieldtype": "Link",
    "label": "PRID",
-   "options": "Patient Registration",
-   "reqd": 1
+   "options": "Patient Registration"
   },
   {
    "fetch_from": "prid.name1",
    "fieldname": "name1",
    "fieldtype": "Data",
-   "hidden": 1,
-   "label": "Name"
+   "label": "Patient Name"
   },
   {
    "fetch_from": "prid.gender",
@@ -85,8 +84,7 @@
    "fetch_from": "prid.age",
    "fieldname": "age",
    "fieldtype": "Data",
-   "label": "Age",
-   "reqd": 1
+   "label": "Age"
   },
   {
    "fetch_from": "prid.patient_id",
@@ -98,30 +96,9 @@
    "label": "Patient ID"
   },
   {
-   "fetch_from": "prid.hospital_name",
-   "fieldname": "organization_copy",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Hospital Name",
-   "options": "Hospital With Organization",
-   "reqd": 1
-  },
-  {
-   "fetch_from": "prid.organization",
-   "fieldname": "organization",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Organization",
-   "options": "Organization Name",
-   "reqd": 1
-  },
-  {
    "fieldname": "why_this_patient_is_eligible_for_subsidy_for_this_service",
    "fieldtype": "Small Text",
-   "label": "Why this patient is eligible for subsidy for this service?",
-   "reqd": 1
+   "label": "Why this patient is eligible for subsidy for this service?"
   },
   {
    "fieldname": "column_break_bamp",
@@ -131,8 +108,7 @@
    "fieldname": "date_of_visit",
    "fieldtype": "Date",
    "in_list_view": 1,
-   "label": "Date of visit / admission",
-   "reqd": 1
+   "label": "Date of visit / admission"
   },
   {
    "depends_on": "eval: doc.type_of_service == \"In Patient Service\"",
@@ -151,15 +127,13 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Type of Service",
-   "options": "\nIn Patient Service\nOut Patient Service\nDay Care Service",
-   "reqd": 1
+   "options": "\nIn Patient Service\nOut Patient Service\nDay Care Service"
   },
   {
    "fieldname": "treatment_category",
    "fieldtype": "Link",
    "label": "Treatment Category",
-   "options": "Department",
-   "reqd": 1
+   "options": "Department"
   },
   {
    "depends_on": "eval: doc.treatment_category == \"Others\"",
@@ -199,6 +173,7 @@
   {
    "fieldname": "service_and_rate",
    "fieldtype": "Table",
+   "hidden": 1,
    "label": "Display agreed service and rate (add adjustments to match with actual bill amount)",
    "options": "Service List and Percentage"
   },
@@ -283,20 +258,17 @@
   {
    "fieldname": "upload_final_bill",
    "fieldtype": "Attach",
-   "label": "Upload final bill",
-   "reqd": 1
+   "label": "Upload final bill"
   },
   {
    "fieldname": "invoice_date",
    "fieldtype": "Date",
-   "label": "Invoice date",
-   "reqd": 1
+   "label": "Invoice date"
   },
   {
    "fieldname": "invoice_number",
    "fieldtype": "Int",
-   "label": "Invoice number",
-   "reqd": 1
+   "label": "Invoice number"
   },
   {
    "fieldname": "section_break_kosa",
@@ -307,13 +279,15 @@
    "fieldname": "approval_status",
    "fieldtype": "Select",
    "label": "Approval Status",
-   "options": "\nRejected\nSent back for revision\nApproved"
+   "options": "\nRejected\nSent back for revision\nApproved",
+   "permlevel": 1
   },
   {
    "depends_on": "eval: doc.approval_status == \"Sent back for revision\"",
    "fieldname": "comment",
    "fieldtype": "Small Text",
-   "label": "Comment (if sent back for revision)"
+   "label": "Comment (if sent back for revision)",
+   "permlevel": 1
   },
   {
    "fieldname": "column_break_yklj",
@@ -324,12 +298,35 @@
    "fieldtype": "Select",
    "label": "Document Status",
    "options": "Claim form partially filled\nClaim form fully filled"
+  },
+  {
+   "fetch_from": "prid.hospital_name",
+   "fieldname": "organization_copy",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Hospital Name",
+   "options": "Hospital With Organization"
+  },
+  {
+   "fetch_from": "prid.organization",
+   "fieldname": "organization",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Organization",
+   "options": "Organization Name"
+  },
+  {
+   "fieldname": "package_and_service",
+   "fieldtype": "Text",
+   "label": "Package and service"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-06-15 16:49:44.988520",
+ "modified": "2026-08-05 16:06:09.657949",
  "modified_by": "Administrator",
  "module": "NWP",
  "name": "Patient Claim Form",
@@ -345,6 +342,53 @@
    "read": 1,
    "report": 1,
    "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "permlevel": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "NWP Data Entry",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "NWP Approver",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "permlevel": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "NWP Approver",
    "share": 1,
    "write": 1
   }

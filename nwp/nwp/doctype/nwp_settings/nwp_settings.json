@@ -1,0 +1,45 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-08-05 12:56:00.463444",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "use_nwp_agreed_rate_model"
+ ],
+ "fields": [
+  {
+   "default": "1",
+   "description": "When on, staff enter a separately negotiated NWP Agreed Rate on each claim, and the hospital's default contribution is the difference between the actual bill and that rate. When off, this organization has no separate agreed rate \u2014 the NWP Agreed Rate is set equal to the actual bill automatically, and the hospital's default contribution is always zero. Nothing else about the contribution calculation changes.",
+   "fieldname": "use_nwp_agreed_rate_model",
+   "fieldtype": "Check",
+   "label": "Use NWP Agreed Rate Model"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-08-05 12:56:00.463444",
+ "modified_by": "Administrator",
+ "module": "NWP",
+ "name": "NWP Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}
