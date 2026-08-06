@@ -293,6 +293,55 @@ fixtures = [
 		"dt": "Role",
 		"filters": [["name", "in", ["NWP Data Entry", "NWP Approver"]]],
 	},
+	# Default assessment question set, so every fresh install keeps a
+	# starting question list out of the box. Assessment Question must import
+	# before Assessment Question Option, since each option links back to its
+	# question. Organizations can freely add, edit, or delete any of these
+	# afterward via the Desk UI.
+	{
+		"dt": "Assessment Question",
+		"filters": [
+			[
+				"name",
+				"in",
+				[
+					"Caste",
+					"House",
+					"Domestic Animal",
+					"Land holding",
+					"Assets (T.V, Fridge, Motor Bike, Four-Wheeler, Tractor)",
+					"Education level of head of the house",
+					"No. of daily working members in the family",
+					"Family member on monthly income",
+					"Food eaten last night",
+					"Debt for medical treatment",
+					"Other Factors",
+				],
+			]
+		],
+	},
+	{
+		"dt": "Assessment Question Option",
+		"filters": [
+			[
+				"question",
+				"in",
+				[
+					"Caste",
+					"House",
+					"Domestic Animal",
+					"Land holding",
+					"Assets (T.V, Fridge, Motor Bike, Four-Wheeler, Tractor)",
+					"Education level of head of the house",
+					"No. of daily working members in the family",
+					"Family member on monthly income",
+					"Food eaten last night",
+					"Debt for medical treatment",
+					"Other Factors",
+				],
+			]
+		],
+	},
 ]
 
 # default_log_clearing_doctypes = {

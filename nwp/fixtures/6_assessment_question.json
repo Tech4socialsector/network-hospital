@@ -1,0 +1,68 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Assessment Question",
+  "modified": "2026-08-05 10:56:21.637253",
+  "name": "Caste"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Assessment Question",
+  "modified": "2026-08-06 10:29:19.827812",
+  "name": "House"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Assessment Question",
+  "modified": "2026-08-06 10:29:19.837488",
+  "name": "Domestic Animal"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Assessment Question",
+  "modified": "2026-08-06 10:29:19.847330",
+  "name": "Land holding"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Assessment Question",
+  "modified": "2026-08-06 10:29:19.855008",
+  "name": "Assets (T.V, Fridge, Motor Bike, Four-Wheeler, Tractor)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Assessment Question",
+  "modified": "2026-08-06 10:29:19.863644",
+  "name": "Education level of head of the house"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Assessment Question",
+  "modified": "2026-08-06 10:29:19.871338",
+  "name": "No. of daily working members in the family"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Assessment Question",
+  "modified": "2026-08-06 10:29:19.879448",
+  "name": "Family member on monthly income"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Assessment Question",
+  "modified": "2026-08-06 10:29:19.885478",
+  "name": "Food eaten last night"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Assessment Question",
+  "modified": "2026-08-06 10:29:19.892647",
+  "name": "Debt for medical treatment"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Assessment Question",
+  "modified": "2026-08-06 10:29:19.903603",
+  "name": "Other Factors"
+ }
+]
