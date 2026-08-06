@@ -88,7 +88,7 @@ frappe.pages['nwp-dashboard'].on_page_load = function(wrapper) {
 	$(page.body).html(`
 <div id="nwp-dash">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Epilogue:wght@300;400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"><\/script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" integrity="sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw" crossorigin="anonymous"><\/script>
 
 <div class="nwp-topbar">
   <div class="nwp-tb-left">
@@ -339,7 +339,12 @@ frappe.pages['nwp-dashboard'].on_page_load = function(wrapper) {
 		var cfg=NWP_DRILLS[key];if(!cfg)return;
 		var CA=NWP_C.filter(function(r){return r.docstatus!==2;});
 		var rows=cfg.src==='C'?(cfg.f?CA.filter(cfg.f):CA.slice()):cfg.src==='B'?NWP_B.slice():NWP_D.slice();
-		window.open(FBASE+'/network-hospital#drill='+btoa(unescape(encodeURIComponent(JSON.stringify({key:key,rows:rows})))),'_blank');
+		// Patient claim data (diagnosis, financials, justification) — kept out
+		// of the URL/browser history; network-hospital.html reads it back by
+		// this short id, same convention used there for its own drill-downs.
+		var id='d'+Date.now()+Math.random().toString(36).slice(2);
+		sessionStorage.setItem(id,JSON.stringify({key:key,rows:rows}));
+		window.open(FBASE+'/network-hospital#drill='+id,'_blank');
 	};
 
 	// ── Init ──────────────────────────────────────────────────────────────

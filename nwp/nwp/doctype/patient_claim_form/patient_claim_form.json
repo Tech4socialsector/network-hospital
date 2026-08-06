@@ -326,7 +326,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-08-05 16:06:09.657949",
+ "modified": "2026-08-06 10:57:49.234420",
  "modified_by": "Administrator",
  "module": "NWP",
  "name": "Patient Claim Form",
@@ -359,7 +359,6 @@
   },
   {
    "create": 1,
-   "delete": 1,
    "email": 1,
    "export": 1,
    "print": 1,
@@ -370,7 +369,6 @@
    "write": 1
   },
   {
-   "delete": 1,
    "email": 1,
    "export": 1,
    "print": 1,
@@ -381,7 +379,6 @@
    "write": 1
   },
   {
-   "delete": 1,
    "email": 1,
    "export": 1,
    "permlevel": 1,

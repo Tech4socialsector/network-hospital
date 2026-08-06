@@ -253,14 +253,23 @@ function load_subsidy(frm) {
         if (r.length) {
 
             let subsidy = r[0].agreed_method_for_subsidy || "";
+            let $wrapper = frm.fields_dict.agreed_method_for_subsidy.$wrapper;
 
-            frm.fields_dict.agreed_method_for_subsidy.$wrapper.html(`
-                <a href="#"
-                   style="color:#0066cc;font-weight:bold;text-decoration:underline"
-                   onclick="frappe.msgprint('${subsidy.replace(/'/g, "\\'")}')">
-                   View Agreed Method For Subsidy
-                </a>
-            `);
+            // Built via DOM APIs (not an HTML string) and passed to msgprint
+            // pre-escaped — "Agreed method for subsidy" is free text on
+            // Hospital Registrations and must never be interpreted as HTML.
+            $wrapper.empty();
+            $('<a href="#">View Agreed Method For Subsidy</a>')
+                .css({
+                    color: '#0066cc',
+                    'font-weight': 'bold',
+                    'text-decoration': 'underline'
+                })
+                .on('click', function (e) {
+                    e.preventDefault();
+                    frappe.msgprint(frappe.utils.escape_html(subsidy));
+                })
+                .appendTo($wrapper);
         }
     });
 }
