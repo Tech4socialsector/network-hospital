@@ -59,7 +59,8 @@ app_license = "mit"
 # application home page (will override Website Settings)
 # Applies to every logged-in user regardless of role, so any newly created
 # user lands on the dashboard without needing their role added here.
-home_page = "nwp-dashboard"
+# "app/" prefix required — this is a Desk Page, not a website route.
+home_page = "app/nwp-dashboard"
 
 # Generators
 # ----------
@@ -263,7 +264,6 @@ fixtures = [
 					"Total Aproved Budget",
 					"Budget Disbursement",
 					"Total Utilisation",
-					"Pending Approval",
 				],
 			]
 		],
