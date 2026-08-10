@@ -20,9 +20,12 @@ function with_agreed_rate_setting(callback) {
         callback(_use_agreed_rate_model);
         return;
     }
-    frappe.db.get_single_value('NWP Settings', 'use_nwp_agreed_rate_model').then(function (value) {
-        _use_agreed_rate_model = cint(value) ? 1 : 0;
-        callback(_use_agreed_rate_model);
+    frappe.call({
+        method: 'nwp.nwp.doctype.nwp_settings.nwp_settings.get_use_nwp_agreed_rate_model',
+        callback: function (r) {
+            _use_agreed_rate_model = cint(r.message) ? 1 : 0;
+            callback(_use_agreed_rate_model);
+        }
     });
 }
 
