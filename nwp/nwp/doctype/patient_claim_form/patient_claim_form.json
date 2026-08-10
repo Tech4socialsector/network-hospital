@@ -234,8 +234,9 @@
   {
    "depends_on": "eval: doc.does_it_require_apf_contribution == \"No\"",
    "fieldname": "other_donor_name",
-   "fieldtype": "Data",
-   "label": "Other Donor Name"
+   "fieldtype": "Link",
+   "label": "Other Donor Name",
+   "options": "Other Donor Name"
   },
   {
    "fieldname": "section_break_viym",
@@ -326,7 +327,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-08-06 10:57:49.234420",
+ "modified": "2026-08-10 11:13:25.606809",
  "modified_by": "Administrator",
  "module": "NWP",
  "name": "Patient Claim Form",

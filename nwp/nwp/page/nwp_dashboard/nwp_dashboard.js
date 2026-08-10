@@ -68,6 +68,12 @@ frappe.pages['nwp-dashboard'].on_page_load = function(wrapper) {
 .nwp-contrib-table td.nwp-col-out.nwp-amount{color:var(--blue);}
 .nwp-contrib-table td.nwp-col-total.nwp-amount{color:var(--ink-mid);}
 .nwp-contrib-table td.nwp-muted{color:var(--ink-pale);}
+.nwp-contrib-table .nwp-caret{display:inline-block;width:14px;font-size:9px;color:var(--ink-soft);transition:transform .15s;}
+.nwp-contrib-table .nwp-caret.open{transform:rotate(90deg);}
+.nwp-contrib-table td.nwp-sub-label{padding-left:26px !important;font-weight:400;color:var(--ink-mid);}
+.nwp-contrib-table td.nwp-sub-label::before{content:'•';color:var(--ink-pale);margin-right:6px;}
+.nwp-contrib-table tr.nwp-sub-row td{background:#fafbfc;}
+.nwp-contrib-table tr.nwp-sub-row:hover td{background:#e6f5f1;}
 .nwp-contrib-table tr.nwp-grand-total td{padding:7px 10px;background:var(--surface);border-top:2px solid var(--border);font-weight:700;text-align:right;font-size:12.5px;font-variant-numeric:tabular-nums;}
 .nwp-contrib-table tr.nwp-grand-total td:first-child{text-align:left;font-weight:700;color:var(--ink);white-space:nowrap;width:1%;}
 .nwp-contrib-table tr.nwp-grand-total td.nwp-col-nwp{color:var(--green);}
@@ -120,6 +126,9 @@ frappe.pages['nwp-dashboard'].on_page_load = function(wrapper) {
     </select>
   </div>
   <div class="nwp-fg"><label>Financial Year</label><select id="nwp-f-fy"><option value="">All Years</option></select></div>
+  <div class="nwp-fg"><label>From Date</label><input type="date" id="nwp-f-fromdate"></div>
+  <div class="nwp-fg"><label>To Date</label><input type="date" id="nwp-f-todate"></div>
+  <div class="nwp-fg"><label>Donor Category</label><select id="nwp-f-donor"><option value="">All Donors</option></select></div>
   <div class="nwp-fbtns">
     <button class="nwp-btn nwp-btn-g" onclick="nwpClearFilters()">Clear</button>
     <button class="nwp-btn nwp-btn-p" onclick="nwpApplyFilters()">Apply</button>
@@ -165,11 +174,14 @@ frappe.pages['nwp-dashboard'].on_page_load = function(wrapper) {
           <td class="nwp-col-nwp nwp-amount" id="nwp-ct-nwp-nwp">—</td><td class="nwp-col-out nwp-muted">—</td>
           <td class="nwp-col-total nwp-amount" id="nwp-ct-nwp-total">—</td>
         </tr>
-        <tr onclick="nwpDrill('other-donor')" class="nwp-clickable">
-          <td class="nwp-row-label">Other Donor Contribution</td>
+        <tr onclick="nwpToggleOtherDonor()" class="nwp-clickable">
+          <td class="nwp-row-label"><span class="nwp-caret" id="nwp-other-donor-caret">&#9656;</span>Other Donor Contribution</td>
           <td class="nwp-col-nwp nwp-muted">—</td><td class="nwp-col-out nwp-amount" id="nwp-ct-donor-out">—</td>
           <td class="nwp-col-total nwp-amount" id="nwp-ct-donor-total">—</td>
         </tr>
+      </tbody>
+      <tbody id="nwp-other-donor-subrows" style="display:none;"></tbody>
+      <tbody>
         <tr class="nwp-grand-total">
           <td class="nwp-row-label">Total Subsidy</td>
           <td class="nwp-col-nwp" id="nwp-ct-grand-nwp">—</td><td class="nwp-col-out" id="nwp-ct-grand-out">—</td>
@@ -218,6 +230,21 @@ frappe.pages['nwp-dashboard'].on_page_load = function(wrapper) {
 		});
 	}
 
+	function nwpPopulateDonorCategories(rows){
+		var sel=document.getElementById('nwp-f-donor');if(!sel)return;
+		sel.innerHTML='<option value="">All Donors</option>';
+		var seen={};
+		(rows||[]).forEach(function(r){
+			var nm=(r.other_donor_name||'').trim();
+			if(nm&&!seen[nm]){
+				seen[nm]=true;
+				var opt=document.createElement('option');
+				opt.value=opt.text=nm;
+				sel.appendChild(opt);
+			}
+		});
+	}
+
 	function nwpPopulateAllDivisions(){
 		var sel=document.getElementById('nwp-f-org');if(!sel)return;
 		sel.innerHTML='<option value="">All Divisions</option>';
@@ -252,7 +279,7 @@ frappe.pages['nwp-dashboard'].on_page_load = function(wrapper) {
 
 	window.nwpApplyFilters = function(){nwpLoadAll();};
 	window.nwpClearFilters = function(){
-		['nwp-f-hosp','nwp-f-org','nwp-f-dept','nwp-f-svc','nwp-f-fy'].forEach(function(id){
+		['nwp-f-hosp','nwp-f-org','nwp-f-dept','nwp-f-svc','nwp-f-fy','nwp-f-fromdate','nwp-f-todate','nwp-f-donor'].forEach(function(id){
 			var el=document.getElementById(id);if(el)el.value='';
 		});
 		nwpPopulateAllDivisions();
@@ -263,12 +290,16 @@ frappe.pages['nwp-dashboard'].on_page_load = function(wrapper) {
 
 	async function nwpLoadAll(){
 		var org=nwpGv('nwp-f-org'),dept=nwpGv('nwp-f-dept'),fy=nwpGv('nwp-f-fy'),svc=nwpGv('nwp-f-svc'),hosp=nwpGv('nwp-f-hosp');
+		var fromDate=nwpGv('nwp-f-fromdate'),toDate=nwpGv('nwp-f-todate'),donor=nwpGv('nwp-f-donor');
 		var cf=[],bf=[],df=[];
 		if(hosp){cf.push(['organization_copy','=',hosp]);bf.push(['hospital_name','=',hosp]);df.push(['hospital_name','=',hosp]);}
 		if(org){cf.push(['organization','=',org]);bf.push(['organization_name','=',org]);df.push(['organization','=',org]);}
 		if(dept){cf.push(['treatment_category','=',dept]);}
 		if(svc){cf.push(['type_of_service','=',svc]);}
 		if(fy){bf.push(['financial_year','=',fy]);}
+		if(fromDate){cf.push(['date_of_visit','>=',fromDate]);bf.push(['date_of_approval','>=',fromDate]);df.push(['date','>=',fromDate]);}
+		if(toDate){cf.push(['date_of_visit','<=',toDate]);bf.push(['date_of_approval','<=',toDate]);df.push(['date','<=',toDate]);}
+		if(donor){cf.push(['other_donor_name','=',donor]);}
 		var cf2=['name','docstatus','prid','patient_id','organization','organization_copy','name1','age','gender','type_of_service','date_of_visit','date_of_discharge','treating_doctor_name','treatment_category','final_diagnosis','total_actual_final_bill_in_rs','does_it_require_apf_contribution','justification','total_bill_at_apf_agreed_rates_mou','existing_hospital_contribution','other_donor_contribution','other_donor_name','patient_contribution_yes','additional_hospital_contribution','apf_contribution','document_status','approval_status','comment','why_this_patient_is_eligible_for_subsidy_for_this_service','if_other_treatment_please_mention'];
 		var res=await Promise.all([
 			nwpFdb('Patient Claim Form',cf2,cf,2000),
@@ -297,6 +328,7 @@ frappe.pages['nwp-dashboard'].on_page_load = function(wrapper) {
 		nwpSetCell('nwp-ct-hosp-add-nwp',hAddY);nwpSetCell('nwp-ct-hosp-add-out',hAddN);nwpSetCell('nwp-ct-hosp-add-total',hAddY+hAddN);
 		nwpSetCell('nwp-ct-nwp-nwp',nwp);nwpSetCell('nwp-ct-nwp-total',nwp);
 		nwpSetCell('nwp-ct-donor-out',donor);nwpSetCell('nwp-ct-donor-total',donor);
+		nwpRenderOtherDonorBreakdown(no);
 		var gN=hDef+hAddY+nwp,gO=hAddN+donor;
 		nwpSetCell('nwp-ct-grand-nwp',gN);nwpSetCell('nwp-ct-grand-out',gO);nwpSetCell('nwp-ct-grand-total',gN+gO);
 		nwpSetCell('nwp-ct-pat-nwp',patY);nwpSetCell('nwp-ct-pat-out',patN);nwpSetCell('nwp-ct-pat-total',patY+patN);
@@ -306,6 +338,56 @@ frappe.pages['nwp-dashboard'].on_page_load = function(wrapper) {
 		nwpCu('nwp-g-approved',approved,true);nwpCu('nwp-g-disbursed',disbursed,true);
 		nwpCu('nwp-g-utilized',nwp,true);nwpCu('nwp-g-balance',approved-nwp,true);
 	}
+
+	// Group "Other Donor Contribution" (NWP=No) claims by donor name for the drill-down breakdown rows
+	function nwpRenderOtherDonorBreakdown(no){
+		var byDonor={};
+		(no||[]).forEach(function(r){
+			var nm=(r.other_donor_name||'').trim()||'Other';
+			byDonor[nm]=(byDonor[nm]||0)+(Number(r.other_donor_contribution)||0);
+		});
+		var tbody=document.getElementById('nwp-other-donor-subrows');if(!tbody)return;
+		tbody.innerHTML='';
+		Object.keys(byDonor).sort().forEach(function(nm){
+			var tr=document.createElement('tr');
+			tr.className='nwp-clickable nwp-sub-row';
+			tr.onclick=function(){nwpDrillDonor(nm);};
+			var tdLabel=document.createElement('td');
+			tdLabel.className='nwp-row-label nwp-sub-label';
+			tdLabel.textContent=nm;
+			var tdNwp=document.createElement('td');
+			tdNwp.className='nwp-col-nwp nwp-muted';
+			tdNwp.textContent='—';
+			var tdOut=document.createElement('td');
+			tdOut.className='nwp-col-out nwp-amount';
+			tdOut.textContent='₹'+nwpFmt(byDonor[nm]);
+			var tdTotal=document.createElement('td');
+			tdTotal.className='nwp-col-total nwp-amount';
+			tdTotal.textContent='₹'+nwpFmt(byDonor[nm]);
+			tr.appendChild(tdLabel);tr.appendChild(tdNwp);tr.appendChild(tdOut);tr.appendChild(tdTotal);
+			tbody.appendChild(tr);
+		});
+	}
+
+	window.nwpToggleOtherDonor = function(){
+		var tbody=document.getElementById('nwp-other-donor-subrows');
+		var caret=document.getElementById('nwp-other-donor-caret');
+		if(!tbody||!caret)return;
+		var open=tbody.style.display!=='none';
+		tbody.style.display=open?'none':'table-row-group';
+		caret.classList.toggle('open',!open);
+	};
+
+	// Drill into claims for a single donor within "Other Donor Contribution"
+	window.nwpDrillDonor = function(donorName){
+		var CA=NWP_C.filter(function(r){return r.docstatus!==2;});
+		var rows=CA.filter(function(r){
+			return r.does_it_require_apf_contribution==='No'&&((r.other_donor_name||'').trim()||'Other')===donorName;
+		});
+		var id='d'+Date.now()+Math.random().toString(36).slice(2);
+		sessionStorage.setItem(id,JSON.stringify({key:'other-donor',rows:rows,title:'Other Donor Contribution — '+donorName,sub:'NWP = No claims, Donor: '+donorName,src:'C'}));
+		window.open(FBASE+'/network-hospital#drill='+id,'_blank');
+	};
 
 	function nwpSetCell(id,val){
 		var el=document.getElementById(id);if(!el)return;
@@ -353,9 +435,11 @@ frappe.pages['nwp-dashboard'].on_page_load = function(wrapper) {
 		NWP_ALL_HOSPS=hosps||[];
 		var depts=await nwpFdb('Department',['name'],[],200).catch(function(){return[];});
 		var fys=await nwpFdb('Financial Year',['name'],[],50).catch(function(){return[];});
+		var donorRows=await nwpFdb('Patient Claim Form',['other_donor_name'],[['other_donor_name','!=','']],2000).catch(function(){return[];});
 		nwpPop('nwp-f-hosp',NWP_ALL_HOSPS);
 		nwpPop('nwp-f-dept',depts);
 		nwpPop('nwp-f-fy',fys);
+		nwpPopulateDonorCategories(donorRows);
 		nwpPopulateAllDivisions();
 		await nwpLoadAll();
 	})();

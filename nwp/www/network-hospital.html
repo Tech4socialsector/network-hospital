@@ -77,6 +77,12 @@ navbar,.navbar,#navbar,.web-navbar,.navbar-home,nav.navbar,[class*="navbar"],hea
 .contrib-table td.col-out.amount{color:var(--blue);}
 .contrib-table td.col-total.amount{color:var(--ink-mid);}
 .contrib-table td.muted{color:var(--ink-pale);}
+.contrib-table .caret{display:inline-block;width:14px;font-size:9px;color:var(--ink-soft);transition:transform .15s;}
+.contrib-table .caret.open{transform:rotate(90deg);}
+.contrib-table td.sub-label{padding-left:26px !important;font-weight:400;color:var(--ink-mid);}
+.contrib-table td.sub-label::before{content:'•';color:var(--ink-pale);margin-right:6px;}
+.contrib-table tr.sub-row td{background:#fafbfc;}
+.contrib-table tr.sub-row:hover td{background:#e6f5f1;}
 .contrib-table tr.grand-total td{padding:7px 10px;background:var(--surface);border-top:2px solid var(--border);font-weight:700;text-align:right;font-size:12.5px;font-variant-numeric:tabular-nums;}
 .contrib-table tr.grand-total td:first-child{text-align:left;font-weight:700;color:var(--ink);white-space:nowrap;width:1%;}
 .contrib-table tr.grand-total td.col-nwp{color:var(--green);}
@@ -134,6 +140,9 @@ navbar,.navbar,#navbar,.web-navbar,.navbar-home,nav.navbar,[class*="navbar"],hea
     </select>
   </div>
   <div class="fg"><label>Financial Year</label><select id="f-fy"><option value="">All Years</option></select></div>
+  <div class="fg"><label>From Date</label><input type="date" id="f-fromdate"></div>
+  <div class="fg"><label>To Date</label><input type="date" id="f-todate"></div>
+  <div class="fg"><label>Donor Category</label><select id="f-donor"><option value="">All Donors</option></select></div>
   <div class="fbtns">
     <button class="btn btn-g" onclick="clearFilters()">Clear</button>
     <button class="btn btn-p" onclick="applyFilters()">Apply</button>
@@ -181,11 +190,14 @@ navbar,.navbar,#navbar,.web-navbar,.navbar-home,nav.navbar,[class*="navbar"],hea
           <td class="col-nwp amount" id="ct-nwp-nwp">—</td><td class="col-out muted">—</td>
           <td class="col-total amount" id="ct-nwp-total">—</td>
         </tr>
-        <tr onclick="drill('other-donor')" class="clickable">
-          <td class="row-label">Other Donor Contribution</td>
+        <tr onclick="toggleOtherDonor()" class="clickable">
+          <td class="row-label"><span class="caret" id="other-donor-caret">&#9656;</span>Other Donor Contribution</td>
           <td class="col-nwp muted">—</td><td class="col-out amount" id="ct-donor-out">—</td>
           <td class="col-total amount" id="ct-donor-total">—</td>
         </tr>
+      </tbody>
+      <tbody id="other-donor-subrows" style="display:none;"></tbody>
+      <tbody>
         <tr class="grand-total">
           <td class="row-label">Total Subsidy</td>
           <td class="col-nwp" id="ct-grand-nwp">—</td><td class="col-out" id="ct-grand-out">—</td>
@@ -240,11 +252,13 @@ async function init(){
 
   var depts=await fdb('Department',['name'],[],200).catch(function(){return[];});
   var fys  =await fdb('Financial Year',['name'],[],50).catch(function(){return[];});
+  var donorRows=await fdb('Patient Claim Form',['other_donor_name'],[['other_donor_name','!=','']],2000).catch(function(){return[];});
 
   /* Populate Hospital dropdown with all hospitals */
   pop('f-hosp', ALL_HOSPS);
   pop('f-dept', depts);
   pop('f-fy',   fys);
+  populateDonorCategories(donorRows);
 
   /* Populate Division with all unique organizations from hospital list */
   populateAllDivisions();
@@ -262,6 +276,22 @@ function populateAllDivisions(){
       seen[h.organization]=true;
       var opt=document.createElement('option');
       opt.value=opt.text=h.organization;
+      sel.appendChild(opt);
+    }
+  });
+}
+
+/* Populate Donor Category dropdown with distinct other_donor_name values found in claims */
+function populateDonorCategories(rows){
+  var sel=document.getElementById('f-donor');
+  sel.innerHTML='<option value="">All Donors</option>';
+  var seen={};
+  (rows||[]).forEach(function(r){
+    var nm=(r.other_donor_name||'').trim();
+    if(nm&&!seen[nm]){
+      seen[nm]=true;
+      var opt=document.createElement('option');
+      opt.value=opt.text=nm;
       sel.appendChild(opt);
     }
   });
@@ -310,6 +340,7 @@ function onHospChange(){
 
 async function loadAll(){
   var org=gv('f-org'),dept=gv('f-dept'),fy=gv('f-fy'),svc=gv('f-svc'),hosp=gv('f-hosp');
+  var fromDate=gv('f-fromdate'),toDate=gv('f-todate'),donor=gv('f-donor');
   var cf=[],bf=[],df=[];
 
   /* Hospital filter applied first (maps to organization_copy in claims) */
@@ -319,6 +350,11 @@ async function loadAll(){
   if(dept){ cf.push(['treatment_category','=',dept]); }
   if(svc){  cf.push(['type_of_service','=',svc]);     }
   if(fy){   bf.push(['financial_year','=',fy]);        }
+  /* Date range filter — claim visit date, grant approval date, disbursement date */
+  if(fromDate){ cf.push(['date_of_visit','>=',fromDate]); bf.push(['date_of_approval','>=',fromDate]); df.push(['date','>=',fromDate]); }
+  if(toDate){   cf.push(['date_of_visit','<=',toDate]);   bf.push(['date_of_approval','<=',toDate]);   df.push(['date','<=',toDate]);   }
+  /* Donor category filter applies only to claims (grants/disbursements aren't donor-specific) */
+  if(donor){ cf.push(['other_donor_name','=',donor]); }
 
   var cf2=['name','prid','patient_id','organization','organization_copy','name1','age','gender','type_of_service','date_of_visit','date_of_discharge','treating_doctor_name','treatment_category','final_diagnosis','total_actual_final_bill_in_rs','does_it_require_apf_contribution','justification','total_bill_at_apf_agreed_rates_mou','existing_hospital_contribution','other_donor_contribution','other_donor_name','patient_contribution_yes','additional_hospital_contribution','apf_contribution','document_status','approval_status','comment','why_this_patient_is_eligible_for_subsidy_for_this_service','if_other_treatment_please_mention'];
   var res=await Promise.all([
@@ -348,6 +384,7 @@ function render(){
   setCell('ct-hosp-add-nwp',hAddY);setCell('ct-hosp-add-out',hAddN);setCell('ct-hosp-add-total',hAddY+hAddN);
   setCell('ct-nwp-nwp',nwp);setCell('ct-nwp-total',nwp);
   setCell('ct-donor-out',donor);setCell('ct-donor-total',donor);
+  renderOtherDonorBreakdown(no);
   var gN=hDef+hAddY+nwp,gO=hAddN+donor;
   setCell('ct-grand-nwp',gN);setCell('ct-grand-out',gO);setCell('ct-grand-total',gN+gO);
   setCell('ct-pat-nwp',patY);setCell('ct-pat-out',patN);setCell('ct-pat-total',patY+patN);
@@ -356,6 +393,46 @@ function render(){
   var disbursed=D.reduce(function(s,d){return s+(Number(d.disbursed_amount)||0);},0);
   cu('g-approved',approved,true);cu('g-disbursed',disbursed,true);
   cu('g-utilized',nwp,true);cu('g-balance',approved-nwp,true);
+}
+
+/* Group "Other Donor Contribution" (NWP=No) claims by donor name for the drill-down breakdown rows */
+function renderOtherDonorBreakdown(no){
+  var byDonor={};
+  (no||[]).forEach(function(r){
+    var nm=(r.other_donor_name||'').trim()||'Other';
+    byDonor[nm]=(byDonor[nm]||0)+(Number(r.other_donor_contribution)||0);
+  });
+  var tbody=document.getElementById('other-donor-subrows');
+  tbody.innerHTML='';
+  Object.keys(byDonor).sort().forEach(function(nm){
+    var tr=document.createElement('tr');
+    tr.className='clickable sub-row';
+    tr.onclick=function(){drillDonor(nm);};
+    tr.innerHTML='<td class="row-label sub-label">'+escHtml(nm)+'</td>'
+      +'<td class="col-nwp muted">—</td>'
+      +'<td class="col-out amount">₹'+fmt(byDonor[nm])+'</td>'
+      +'<td class="col-total amount">₹'+fmt(byDonor[nm])+'</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function toggleOtherDonor(){
+  var tbody=document.getElementById('other-donor-subrows');
+  var caret=document.getElementById('other-donor-caret');
+  var open=tbody.style.display!=='none';
+  tbody.style.display=open?'none':'table-row-group';
+  caret.classList.toggle('open',!open);
+}
+
+/* Drill into claims for a single donor within "Other Donor Contribution" */
+function drillDonor(donorName){
+  var CA=C.filter(function(r){return r.approval_status==='Approved';});
+  var rows=CA.filter(function(r){
+    return r.does_it_require_apf_contribution==='No'&&((r.other_donor_name||'').trim()||'Other')===donorName;
+  });
+  var id='d'+Date.now()+Math.random().toString(36).slice(2);
+  sessionStorage.setItem(id,JSON.stringify({key:'other-donor',rows:rows,title:'Other Donor Contribution — '+donorName,sub:'NWP = No claims, Donor: '+donorName,src:'C'}));
+  window.open(FBASE+'/network-hospital#drill='+id,'_blank');
 }
 
 function setCell(id,val){
@@ -434,7 +511,8 @@ function detailPageHTML(r){
       try{
         var raw=sessionStorage.getItem(hash.replace('#drill=',''));
         var payload=raw?JSON.parse(raw):null;
-        var key=payload&&payload.key,rows=(payload&&payload.rows)||[],cfg=DRILLS[key];
+        var key=payload&&payload.key,rows=(payload&&payload.rows)||[];
+        var cfg=(payload&&payload.title)?{title:payload.title,sub:payload.sub||'',src:payload.src||(DRILLS[key]?DRILLS[key].src:'C')}:DRILLS[key];
         if(!cfg){document.documentElement.style.visibility='';init();return;}
         document.title=cfg.title;
         var PS=50,page=0;
@@ -507,7 +585,7 @@ function fmt(v){return Math.round(Number(v)||0).toLocaleString('en-IN');}
 function gv(id){return document.getElementById(id).value;}
 function applyFilters(){loadAll();}
 function clearFilters(){
-  ['f-hosp','f-org','f-dept','f-svc','f-fy'].forEach(function(id){
+  ['f-hosp','f-org','f-dept','f-svc','f-fy','f-fromdate','f-todate','f-donor'].forEach(function(id){
     var el=document.getElementById(id);if(el)el.value='';
   });
   /* Reset Division dropdown to show all divisions again */
@@ -521,7 +599,8 @@ function mockData(dt){
   if(dt==='Financial Year')return[{name:'2025-26'},{name:'2024-25'}];
   if(dt==='Patient Claim Form'){
     var svcs=['In Patient Service','Out Patient Service','Day Care Service'];
-    return Array.from({length:4},function(_,i){var apf=i%2===0?'Yes':'No',bill=15000+i*5000,agreed=apf==='Yes'?Math.round(bill*.85):0;return{name:'PCID-00'+(i+1),prid:'PR-00'+(i+1),patient_id:'PAT-'+(100+i),name1:['Ravi Kumar','Priya S','Mohan Das','Lakshmi B'][i],age:String(30+i*10),gender:i%2===0?'Male':'Female',organization:'APF Bengaluru',organization_copy:'City Hospital',type_of_service:svcs[i%3],date_of_visit:'2026-04-0'+(i+1),date_of_discharge:svcs[i%3]==='In Patient Service'?'2026-04-05':null,treating_doctor_name:'Dr. Sharma',treatment_category:'General medicine',final_diagnosis:'Test diagnosis',total_actual_final_bill_in_rs:bill,does_it_require_apf_contribution:apf,total_bill_at_apf_agreed_rates_mou:agreed,justification:null,existing_hospital_contribution:apf==='Yes'?Math.round(bill*.2):0,additional_hospital_contribution:Math.round(bill*.05),patient_contribution_yes:Math.round(bill*.15),apf_contribution:apf==='Yes'?Math.round(bill*.3):0,other_donor_name:apf==='No'?'Donor Trust':null,other_donor_contribution:apf==='No'?String(Math.round(bill*.1)):null,document_status:i===0?'Claim form fully filled':'Claim form partially filled',approval_status:'Approved',comment:null,why_this_patient_is_eligible_for_subsidy_for_this_service:'BPL patient',if_other_treatment_please_mention:null};});
+    var donorNames=['Leprosy','JAF','General Charity','Other'];
+    return Array.from({length:4},function(_,i){var apf=i%2===0?'Yes':'No',bill=15000+i*5000,agreed=apf==='Yes'?Math.round(bill*.85):0;return{name:'PCID-00'+(i+1),prid:'PR-00'+(i+1),patient_id:'PAT-'+(100+i),name1:['Ravi Kumar','Priya S','Mohan Das','Lakshmi B'][i],age:String(30+i*10),gender:i%2===0?'Male':'Female',organization:'APF Bengaluru',organization_copy:'City Hospital',type_of_service:svcs[i%3],date_of_visit:'2026-04-0'+(i+1),date_of_discharge:svcs[i%3]==='In Patient Service'?'2026-04-05':null,treating_doctor_name:'Dr. Sharma',treatment_category:'General medicine',final_diagnosis:'Test diagnosis',total_actual_final_bill_in_rs:bill,does_it_require_apf_contribution:apf,total_bill_at_apf_agreed_rates_mou:agreed,justification:null,existing_hospital_contribution:apf==='Yes'?Math.round(bill*.2):0,additional_hospital_contribution:Math.round(bill*.05),patient_contribution_yes:Math.round(bill*.15),apf_contribution:apf==='Yes'?Math.round(bill*.3):0,other_donor_name:apf==='No'?donorNames[i%donorNames.length]:null,other_donor_contribution:apf==='No'?String(Math.round(bill*.1)):null,document_status:i===0?'Claim form fully filled':'Claim form partially filled',approval_status:'Approved',comment:null,why_this_patient_is_eligible_for_subsidy_for_this_service:'BPL patient',if_other_treatment_please_mention:null};});
   }
   if(dt==='Network Hospital Budget')return[{name:'1',organization_name:'APF Bengaluru',hospital_name:'City Hospital',date_of_approval:'2025-04-01',financial_year:'2025-26',start_date:'2025-04-01',end_date:'2026-03-31',grant_id:'GR-001',total_budget:500000}];
   if(dt==='Budget Disbursement')return[{name:'1',date:'2026-01-10',organization:'APF Bengaluru',hospital_name:'City Hospital',disbursed_amount:200000}];
