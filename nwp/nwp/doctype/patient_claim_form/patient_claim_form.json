@@ -51,6 +51,7 @@
   "section_break_kosa",
   "approval_status",
   "comment",
+  "approver",
   "column_break_yklj",
   "document_status"
  ],
@@ -119,8 +120,9 @@
   },
   {
    "fieldname": "treating_doctor_name",
-   "fieldtype": "Data",
-   "label": "Treating doctor name"
+   "fieldtype": "Link",
+   "label": "Treating doctor name",
+   "options": "Doctor"
   },
   {
    "fieldname": "type_of_service",
@@ -288,6 +290,13 @@
    "fieldname": "comment",
    "fieldtype": "Small Text",
    "label": "Comment (if sent back for revision)",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "approver",
+   "fieldtype": "Link",
+   "label": "Approver",
+   "options": "Approver",
    "permlevel": 1
   },
   {

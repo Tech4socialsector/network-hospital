@@ -57,12 +57,9 @@ app_license = "mit"
 # ----------
 
 # application home page (will override Website Settings)
-# home_page = "login"
-
-# website user home page (by Role)
-# role_home_page = {
-# 	"Role": "home_page"
-# }
+# Applies to every logged-in user regardless of role, so any newly created
+# user lands on the dashboard without needing their role added here.
+home_page = "nwp-dashboard"
 
 # Generators
 # ----------
