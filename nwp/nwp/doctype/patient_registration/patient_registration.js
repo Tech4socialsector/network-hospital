@@ -9,7 +9,32 @@ function calculate_assessment_total(frm) {
     frm.set_value('total_score', total);
 }
 
+// A registration is treated as due for renewal 3 years after it was
+// assessed — that's the date the socio-economic assessment actually
+// happened, so it's the right clock to measure "how long since this
+// patient was last registered" from.
+function check_reregistration_due(frm) {
+    if (frm.is_new() || !frm.doc.assessed_on) {
+        return;
+    }
+    var expiry = frappe.datetime.add_months(frm.doc.assessed_on, 36);
+    if (frappe.datetime.get_today() >= expiry) {
+        frappe.msgprint({
+            title: __('Re-registration Required'),
+            indicator: 'orange',
+            message: __(
+                'This patient was last assessed on {0} — more than 3 years ago. They need to complete a fresh Patient Registration.',
+                [frappe.datetime.str_to_user(frm.doc.assessed_on)]
+            )
+        });
+    }
+}
+
 frappe.ui.form.on('Patient Registration', {
+    refresh: function(frm) {
+        check_reregistration_due(frm);
+    },
+
     setup: function(frm) {
         frm.set_query('district', function() {
             return {

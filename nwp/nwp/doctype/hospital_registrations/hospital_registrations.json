@@ -59,6 +59,8 @@
   "general_fund",
   "other_earmarked_funds",
   "liabilities",
+  "yearly_data_section",
+  "yearly_data",
   "section_break_yovg",
   "information_updated_on",
   "agreed_method_for_subsidy"
@@ -200,46 +202,72 @@
    "label": "Describe existing community outreach work"
   },
   {
+   "fieldname": "section_break_yovg",
+   "fieldtype": "Section Break"
+  },
+  {
+   "description": "Hospital stats, financials and capacities to be updated every year",
+   "fieldname": "information_updated_on",
+   "fieldtype": "Date",
+   "label": "Information updated on"
+  },
+  {
+   "fieldname": "agreed_method_for_subsidy",
+   "fieldtype": "Small Text",
+   "label": "Agreed method for subsidy"
+  },
+  {
+   "fieldname": "yearly_data_section",
+   "fieldtype": "Section Break",
+   "label": "Update history (filled automatically by the Update button below)"
+  },
+  {
+   "fieldname": "yearly_data",
+   "fieldtype": "Table",
+   "label": "Yearly Data",
+   "options": "Hospital Registration Yearly Data",
+   "read_only": 1
+  },
+  {
    "fieldname": "hospital_stats_section",
    "fieldtype": "Section Break",
-   "label": "Hospital stats (2025-26)"
+   "label": "Hospital stats"
   },
   {
    "fieldname": "data_twdi",
    "fieldtype": "Data",
-   "label": "OPD patients in 2025-26"
+   "label": "OPD patients"
   },
   {
    "fieldname": "data_ipd",
    "fieldtype": "Data",
-   "label": "IPD admissions in 2025-26"
+   "label": "IPD admissions"
   },
   {
    "fieldname": "ndel",
    "fieldtype": "Data",
-   "label": "Normal deliveries in 2025-26"
+   "label": "Normal deliveries"
   },
   {
    "fieldname": "cdel",
    "fieldtype": "Data",
-   "label": "C-section deliveries in 2025-26"
+   "label": "C-section deliveries"
   },
   {
    "fieldname": "data_surgeries",
    "fieldtype": "Data",
-   "label": "Surgeries (excluding minor procedures) in 2025-26"
+   "label": "Surgeries (excluding minor procedures)"
   },
   {
    "fieldname": "hospital_finances_section",
    "fieldtype": "Section Break",
-   "label": "Hospital income-expenditure (FY 2024-25, as per books of accounts)"
+   "label": "Hospital income-expenditure (as per books of accounts)"
   },
   {
    "fieldname": "column_break_zthb",
    "fieldtype": "Column Break"
   },
   {
-   "description": "Patient fees and pharmacy income",
    "fieldname": "income_from_patient",
    "fieldtype": "Currency",
    "label": "Income from patient"
@@ -277,14 +305,13 @@
   {
    "fieldname": "last_3_years_average_hospital_expenditure_in_rs_copy",
    "fieldtype": "Currency",
-   "label": "Total income in Rs. (2025-26)"
+   "label": "Total income in Rs."
   },
   {
    "fieldname": "column_break_vpec",
    "fieldtype": "Column Break"
   },
   {
-   "description": "Salaries of medical team like doctors, nurses, technicians etc., Medicines & consumables, Hospital renovation expenses etc.",
    "fieldname": "opex",
    "fieldtype": "Currency",
    "label": "Hospital operating expenses"
@@ -312,7 +339,7 @@
   {
    "fieldname": "last_3_years_average_hospital_expenditure_in_rs",
    "fieldtype": "Currency",
-   "label": "Total expenditure in Rs. (2025-26)"
+   "label": "Total expenditure in Rs."
   },
   {
    "fieldname": "last_3_year_average_annual_surplus__deficit_in_rs",
@@ -322,52 +349,33 @@
   {
    "fieldname": "hospital_balance_sheet_section",
    "fieldtype": "Section Break",
-   "label": "Hospital balance sheet (FY 2024-25, as per books of accounts)"
+   "label": "Hospital balance sheet (as per books of accounts)"
   },
   {
    "fieldname": "general__corpus_fund",
    "fieldtype": "Data",
-   "label": "Corpus fund",
-   "reqd": 1
+   "label": "Corpus fund"
   },
   {
    "fieldname": "general_fund",
    "fieldtype": "Data",
-   "label": "General fund",
-   "reqd": 1
+   "label": "General fund"
   },
   {
    "fieldname": "other_earmarked_funds",
    "fieldtype": "Data",
-   "label": "Other earmarked funds",
-   "reqd": 1
+   "label": "Other earmarked funds"
   },
   {
    "fieldname": "liabilities",
    "fieldtype": "Data",
-   "label": "Liabilities (Long+Short Term)",
-   "reqd": 1
-  },
-  {
-   "fieldname": "section_break_yovg",
-   "fieldtype": "Section Break"
-  },
-  {
-   "description": "Hospital stats, financials and capacities to be updated every year",
-   "fieldname": "information_updated_on",
-   "fieldtype": "Date",
-   "label": "Information updated on"
-  },
-  {
-   "fieldname": "agreed_method_for_subsidy",
-   "fieldtype": "Small Text",
-   "label": "Agreed method for subsidy"
+   "label": "Liabilities (Long+Short Term)"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-08-10 20:23:04.798989",
+ "modified": "2026-08-13 16:24:25.465656",
  "modified_by": "Administrator",
  "module": "NWP",
  "name": "Hospital Registrations",

@@ -1,0 +1,210 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-08-13 16:00:10.491766",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "financial_year",
+  "stats_section",
+  "data_twdi",
+  "data_ipd",
+  "ndel",
+  "cdel",
+  "data_surgeries",
+  "income_section",
+  "income_from_patient",
+  "data_wafl",
+  "grants_donations_govt_supportreimburse",
+  "supportreimbursements_from_government",
+  "bankinterest",
+  "other_income",
+  "add_details_of_other_income_below",
+  "last_3_years_average_hospital_expenditure_in_rs_copy",
+  "expenditure_section",
+  "opex",
+  "charity",
+  "adminex",
+  "other_expenses_school_nursing_college_agriculture_etc",
+  "comm_work",
+  "last_3_years_average_hospital_expenditure_in_rs",
+  "last_3_year_average_annual_surplus__deficit_in_rs",
+  "balance_sheet_section",
+  "general__corpus_fund",
+  "general_fund",
+  "other_earmarked_funds",
+  "liabilities"
+ ],
+ "fields": [
+  {
+   "fieldname": "financial_year",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Financial Year",
+   "options": "Financial Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "stats_section",
+   "fieldtype": "Section Break",
+   "label": "Hospital stats"
+  },
+  {
+   "fieldname": "data_twdi",
+   "fieldtype": "Data",
+   "label": "OPD patients"
+  },
+  {
+   "fieldname": "data_ipd",
+   "fieldtype": "Data",
+   "label": "IPD admissions"
+  },
+  {
+   "fieldname": "ndel",
+   "fieldtype": "Data",
+   "label": "Normal deliveries"
+  },
+  {
+   "fieldname": "cdel",
+   "fieldtype": "Data",
+   "label": "C-section deliveries"
+  },
+  {
+   "fieldname": "data_surgeries",
+   "fieldtype": "Data",
+   "label": "Surgeries (excluding minor procedures)"
+  },
+  {
+   "fieldname": "income_section",
+   "fieldtype": "Section Break",
+   "label": "Income"
+  },
+  {
+   "fieldname": "income_from_patient",
+   "fieldtype": "Currency",
+   "label": "Income from patient"
+  },
+  {
+   "fieldname": "data_wafl",
+   "fieldtype": "Currency",
+   "label": "Income from nursing school/college"
+  },
+  {
+   "fieldname": "grants_donations_govt_supportreimburse",
+   "fieldtype": "Currency",
+   "label": "Grants, Donations"
+  },
+  {
+   "fieldname": "supportreimbursements_from_government",
+   "fieldtype": "Currency",
+   "label": "Support/Reimbursements from Government"
+  },
+  {
+   "fieldname": "bankinterest",
+   "fieldtype": "Currency",
+   "label": "Bank interest (savings + FD)"
+  },
+  {
+   "fieldname": "other_income",
+   "fieldtype": "Data",
+   "label": "Other income"
+  },
+  {
+   "fieldname": "add_details_of_other_income_below",
+   "fieldtype": "Small Text",
+   "label": "Add details of other income below"
+  },
+  {
+   "fieldname": "last_3_years_average_hospital_expenditure_in_rs_copy",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Total income in Rs.",
+   "read_only": 1
+  },
+  {
+   "fieldname": "expenditure_section",
+   "fieldtype": "Section Break",
+   "label": "Expenditure"
+  },
+  {
+   "fieldname": "opex",
+   "fieldtype": "Currency",
+   "label": "Hospital operating expenses"
+  },
+  {
+   "fieldname": "charity",
+   "fieldtype": "Currency",
+   "label": "Charity / Discount for patients"
+  },
+  {
+   "fieldname": "adminex",
+   "fieldtype": "Currency",
+   "label": "Admin expense"
+  },
+  {
+   "fieldname": "other_expenses_school_nursing_college_agriculture_etc",
+   "fieldtype": "Currency",
+   "label": "Other expenses (school, nursing college, agriculture etc.)"
+  },
+  {
+   "fieldname": "comm_work",
+   "fieldtype": "Currency",
+   "label": "Community work"
+  },
+  {
+   "fieldname": "last_3_years_average_hospital_expenditure_in_rs",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Total expenditure in Rs.",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_3_year_average_annual_surplus__deficit_in_rs",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Surplus / Deficit",
+   "read_only": 1
+  },
+  {
+   "fieldname": "balance_sheet_section",
+   "fieldtype": "Section Break",
+   "label": "Balance sheet"
+  },
+  {
+   "fieldname": "general__corpus_fund",
+   "fieldtype": "Data",
+   "label": "Corpus fund"
+  },
+  {
+   "fieldname": "general_fund",
+   "fieldtype": "Data",
+   "label": "General fund"
+  },
+  {
+   "fieldname": "other_earmarked_funds",
+   "fieldtype": "Data",
+   "label": "Other earmarked funds"
+  },
+  {
+   "fieldname": "liabilities",
+   "fieldtype": "Data",
+   "label": "Liabilities (Long+Short Term)"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-08-13 16:00:10.491766",
+ "modified_by": "Administrator",
+ "module": "NWP",
+ "name": "Hospital Registration Yearly Data",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

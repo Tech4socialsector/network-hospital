@@ -2,7 +2,7 @@
  "actions": [],
  "allow_rename": 1,
  "autoname": "prompt",
- "creation": "2026-08-10 00:00:00.000000",
+ "creation": "2026-08-10 00:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -17,7 +17,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-08-10 00:00:00.000000",
+ "modified": "2026-08-13 18:02:40.846498",
  "modified_by": "Administrator",
  "module": "NWP",
  "name": "Doctor",
@@ -37,14 +37,15 @@
    "write": 1
   },
   {
-   "create": 1,
    "email": 1,
    "read": 1,
-   "role": "NWP Data Entry"
+   "role": "NWP Data Entry",
+   "write": 1
   },
   {
    "read": 1,
-   "role": "NWP Approver"
+   "role": "NWP Approver",
+   "write": 1
   }
  ],
  "row_format": "Dynamic",
