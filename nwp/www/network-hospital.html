@@ -232,11 +232,13 @@ function escHtml(v){
   });
 }
 
-function fdb(dt,fields,filters,limit){
+function fdb(dt,fields,filters){
+  // limit_page_length=0 means "no limit" in Frappe — fetch every matching
+  // record, however many there are, now or in the future.
   return new Promise(function(resolve){
     if(typeof frappe==='undefined'){resolve(mockData(dt));return;}
     var csrf=(frappe.csrf_token&&frappe.csrf_token!=='No')?frappe.csrf_token:'';
-    fetch('/api/resource/'+encodeURIComponent(dt)+'?fields='+encodeURIComponent(JSON.stringify(fields))+'&filters='+encodeURIComponent(JSON.stringify(filters||[]))+'&limit_page_length='+(limit||2000)+'&order_by=creation+desc',{
+    fetch('/api/resource/'+encodeURIComponent(dt)+'?fields='+encodeURIComponent(JSON.stringify(fields))+'&filters='+encodeURIComponent(JSON.stringify(filters||[]))+'&limit_page_length=0&order_by=creation+desc',{
       headers:{'X-Frappe-CSRF-Token':csrf,'Accept':'application/json'}
     })
     .then(function(r){return r.json();})
@@ -247,12 +249,12 @@ function fdb(dt,fields,filters,limit){
 
 async function init(){
   /* Load all hospitals (with their linked organization) upfront */
-  var hosps=await fdb('Hospital With Organization',['name','organization'],[],5000).catch(function(){return[];});
+  var hosps=await fdb('Hospital With Organization',['name','organization'],[]).catch(function(){return[];});
   ALL_HOSPS=hosps||[];
 
-  var depts=await fdb('Department',['name'],[],2000).catch(function(){return[];});
-  var fys  =await fdb('Financial Year',['name'],[],500).catch(function(){return[];});
-  var donorRows=await fdb('Patient Claim Form',['other_donor_name'],[['other_donor_name','!=','']],200000).catch(function(){return[];});
+  var depts=await fdb('Department',['name'],[]).catch(function(){return[];});
+  var fys  =await fdb('Financial Year',['name'],[]).catch(function(){return[];});
+  var donorRows=await fdb('Patient Claim Form',['other_donor_name'],[['other_donor_name','!=','']]).catch(function(){return[];});
 
   /* Populate Hospital dropdown with all hospitals */
   pop('f-hosp', ALL_HOSPS);
@@ -358,9 +360,9 @@ async function loadAll(){
 
   var cf2=['name','prid','patient_id','organization','organization_copy','name1','age','gender','type_of_service','date_of_visit','date_of_discharge','treating_doctor_name','treatment_category','final_diagnosis','total_actual_final_bill_in_rs','does_it_require_apf_contribution','justification','total_bill_at_apf_agreed_rates_mou','existing_hospital_contribution','other_donor_contribution','other_donor_name','patient_contribution_yes','additional_hospital_contribution','apf_contribution','document_status','approval_status','comment','why_this_patient_is_eligible_for_subsidy_for_this_service','if_other_treatment_please_mention'];
   var res=await Promise.all([
-    fdb('Patient Claim Form',cf2,cf,200000),
-    fdb('Network Hospital Budget',['name','organization_name','hospital_name','date_of_approval','financial_year','start_date','end_date','grant_id','total_budget'],bf,20000),
-    fdb('Budget Disbursement',['name','date','organization','hospital_name','disbursed_amount'],df,20000),
+    fdb('Patient Claim Form',cf2,cf),
+    fdb('Network Hospital Budget',['name','organization_name','hospital_name','date_of_approval','financial_year','start_date','end_date','grant_id','total_budget'],bf),
+    fdb('Budget Disbursement',['name','date','organization','hospital_name','disbursed_amount'],df),
   ]);
   C=res[0];B=res[1];D=res[2];
   render();
