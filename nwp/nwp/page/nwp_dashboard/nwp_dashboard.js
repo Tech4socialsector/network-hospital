@@ -302,9 +302,9 @@ frappe.pages['nwp-dashboard'].on_page_load = function(wrapper) {
 		if(donor){cf.push(['other_donor_name','=',donor]);}
 		var cf2=['name','docstatus','prid','patient_id','organization','organization_copy','name1','age','gender','type_of_service','date_of_visit','date_of_discharge','treating_doctor_name','treatment_category','final_diagnosis','total_actual_final_bill_in_rs','does_it_require_apf_contribution','justification','total_bill_at_apf_agreed_rates_mou','existing_hospital_contribution','other_donor_contribution','other_donor_name','patient_contribution_yes','additional_hospital_contribution','apf_contribution','document_status','approval_status','comment','why_this_patient_is_eligible_for_subsidy_for_this_service','if_other_treatment_please_mention'];
 		var res=await Promise.all([
-			nwpFdb('Patient Claim Form',cf2,cf,2000),
-			nwpFdb('Network Hospital Budget',['name','organization_name','hospital_name','date_of_approval','financial_year','start_date','end_date','grant_id','total_budget'],bf,500),
-			nwpFdb('Budget Disbursement',['name','date','organization','hospital_name','disbursed_amount'],df,500),
+			nwpFdb('Patient Claim Form',cf2,cf,200000),
+			nwpFdb('Network Hospital Budget',['name','organization_name','hospital_name','date_of_approval','financial_year','start_date','end_date','grant_id','total_budget'],bf,20000),
+			nwpFdb('Budget Disbursement',['name','date','organization','hospital_name','disbursed_amount'],df,20000),
 		]);
 		NWP_C=res[0];NWP_B=res[1];NWP_D=res[2];
 		nwpRender();
@@ -431,11 +431,11 @@ frappe.pages['nwp-dashboard'].on_page_load = function(wrapper) {
 
 	// ── Init ──────────────────────────────────────────────────────────────
 	(async function(){
-		var hosps=await nwpFdb('Hospital With Organization',['name','organization'],[],500).catch(function(){return[];});
+		var hosps=await nwpFdb('Hospital With Organization',['name','organization'],[],5000).catch(function(){return[];});
 		NWP_ALL_HOSPS=hosps||[];
-		var depts=await nwpFdb('Department',['name'],[],200).catch(function(){return[];});
-		var fys=await nwpFdb('Financial Year',['name'],[],50).catch(function(){return[];});
-		var donorRows=await nwpFdb('Patient Claim Form',['other_donor_name'],[['other_donor_name','!=','']],2000).catch(function(){return[];});
+		var depts=await nwpFdb('Department',['name'],[],2000).catch(function(){return[];});
+		var fys=await nwpFdb('Financial Year',['name'],[],500).catch(function(){return[];});
+		var donorRows=await nwpFdb('Patient Claim Form',['other_donor_name'],[['other_donor_name','!=','']],200000).catch(function(){return[];});
 		nwpPop('nwp-f-hosp',NWP_ALL_HOSPS);
 		nwpPop('nwp-f-dept',depts);
 		nwpPop('nwp-f-fy',fys);

@@ -34,7 +34,8 @@ function apply_agreed_rate_model(frm) {
         frm.set_df_property('total_bill_at_apf_agreed_rates_mou', 'hidden', !use_model);
         frm.set_df_property('existing_hospital_contribution', 'hidden', !use_model);
         if (!use_model) {
-            frm.set_value(
+            safe_set(
+                frm,
                 'total_bill_at_apf_agreed_rates_mou',
                 frm.doc.total_actual_final_bill_in_rs
             );
@@ -227,14 +228,16 @@ function calculate_other_donor_contribution(frm) {
             - (flt(frm.doc.patient_contribution_yes) || 0)
             - (flt(frm.doc.additional_hospital_contribution) || 0);
 
-        frm.set_value(
+        safe_set(
+            frm,
             "other_donor_contribution",
             Math.max(0, value)
         );
 
     } else {
 
-        frm.set_value(
+        safe_set(
+            frm,
             "other_donor_contribution",
             0
         );
