@@ -3,11 +3,11 @@ name: CI
 on:
   push:
     branches:
-      - version-16
+      - version-15
   pull_request:
 
 concurrency:
-  group: version-16-nwp-${{ github.event.number }}
+  group: version-15-nwp-${{ github.event.number }}
   cancel-in-progress: true
 
 jobs:
@@ -46,7 +46,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.14'
+          python-version: '3.11'
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -83,7 +83,7 @@ jobs:
       - name: Setup
         run: |
           pip install frappe-bench
-          bench init --skip-redis-config-generation --skip-assets --python "$(which python)" ~/frappe-bench
+          bench init --skip-redis-config-generation --skip-assets --frappe-branch version-15 --python "$(which python)" ~/frappe-bench
 
       - name: Install
         working-directory: /home/runner/frappe-bench
