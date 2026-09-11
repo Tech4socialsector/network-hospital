@@ -107,13 +107,13 @@
     "indent": 0,
     "keep_closed": 0,
     "label": "dashboard",
-    "link_to": "nwp-dashboard",
-    "link_type": "Page",
+    "link_to": null,
+    "link_type": "URL",
     "navigate_to_tab": null,
     "route_options": null,
     "show_arrow": 0,
     "type": "Link",
-    "url": null
+    "url": "/network-hospital"
    }
   ],
   "modified": "2026-07-28 20:56:45.496620",

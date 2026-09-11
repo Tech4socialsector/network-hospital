@@ -26,6 +26,9 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Epilogue',sans-serif;background:var(--surface);color:var(--ink);min-height:100vh;font-size:14px;}
+/* Force this page's own wrapper to span the full width, regardless of any
+   padding/margin the website theme applies to its wrapping elements. */
+html,body,.page-content-wrapper,main,.page_content,[id^="page-"]{max-width:100% !important;width:100% !important;margin:0 !important;padding:0 !important;}
 footer,.footer,.web-footer,.page-footer,.footer-section,#footer,.web-page-footer,.site-footer,[class*="footer"]{display:none !important;}
 navbar,.navbar,#navbar,.web-navbar,.navbar-home,nav.navbar,[class*="navbar"],header.navbar,.sticky-top{display:none !important;}
 .topbar{background:#e8f5f1;border-bottom:2px solid #b2ddd4;padding:0 32px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}

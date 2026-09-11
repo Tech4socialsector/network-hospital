@@ -59,8 +59,9 @@ app_license = "mit"
 # application home page (will override Website Settings)
 # Applies to every logged-in user regardless of role, so any newly created
 # user lands on the dashboard without needing their role added here.
-# "app/" prefix required — this is a Desk Page, not a website route.
-home_page = "app/nwp-dashboard"
+# No "app/" prefix — this is a website route (nwp/www/network-hospital.html),
+# not a Desk Page.
+home_page = "network-hospital"
 
 # Generators
 # ----------
