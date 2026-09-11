@@ -4,12 +4,16 @@ This app is maintained against two Frappe major versions in parallel:
 
 | Branch       | Frappe version      | Python           |
 |--------------|----------------------|------------------|
-| `version-16` | `>=16.0.0,<17.0.0`   | `>=3.14`         |
+| `main`       | `>=16.0.0,<17.0.0`   | `>=3.14`         |
 | `version-15` | `>=15.0.0,<16.0.0`   | `>=3.10,<3.13`   |
 
-`version-16` is the primary line — new features and fixes land there first.
-`version-15` carries the same app logic, adapted only where Frappe v15's
-older APIs or Python floor require it.
+`main` is the primary line (targeting the current Frappe v16) — new features
+and fixes land there first. `version-15` carries the same app logic, adapted
+only where Frappe v15's older APIs or Python floor require it.
+
+There is no separate `version-16` branch — `main` fills that role, since
+duplicating it under another name would just mean maintaining two identical
+branches.
 
 ## What differs between the branches
 
@@ -29,7 +33,7 @@ across both branches.
 
 ## Keeping the branches in sync
 
-1. Land feature/bugfix work on `version-16` first.
+1. Land feature/bugfix work on `main` first.
 2. Cherry-pick each commit onto `version-15`:
    ```bash
    git checkout version-15
@@ -39,12 +43,5 @@ across both branches.
    commit on `version-15` instead of skipping it silently — otherwise the
    branches quietly diverge in behavior, not just in supported-version
    metadata.
-4. When Frappe v17 ships, branch a new `version-17` off `version-16` the same
-   way `version-15` was branched off it, and repeat this process.
-
-## Open item
-
-GitHub's default branch is still `main`, which predates this split and
-doesn't match either version branch. Decide whether to set `version-16` as
-the default branch, or keep `main` as a rolling alias of the latest version
-branch.
+4. When Frappe v17 ships, branch a new `version-15`-style compatibility
+   branch off `main` for whichever version `main` has moved past by then.
