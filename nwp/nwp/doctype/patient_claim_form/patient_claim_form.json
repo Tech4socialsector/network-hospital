@@ -78,7 +78,8 @@
    "fieldname": "gender",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Gender"
+   "label": "Gender",
+   "reqd": 1
   },
   {
    "fetch_from": "prid.age",

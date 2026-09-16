@@ -52,7 +52,7 @@
     "restrict_to_domain": null,
     "stats_filter": null,
     "type": "URL",
-    "url": "/network-hospital"
+    "url": "/app/nwp-dashboard"
    }
   ],
   "title": "Network Hospital",

@@ -26,7 +26,8 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Selected Option",
-   "options": "Assessment Question Option"
+   "options": "Assessment Question Option",
+   "reqd": 1
   },
   {
    "columns": 2,

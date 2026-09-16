@@ -17,19 +17,22 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Question",
-   "options": "Assessment Question"
+   "options": "Assessment Question",
+   "reqd": 1
   },
   {
    "fieldname": "option_label",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Option Label"
+   "label": "Option Label",
+   "reqd": 1
   },
   {
    "fieldname": "score",
    "fieldtype": "Int",
    "in_list_view": 1,
-   "label": "Score"
+   "label": "Score",
+   "reqd": 1
   }
  ],
  "grid_page_length": 50,

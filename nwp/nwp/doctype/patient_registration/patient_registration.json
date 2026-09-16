@@ -42,7 +42,8 @@
   {
    "fieldname": "name1",
    "fieldtype": "Data",
-   "label": "Patient Name"
+   "label": "Patient Name",
+   "reqd": 1
   },
   {
    "fieldname": "age",

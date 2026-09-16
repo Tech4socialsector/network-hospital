@@ -42,7 +42,8 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Financial Year",
-   "options": "Financial Year"
+   "options": "Financial Year",
+   "reqd": 1
   },
   {
    "fieldname": "stats_section",

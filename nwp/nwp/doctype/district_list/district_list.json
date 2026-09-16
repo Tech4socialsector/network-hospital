@@ -15,7 +15,8 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "State",
-   "options": "State List"
+   "options": "State List",
+   "reqd": 1
   },
   {
    "fieldname": "section_break_s03f",
