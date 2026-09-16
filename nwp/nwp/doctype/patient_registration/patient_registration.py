@@ -9,18 +9,27 @@ from frappe.utils import flt
 
 class PatientRegistration(Document):
 	def validate(self):
+		# Bulk imports (Data Import) create the document without ever loading
+		# the form in a browser, so the client script that normally fills
+		# this table on new-form-load never runs — fall back to the same
+		# population here so imported records still get every question.
+		if self.is_new() and not self.assessment_answers:
+			self.populate_assessment_answers()
 		self.total_score = sum(flt(d.score) for d in self.assessment_answers)
 
-	@frappe.whitelist()
-	def get_assessment_questions(self):
+	def populate_assessment_answers(self):
 		"""Populate one answer row per question currently defined in
 		Assessment Question — the organization's question list is managed
 		directly there (add/remove questions any time), not through a
 		separate template."""
-		self.set("assessment_answers", [])
 		questions = frappe.get_all("Assessment Question", order_by="creation", fields=["name"])
 		for q in questions:
 			self.append("assessment_answers", {"question": q.name})
+
+	@frappe.whitelist()
+	def get_assessment_questions(self):
+		self.set("assessment_answers", [])
+		self.populate_assessment_answers()
 
 
 def get_or_create_location(doctype, value, filters=None):
