@@ -83,7 +83,22 @@ frappe.ui.form.on("Patient Claim Form", {
         calculate_apf_contribution(frm);
         calculate_other_donor_contribution(frm);
     },
+
+    date_of_visit: function (frm) {
+        check_date_of_visit(frm);
+    },
+
+    validate: function (frm) {
+        check_date_of_visit(frm);
+    },
 });
+
+// ── date_of_visit must never be a future date ──────────────────────────────
+function check_date_of_visit(frm) {
+    if (frm.doc.date_of_visit && frm.doc.date_of_visit > frappe.datetime.get_today()) {
+        frappe.throw(__("Date of visit / admission cannot be a future date."));
+    }
+}
 
 frappe.ui.form.on("Service List and Percentage", {
     form_render: function (frm, _cdt, _cdn) {

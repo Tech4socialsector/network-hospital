@@ -3,6 +3,7 @@
 
 import frappe
 from frappe.model.document import Document
+from frappe.utils import getdate, today
 
 APPROVER_EDITABLE_FIELDS = {"approval_status", "comment", "approver"}
 NON_DATA_FIELDTYPES = {"Section Break", "Column Break", "Tab Break", "HTML", "Button"}
@@ -27,6 +28,11 @@ class PatientClaimForm(Document):
 	def validate(self):
 		self.restrict_approver_to_approval_fields()
 		self.sync_fields_from_registration()
+		self.validate_date_of_visit()
+
+	def validate_date_of_visit(self):
+		if self.date_of_visit and getdate(self.date_of_visit) > getdate(today()):
+			frappe.throw("Date of visit / admission cannot be a future date.")
 
 	def sync_fields_from_registration(self):
 		if not self.prid:
