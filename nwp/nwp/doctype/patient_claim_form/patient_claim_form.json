@@ -17,10 +17,10 @@
   "organization",
   "why_this_patient_is_eligible_for_subsidy_for_this_service",
   "column_break_bamp",
+  "type_of_service",
   "date_of_visit",
   "date_of_discharge",
   "treating_doctor_name",
-  "type_of_service",
   "treatment_category",
   "if_other_treatment_please_mention",
   "final_diagnosis",
@@ -111,11 +111,11 @@
    "label": "Date of visit / admission"
   },
   {
-   "depends_on": "eval: doc.type_of_service == \"In Patient Service\"",
    "fieldname": "date_of_discharge",
    "fieldtype": "Date",
    "in_list_view": 1,
-   "label": "Date of discharge"
+   "label": "Date of discharge",
+   "read_only_depends_on": "eval: doc.type_of_service != \"In Patient Service\""
   },
   {
    "fieldname": "treating_doctor_name",
@@ -281,7 +281,7 @@
    "fieldname": "approval_status",
    "fieldtype": "Select",
    "label": "Approval Status",
-   "options": "\nRejected\nSent back for revision\nApproved",
+   "options": "Pending for approval\nRejected\nSent back for revision\nApproved",
    "permlevel": 1
   },
   {
@@ -335,7 +335,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-08-10 11:13:25.606809",
+ "modified": "2026-09-23 12:50:58.609125",
  "modified_by": "Administrator",
  "module": "NWP",
  "name": "Patient Claim Form",

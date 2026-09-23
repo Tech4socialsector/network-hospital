@@ -29,10 +29,25 @@ class PatientClaimForm(Document):
 		self.restrict_approver_to_approval_fields()
 		self.sync_fields_from_registration()
 		self.validate_date_of_visit()
+		self.sync_date_of_discharge()
+		self.sync_invoice_date()
 
 	def validate_date_of_visit(self):
 		if self.date_of_visit and getdate(self.date_of_visit) > getdate(today()):
 			frappe.throw("Date of visit / admission cannot be a future date.")
+
+	def sync_date_of_discharge(self):
+		"""Out Patient / Day Care visits are same-day, so discharge always
+		matches the visit date — only In Patient stays a manual entry, since
+		an admission can run for several days."""
+		if self.type_of_service != "In Patient Service":
+			self.date_of_discharge = self.date_of_visit
+
+	def sync_invoice_date(self):
+		"""Default invoice_date from date_of_discharge — a suggestion only,
+		never overwrites a value that's already been entered."""
+		if self.date_of_discharge and not self.invoice_date:
+			self.invoice_date = self.date_of_discharge
 
 	def sync_fields_from_registration(self):
 		if not self.prid:

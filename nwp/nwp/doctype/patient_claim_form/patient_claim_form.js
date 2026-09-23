@@ -86,6 +86,20 @@ frappe.ui.form.on("Patient Claim Form", {
 
     date_of_visit: function (frm) {
         check_date_of_visit(frm);
+        sync_date_of_discharge(frm);
+    },
+
+    type_of_service: function (frm) {
+        sync_date_of_discharge(frm);
+    },
+
+    date_of_discharge: function (frm) {
+        // Just a default suggestion — invoice_date stays editable, this only
+        // fills it in when it's still empty, never overwrites a value
+        // already there (manually entered or already synced).
+        if (!frm.doc.invoice_date) {
+            frm.set_value("invoice_date", frm.doc.date_of_discharge);
+        }
     },
 
     validate: function (frm) {
@@ -97,6 +111,16 @@ frappe.ui.form.on("Patient Claim Form", {
 function check_date_of_visit(frm) {
     if (frm.doc.date_of_visit && frm.doc.date_of_visit > frappe.datetime.get_today()) {
         frappe.throw(__("Date of visit / admission cannot be a future date."));
+    }
+}
+
+// ── Out Patient / Day Care: discharge always matches visit date (same-day).
+// In Patient stays a manual entry, since an admission can run several days.
+// Triggered only on real field changes — never on refresh/load, which would
+// re-dirty a freshly opened or just-saved form (see the age-field bug).
+function sync_date_of_discharge(frm) {
+    if (frm.doc.type_of_service && frm.doc.type_of_service !== "In Patient Service") {
+        frm.set_value("date_of_discharge", frm.doc.date_of_visit);
     }
 }
 

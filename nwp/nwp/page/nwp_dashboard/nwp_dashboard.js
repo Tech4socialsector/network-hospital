@@ -518,8 +518,8 @@ frappe.pages['nwp-dashboard'].on_page_load = function(wrapper) {
 			if(dept){cf.push(['treatment_category','=',dept]);}
 			if(svc){cf.push(['type_of_service','=',svc]);}
 			if(fy){bf.push(['financial_year','=',fy]);}
-			if(fromDate){cf.push(['date_of_visit','>=',fromDate]);bf.push(['date_of_approval','>=',fromDate]);df.push(['date','>=',fromDate]);}
-			if(toDate){cf.push(['date_of_visit','<=',toDate]);bf.push(['date_of_approval','<=',toDate]);df.push(['date','<=',toDate]);}
+			if(fromDate){cf.push(['invoice_date','>=',fromDate]);bf.push(['date_of_approval','>=',fromDate]);df.push(['date','>=',fromDate]);}
+			if(toDate){cf.push(['invoice_date','<=',toDate]);bf.push(['date_of_approval','<=',toDate]);df.push(['date','<=',toDate]);}
 			if(donor){cf.push(['other_donor_name','=',donor]);}
 			var cf2=['name','docstatus','prid','patient_id','organization','organization_copy','name1','age','gender','type_of_service','date_of_visit','date_of_discharge','treating_doctor_name','treatment_category','final_diagnosis','total_actual_final_bill_in_rs','does_it_require_apf_contribution','justification','total_bill_at_apf_agreed_rates_mou','existing_hospital_contribution','other_donor_contribution','other_donor_name','patient_contribution_yes','additional_hospital_contribution','apf_contribution','document_status','approval_status','comment','why_this_patient_is_eligible_for_subsidy_for_this_service','if_other_treatment_please_mention'];
 			var res=await Promise.all([
