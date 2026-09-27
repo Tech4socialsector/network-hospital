@@ -121,8 +121,9 @@
   },
   {
    "fieldname": "assessed_by",
-   "fieldtype": "Data",
-   "label": "Assessed by"
+   "fieldtype": "Link",
+   "label": "Assessed by",
+   "options": "Assessed By"
   },
   {
    "fieldname": "assessed_on",
@@ -131,8 +132,9 @@
   },
   {
    "fieldname": "verified_by",
-   "fieldtype": "Data",
-   "label": "Verified by"
+   "fieldtype": "Link",
+   "label": "Verified by",
+   "options": "Verified By"
   },
   {
    "fieldname": "verified_on",
@@ -140,10 +142,11 @@
    "label": "Verified on"
   },
   {
+   "default": "Registration In-Progress",
    "fieldname": "document_status",
    "fieldtype": "Select",
    "label": "Document Status",
-   "options": "Registration In-Progress\nRegistration Complete"
+   "options": "Registration In-Progress\nRegistration Completed"
   },
   {
    "fieldname": "assessment_answers",
@@ -175,7 +178,7 @@
    "link_fieldname": "prid"
   }
  ],
- "modified": "2026-08-05 16:01:00.819243",
+ "modified": "2026-09-27 19:50:24.426651",
  "modified_by": "Administrator",
  "module": "NWP",
  "name": "Patient Registration",
