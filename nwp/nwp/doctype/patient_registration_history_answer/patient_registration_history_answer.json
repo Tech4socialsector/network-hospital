@@ -1,11 +1,12 @@
 {
  "actions": [],
  "allow_rename": 1,
- "creation": "2026-08-04 16:06:48.720302",
+ "creation": "2026-09-29 00:00:00.000000",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "assessed_on",
   "question",
   "selected_option",
   "selected_option_label",
@@ -13,7 +14,14 @@
  ],
  "fields": [
   {
-   "columns": 7,
+   "fieldname": "assessed_on",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "From assessment cycle dated",
+   "read_only": 1
+  },
+  {
+   "columns": 6,
    "fieldname": "question",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -22,15 +30,16 @@
    "read_only": 1
   },
   {
-   "columns": 6,
+   "columns": 5,
    "fieldname": "selected_option",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Selected Option",
-   "options": "Assessment Question Option"
+   "options": "Assessment Question Option",
+   "read_only": 1
   },
   {
-   "description": "Hidden on the form on purpose — Selected Option above already shows this text visually. Exists only so exports/reports can pull the readable text instead of Selected Option's raw stored ID.",
+   "description": "Hidden on the form on purpose — Selected Option above already shows this text visually. Exists only so exports/reports can pull the readable text instead of Selected Option's raw stored ID. Set explicitly by start_reregistration() when archiving, since fetch_from doesn't run for rows written server-side.",
    "fetch_from": "selected_option.option_label",
    "fieldname": "selected_option_label",
    "fieldtype": "Data",
@@ -40,7 +49,6 @@
   },
   {
    "columns": 2,
-   "fetch_from": "selected_option.score",
    "fieldname": "score",
    "fieldtype": "Int",
    "in_list_view": 1,
@@ -52,10 +60,10 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-08-05 10:21:21.985438",
+ "modified": "2026-09-29 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "NWP",
- "name": "Patient Assessment Answer",
+ "name": "Patient Registration History Answer",
  "owner": "Administrator",
  "permissions": [],
  "row_format": "Dynamic",

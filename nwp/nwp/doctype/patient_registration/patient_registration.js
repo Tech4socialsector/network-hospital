@@ -13,26 +13,82 @@ function calculate_assessment_total(frm) {
 // assessed — that's the date the socio-economic assessment actually
 // happened, so it's the right clock to measure "how long since this
 // patient was last registered" from.
-function check_reregistration_due(frm) {
+function is_reregistration_due(frm) {
     if (frm.is_new() || !frm.doc.assessed_on) {
-        return;
+        return false;
     }
     var expiry = frappe.datetime.add_months(frm.doc.assessed_on, 36);
-    if (frappe.datetime.get_today() >= expiry) {
-        frappe.msgprint({
-            title: __('Re-registration Required'),
-            indicator: 'orange',
-            message: __(
-                'This patient was last assessed on {0} — more than 3 years ago. They need to complete a fresh Patient Registration.',
-                [frappe.datetime.str_to_user(frm.doc.assessed_on)]
-            )
-        });
+    return frappe.datetime.get_today() >= expiry;
+}
+
+function check_reregistration_due(frm) {
+    if (!is_reregistration_due(frm)) {
+        return;
     }
+    frappe.msgprint({
+        title: __('Re-registration Required'),
+        indicator: 'orange',
+        message: __(
+            'This patient was last assessed on {0} — more than 3 years ago. Click "Register" to archive this assessment and start a fresh one.',
+            [frappe.datetime.str_to_user(frm.doc.assessed_on)]
+        )
+    });
+}
+
+// Archives the current assessment cycle (every individual question/answer/
+// score row, not just the total) into registration_history, clears the
+// assessment fields on this same document, and refills a fresh question
+// list — all as one atomic server-side save (start_reregistration in
+// patient_registration.py), so there's no fragile multi-step client-side
+// chain that can silently fall out of sync. This patient keeps exactly one
+// Patient Registration document for life, so Patient ID can stay a real,
+// permanent, unique identity instead of needing a duplicate-but-not-really
+// exception.
+function start_reregistration(frm) {
+    frappe.confirm(
+        __(
+            'This will archive the current assessment (from {0}), including every question and answer, into Registration History, and clear the form so a fresh assessment can be entered for this patient. Continue?',
+            [frappe.datetime.str_to_user(frm.doc.assessed_on)]
+        ),
+        function () {
+            frappe.call({
+                method: 'start_reregistration',
+                doc: frm.doc,
+                freeze: true,
+                freeze_message: __('Archiving and loading fresh assessment questions...'),
+                callback: function (r) {
+                    if (r.exc) {
+                        frappe.msgprint({
+                            title: __('Could Not Start Re-registration'),
+                            indicator: 'red',
+                            message: __('Please check permissions or try again.')
+                        });
+                        return;
+                    }
+                    frm.reload_doc();
+                    frappe.show_alert({ message: __('Archived — enter the fresh assessment now.'), indicator: 'green' }, 5);
+                }
+            });
+        }
+    );
 }
 
 frappe.ui.form.on('Patient Registration', {
     refresh: function(frm) {
         check_reregistration_due(frm);
+
+        ['registration_history', 'registration_history_answers'].forEach(function (fieldname) {
+            frm.set_df_property(fieldname, 'read_only', 1);
+            if (frm.get_field(fieldname).grid) {
+                frm.get_field(fieldname).grid.cannot_add_rows = true;
+                frm.get_field(fieldname).grid.cannot_delete_rows = true;
+            }
+            frm.refresh_field(fieldname);
+        });
+
+        if (is_reregistration_due(frm)) {
+            frm.add_custom_button(__('Register'), function () { start_reregistration(frm); }).addClass('btn-primary');
+        }
     },
 
     setup: function(frm) {

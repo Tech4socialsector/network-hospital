@@ -29,7 +29,10 @@
   "assessed_on",
   "verified_by",
   "verified_on",
-  "document_status"
+  "document_status",
+  "registration_history_section",
+  "registration_history",
+  "registration_history_answers"
  ],
  "fields": [
   {
@@ -168,6 +171,25 @@
    "fieldname": "organization",
    "fieldtype": "Data",
    "label": "Organization"
+  },
+  {
+   "fieldname": "registration_history_section",
+   "fieldtype": "Section Break",
+   "label": "Registration History"
+  },
+  {
+   "description": "Every earlier assessment cycle, archived here each time this patient is re-registered (see the \"Register\" button, shown once an assessment is 3+ years old).",
+   "fieldname": "registration_history",
+   "fieldtype": "Table",
+   "label": "Registration History",
+   "options": "Patient Registration History"
+  },
+  {
+   "description": "Every individual question/answer/score from each earlier assessment cycle, tagged by that cycle's assessment date — compare against the current Assessment Answers above to see exactly what changed.",
+   "fieldname": "registration_history_answers",
+   "fieldtype": "Table",
+   "label": "Registration History – Assessment Answers",
+   "options": "Patient Registration History Answer"
   }
  ],
  "grid_page_length": 50,

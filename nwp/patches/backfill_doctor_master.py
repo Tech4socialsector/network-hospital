@@ -10,7 +10,7 @@ def execute():
 	"""
 	distinct_names = frappe.get_all(
 		"Patient Claim Form",
-		filters={"treating_doctor_name": ["not in", ["", None]]},
+		filters={"treating_doctor_name": ["!=", ""]},
 		pluck="treating_doctor_name",
 		distinct=True,
 	)
