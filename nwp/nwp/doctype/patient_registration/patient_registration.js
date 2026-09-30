@@ -77,6 +77,13 @@ frappe.ui.form.on('Patient Registration', {
     refresh: function(frm) {
         check_reregistration_due(frm);
 
+        // Nothing to show until this patient has actually been re-registered
+        // at least once — keep the whole section out of the way until then.
+        var has_history = (frm.doc.registration_history || []).length > 0;
+        frm.toggle_display('registration_history_section', has_history);
+        frm.toggle_display('registration_history', has_history);
+        frm.toggle_display('registration_history_answers', has_history);
+
         ['registration_history', 'registration_history_answers'].forEach(function (fieldname) {
             frm.set_df_property(fieldname, 'read_only', 1);
             if (frm.get_field(fieldname).grid) {
