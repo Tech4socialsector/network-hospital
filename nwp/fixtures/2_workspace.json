@@ -17,7 +17,7 @@
   "link_type": "DocType",
   "links": [],
   "modified": "2026-08-10 20:11:42.197652",
-  "module": null,
+  "module": "NWP",
   "name": "Network Hospital",
   "number_cards": [
    {
@@ -76,7 +76,7 @@
   "link_type": "DocType",
   "links": [],
   "modified": "2026-06-16 15:24:14.159818",
-  "module": null,
+  "module": "NWP",
   "name": "Budget Summary",
   "number_cards": [
    {
@@ -135,7 +135,7 @@
   "link_type": "DocType",
   "links": [],
   "modified": "2026-06-16 15:04:59.069935",
-  "module": null,
+  "module": "NWP",
   "name": "Master",
   "number_cards": [],
   "parent_page": null,
@@ -251,7 +251,7 @@
   "link_type": "DocType",
   "links": [],
   "modified": "2026-06-17 11:12:15.722758",
-  "module": null,
+  "module": "NWP",
   "name": "View Dashboard",
   "number_cards": [],
   "parent_page": null,
