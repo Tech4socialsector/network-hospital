@@ -11,15 +11,15 @@ app_license = "mit"
 # required_apps = []
 
 # Each item in the list will be shown as an app in the apps page
-# Newer v16 builds the desk's Apps screen from this hook; Desktop Icon is deprecated.
-add_to_apps_screen = [
-	{
-		"name": "nwp",
-		"title": "NWP",
-		"route": "/desk/network-hospital",
-		"has_permission": "nwp.permission.has_app_permission",
-	}
-]
+# add_to_apps_screen = [
+# 	{
+# 		"name": "nwp",
+# 		"logo": "/assets/nwp/logo.png",
+# 		"title": "NWP",
+# 		"route": "/nwp",
+# 		"has_permission": "nwp.api.permission.has_app_permission"
+# 	}
+# ]
 
 # Includes in <head>
 # ------------------
@@ -245,8 +245,6 @@ after_install = "nwp.install.after_install"
 #
 # Order matters: Desktop Icon links to a Workspace Sidebar record, and Workspace
 # Sidebar items link to a Workspace/Page, so they must import in this sequence.
-# Workspaces themselves ship as module files in nwp/nwp/workspace, not fixtures:
-# migrate deletes public workspaces with a module but no file as orphans.
 # fixture_auto_order numbers the exported filenames so import (which is otherwise
 # alphabetical) follows this list instead of the doctype name.
 
@@ -268,6 +266,12 @@ fixtures = [
 					"Total Utilisation",
 				],
 			]
+		],
+	},
+	{
+		"dt": "Workspace",
+		"filters": [
+			["name", "in", ["Network Hospital", "Master", "Budget Summary", "View Dashboard"]]
 		],
 	},
 	{
