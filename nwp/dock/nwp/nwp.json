@@ -10,7 +10,7 @@
    "hidden": 0,
    "icon": "hospital",
    "link_to": "Network Hospital",
-   "link_type": "Workspace",
+   "link_type": "Sidebar",
    "title": "Network Hospital"
   },
   {
@@ -18,7 +18,7 @@
    "hidden": 0,
    "icon": "indian-rupee",
    "link_to": "Budget Summary",
-   "link_type": "Workspace",
+   "link_type": "Sidebar",
    "title": "Budget Summary"
   },
   {
@@ -26,7 +26,7 @@
    "hidden": 0,
    "icon": "settings",
    "link_to": "Master",
-   "link_type": "Workspace",
+   "link_type": "Sidebar",
    "title": "Master"
   },
   {
@@ -34,7 +34,7 @@
    "hidden": 0,
    "icon": "layout-dashboard",
    "link_to": "View Dashboard",
-   "link_type": "Workspace",
+   "link_type": "Sidebar",
    "title": "View Dashboard"
   }
  ],
