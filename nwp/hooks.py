@@ -11,15 +11,15 @@ app_license = "mit"
 # required_apps = []
 
 # Each item in the list will be shown as an app in the apps page
-# add_to_apps_screen = [
-# 	{
-# 		"name": "nwp",
-# 		"logo": "/assets/nwp/logo.png",
-# 		"title": "NWP",
-# 		"route": "/nwp",
-# 		"has_permission": "nwp.api.permission.has_app_permission"
-# 	}
-# ]
+# Newer v16 builds the desk's Apps screen from this hook; Desktop Icon is deprecated.
+add_to_apps_screen = [
+	{
+		"name": "nwp",
+		"title": "NWP",
+		"route": "/desk/network-hospital",
+		"has_permission": "nwp.permission.has_app_permission",
+	}
+]
 
 # Includes in <head>
 # ------------------
