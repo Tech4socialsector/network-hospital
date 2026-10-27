@@ -245,6 +245,8 @@ after_install = "nwp.install.after_install"
 #
 # Order matters: Desktop Icon links to a Workspace Sidebar record, and Workspace
 # Sidebar items link to a Workspace/Page, so they must import in this sequence.
+# Workspaces themselves ship as module files in nwp/nwp/workspace, not fixtures:
+# migrate deletes public workspaces with a module but no file as orphans.
 # fixture_auto_order numbers the exported filenames so import (which is otherwise
 # alphabetical) follows this list instead of the doctype name.
 
@@ -266,12 +268,6 @@ fixtures = [
 					"Total Utilisation",
 				],
 			]
-		],
-	},
-	{
-		"dt": "Workspace",
-		"filters": [
-			["name", "in", ["Network Hospital", "Master", "Budget Summary", "View Dashboard"]]
 		],
 	},
 	{
