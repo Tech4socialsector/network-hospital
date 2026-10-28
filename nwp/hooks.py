@@ -269,12 +269,6 @@ fixtures = [
 		],
 	},
 	{
-		"dt": "Workspace",
-		"filters": [
-			["name", "in", ["Network Hospital", "Master", "Budget Summary", "View Dashboard"]]
-		],
-	},
-	{
 		"dt": "Workspace Sidebar",
 		"filters": [
 			["name", "in", ["Network Hospital", "Master", "Budget Summary", "View Dashboard"]]
