@@ -26,12 +26,29 @@
 		return path;
 	}
 
-	frappe.ready(function () {
-		if (!(frappe.ui && frappe.ui.sidebar_item && frappe.ui.sidebar_item.TypeLink)) return;
+	function apply_patch() {
+		if (!(frappe.ui && frappe.ui.sidebar_item && frappe.ui.sidebar_item.TypeLink)) return false;
 
-		const original_get_path = frappe.ui.sidebar_item.TypeLink.prototype.get_path;
-		frappe.ui.sidebar_item.TypeLink.prototype.get_path = function () {
+		const proto = frappe.ui.sidebar_item.TypeLink.prototype;
+		if (proto.get_path.__nwp_patched) return true;
+
+		const original_get_path = proto.get_path;
+		proto.get_path = function () {
 			return rewrite_path(original_get_path.apply(this, arguments));
 		};
-	});
+		proto.get_path.__nwp_patched = true;
+		return true;
+	}
+
+	if (!apply_patch()) {
+		// frappe.ui.sidebar_item may not be loaded yet depending on bundle
+		// order/version; poll briefly instead of depending on a readiness API.
+		let attempts = 0;
+		let timer = setInterval(function () {
+			attempts++;
+			if (apply_patch() || attempts > 40) {
+				clearInterval(timer);
+			}
+		}, 250);
+	}
 })();
