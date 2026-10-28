@@ -16,7 +16,7 @@ add_to_apps_screen = [
 		"name": "nwp",
 		"logo": "/assets/nwp/logo.png",
 		"title": "NWP",
-		"route": "app/nwp-dashboard",
+		"route": "app/network-hospital",
 		"has_permission": "nwp.api.permission.has_app_permission"
 	}
 ]
