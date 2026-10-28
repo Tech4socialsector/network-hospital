@@ -16,7 +16,7 @@ add_to_apps_screen = [
 		"name": "nwp",
 		"logo": "/assets/nwp/logo.png",
 		"title": "NWP",
-		"route": "/nwp",
+		"route": "app/nwp-dashboard",
 		"has_permission": "nwp.api.permission.has_app_permission"
 	}
 ]
