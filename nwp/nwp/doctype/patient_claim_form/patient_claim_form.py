@@ -31,6 +31,7 @@ class PatientClaimForm(Document):
 		self.validate_date_of_visit()
 		self.sync_date_of_discharge()
 		self.sync_invoice_date()
+		self.clear_contribution_fields_for_other_side()
 
 	def validate_date_of_visit(self):
 		if self.date_of_visit and getdate(self.date_of_visit) > getdate(today()):
@@ -62,6 +63,21 @@ class PatientClaimForm(Document):
 			return
 		for target in missing:
 			self.set(target, registration.get(FETCH_FROM_PRID[target]))
+
+	def clear_contribution_fields_for_other_side(self):
+		"""does_it_require_apf_contribution picks one of two mutually exclusive
+		funding paths — the client-side script already zeroes out the other
+		side's fields when toggling this in the browser, but that never runs
+		for a Data Import, the API, or a document saved without the form
+		reloading. This is the one place guaranteed to run on every save,
+		regardless of how the document was created, so a value left over from
+		the other side (or imported along with it) never lingers."""
+		if self.does_it_require_apf_contribution == "Yes":
+			self.other_donor_contribution = 0
+		else:
+			self.total_bill_at_apf_agreed_rates_mou = 0
+			self.existing_hospital_contribution = 0
+			self.apf_contribution = 0
 
 	def restrict_approver_to_approval_fields(self):
 		"""NWP Approver can see the whole claim but should only ever change the

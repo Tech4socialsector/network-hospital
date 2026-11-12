@@ -160,32 +160,36 @@ frappe.pages['nwp-dashboard'].on_page_load = function(wrapper) {
 			function aprP(v){if(v==='Approved')return '<span style="background:#dcfce7;color:#16a34a;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;">Approved</span>';if(v==='Rejected')return '<span style="background:#fee2e2;color:#dc2626;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;">Rejected</span>';if(v==='Sent back for revision')return '<span style="background:#fef3e2;color:#b45309;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;">Revision</span>';return nwpDv(v);}
 			function nwpP(v){return v==='Yes'?'<span style="background:#e6f5f1;color:#0e7a5f;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;">Yes</span>':v==='No'?'<span style="background:#f4f6f9;color:#7a8899;border:1px solid #e3e8ef;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;">No</span>':nwpDv(v);}
 
+			// Amount-type fields get the ₹ formatter; every other field on the
+			// record (all of them, since each row is fetched with ['*']) is
+			// shown as-is so the drill-down table never leaves a field out.
+			var AMOUNT_FIELDS={total_actual_final_bill_in_rs:1,total_bill_at_apf_agreed_rates_mou:1,existing_hospital_contribution:1,additional_hospital_contribution:1,patient_contribution_yes:1,apf_contribution:1,other_donor_contribution:1,total_budget:1,disbursed_amount:1};
+			var EXCLUDE_FIELDS=['docstatus','owner','modified_by','idx','_user_tags','_comments','_assign','_liked_by','doctype','creation','modified'];
+			// "name" is Frappe's internal fieldname for every record's own ID
+			// (PCID-001, etc.) — not a person's name, so it needs its own label
+			// instead of the generic underscore->title-case conversion.
+			var HEADER_OVERRIDES={name:'ID',patient_id:'MRN',organization_copy:'Hospital Name',organization:'Division'};
+
 			function buildTable(pr, offset) {
-				if (cfg.src === 'C') {
-					var th='<thead><tr><th '+ths+'>#</th><th '+ths+'>PRID</th><th '+ths+'>Hospital</th><th '+ths+'>Division</th><th '+ths+'>Age</th><th '+ths+'>Gender</th><th '+ths+'>Service Type</th><th '+ths+'>Department</th><th '+ths+'>NWP Required</th><th '+ths+'>Default Hosp (₹)</th><th '+ths+'>Add. Hosp (₹)</th><th '+ths+'>Patient Contrib (₹)</th><th '+ths+'>NWP Contribution (₹)</th><th '+ths+'>Other Donor Name</th><th '+ths+'>Other Donor Contrib (₹)</th><th '+ths+'>Approval Status</th></tr></thead>';
-					var tb='<tbody>'+pr.map(function(r,i){var idx=offset+i;return '<tr style="cursor:pointer;" '+hov+' onclick="nwpOpenClaim('+idx+')">'
-						+'<td style="padding:9px 11px;border-bottom:1px solid #e3e8ef;color:#b8c4d0;font-size:11px;">'+(idx+1)+'</td>'
-						+'<td '+tds+'>'+nwpDv(r.prid)+'</td><td '+tds+'>'+nwpDv(r.organization_copy)+'</td><td '+tds+'>'+nwpDv(r.organization)+'</td>'
-						+'<td '+tds+'>'+nwpDv(r.age)+'</td><td '+tds+'>'+nwpDv(r.gender)+'</td>'
-						+'<td '+tds+'>'+svcP(r.type_of_service)+'</td><td '+tds+'>'+nwpDv(r.treatment_category)+'</td>'
-						+'<td '+tds+'>'+nwpP(r.does_it_require_apf_contribution)+'</td>'
-						+'<td '+tds+'>'+nwpRs(r.existing_hospital_contribution)+'</td>'
-						+'<td '+tds+'>'+nwpRs(r.additional_hospital_contribution)+'</td>'
-						+'<td '+tds+'>'+nwpRs(r.patient_contribution_yes)+'</td>'
-						+'<td '+tds+'><strong style="color:#1a5fa8;">'+nwpRs(r.apf_contribution)+'</strong></td>'
-						+'<td '+tds+'>'+nwpDv(r.other_donor_name)+'</td><td '+tds+'>'+nwpRs(r.other_donor_contribution)+'</td>'
-						+'<td '+tds+'>'+aprP(r.approval_status)+'</td></tr>';
-					}).join('')+'</tbody>';
-					return '<div style="overflow-x:auto;"><table style="border-collapse:collapse;font-size:12px;font-family:Inter,sans-serif;width:max-content;min-width:100%;">'+th+tb+'</table></div>';
-				}
-				if (cfg.src === 'B') {
-					var thB='<thead><tr><th '+ths+'>#</th><th '+ths+'>Record ID</th><th '+ths+'>Division</th><th '+ths+'>Hospital</th><th '+ths+'>Date of Approval</th><th '+ths+'>Financial Year</th><th '+ths+'>Start Date</th><th '+ths+'>End Date</th><th '+ths+'>Grant ID</th><th '+ths+'>Total Budget (₹)</th></tr></thead>';
-					var tbB='<tbody>'+pr.map(function(r,i){return '<tr><td style="padding:9px 11px;border-bottom:1px solid #e3e8ef;color:#b8c4d0;font-size:11px;">'+(offset+i+1)+'</td><td '+tds+'><strong>'+nwpDv(r.name)+'</strong></td><td '+tds+'>'+nwpDv(r.organization_name)+'</td><td '+tds+'>'+nwpDv(r.hospital_name)+'</td><td '+tds+'>'+nwpDv(r.date_of_approval)+'</td><td '+tds+'>'+nwpDv(r.financial_year)+'</td><td '+tds+'>'+nwpDv(r.start_date)+'</td><td '+tds+'>'+nwpDv(r.end_date)+'</td><td '+tds+'>'+nwpDv(r.grant_id)+'</td><td '+tds+'><strong>'+nwpRs(r.total_budget)+'</strong></td></tr>';}).join('')+'</tbody>';
-					return '<div style="overflow-x:auto;"><table style="border-collapse:collapse;font-size:12px;font-family:Inter,sans-serif;width:max-content;min-width:100%;">'+thB+tbB+'</table></div>';
-				}
-				var thD='<thead><tr><th '+ths+'>#</th><th '+ths+'>Record ID</th><th '+ths+'>Date</th><th '+ths+'>Division</th><th '+ths+'>Hospital</th><th '+ths+'>Disbursed Amount (₹)</th></tr></thead>';
-				var tbD='<tbody>'+pr.map(function(r,i){return '<tr><td style="padding:9px 11px;border-bottom:1px solid #e3e8ef;color:#b8c4d0;font-size:11px;">'+(offset+i+1)+'</td><td '+tds+'><strong>'+nwpDv(r.name)+'</strong></td><td '+tds+'>'+nwpDv(r.date)+'</td><td '+tds+'>'+nwpDv(r.organization)+'</td><td '+tds+'>'+nwpDv(r.hospital_name)+'</td><td '+tds+'><strong>'+nwpRs(r.disbursed_amount)+'</strong></td></tr>';}).join('')+'</tbody>';
-				return '<div style="overflow-x:auto;"><table style="border-collapse:collapse;font-size:12px;font-family:Inter,sans-serif;width:max-content;min-width:100%;">'+thD+tbD+'</table></div>';
+				if (!pr.length) return '<div style="padding:40px;text-align:center;color:#7a8899;">No records.</div>';
+				var allKeys=Object.keys(pr[0]).filter(function(k){return EXCLUDE_FIELDS.indexOf(k)===-1;});
+				var headerLabel=function(k){return HEADER_OVERRIDES[k]||k.replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});};
+				var th='<thead><tr><th '+ths+'>#</th>'+allKeys.map(function(k){return '<th '+ths+'>'+nwpEsc(headerLabel(k))+'</th>';}).join('')+'</tr></thead>';
+				var clickable=cfg.src==='C';
+				var tb='<tbody>'+pr.map(function(r,i){
+					var idx=offset+i;
+					var cells=allKeys.map(function(k){
+						var v=r[k];
+						if(k==='type_of_service')return '<td '+tds+'>'+svcP(v)+'</td>';
+						if(k==='approval_status')return '<td '+tds+'>'+aprP(v)+'</td>';
+						if(k==='does_it_require_apf_contribution')return '<td '+tds+'>'+nwpP(v)+'</td>';
+						if(AMOUNT_FIELDS[k])return '<td '+tds+'>'+nwpRs(v)+'</td>';
+						return '<td '+tds+'>'+nwpDv(v)+'</td>';
+					}).join('');
+					var rowAttrs=clickable?' onclick="nwpOpenClaim('+idx+')" style="cursor:pointer;" '+hov:'';
+					return '<tr'+rowAttrs+'><td style="padding:9px 11px;border-bottom:1px solid #e3e8ef;color:#b8c4d0;font-size:11px;">'+(idx+1)+'</td>'+cells+'</tr>';
+				}).join('')+'</tbody>';
+				return '<div style="overflow-x:auto;"><table style="border-collapse:collapse;font-size:12px;font-family:Inter,sans-serif;width:max-content;min-width:100%;">'+th+tb+'</table></div>';
 			}
 
 			function sumBar() {
@@ -246,17 +250,16 @@ frappe.pages['nwp-dashboard'].on_page_load = function(wrapper) {
 			};
 			window.nwpDlExcel = function() {
 				if (!window.XLSX) { frappe.msgprint(__('Excel library still loading — try again in a moment.')); return; }
-				var data = [];
-				if (cfg.src === 'C') {
-					data.push(['PRID','Hospital','Division','Age','Gender','Service Type','Department','NWP Required','Default Hosp (Rs)','Add. Hosp (Rs)','Patient Contrib (Rs)','NWP Contribution (Rs)','Other Donor Name','Other Donor Contrib (Rs)','Approval Status']);
-					rows.forEach(function(r){data.push([r.prid,r.organization_copy,r.organization,r.age,r.gender,r.type_of_service,r.treatment_category,r.does_it_require_apf_contribution,Number(r.existing_hospital_contribution)||0,Number(r.additional_hospital_contribution)||0,Number(r.patient_contribution_yes)||0,Number(r.apf_contribution)||0,r.other_donor_name,Number(r.other_donor_contribution)||0,r.approval_status]);});
-				} else if (cfg.src === 'B') {
-					data.push(['Record ID','Division','Hospital','Date of Approval','Financial Year','Start Date','End Date','Grant ID','Total Budget (Rs)']);
-					rows.forEach(function(r){data.push([r.name,r.organization_name,r.hospital_name,r.date_of_approval,r.financial_year,r.start_date,r.end_date,r.grant_id,Number(r.total_budget)||0]);});
-				} else {
-					data.push(['Record ID','Date','Division','Hospital','Disbursed Amount (Rs)']);
-					rows.forEach(function(r){data.push([r.name,r.date,r.organization,r.hospital_name,Number(r.disbursed_amount)||0]);});
-				}
+				if (!rows.length) { frappe.msgprint(__('No records to export.')); return; }
+				var allKeys=Object.keys(rows[0]).filter(function(k){return EXCLUDE_FIELDS.indexOf(k)===-1;});
+				var headerLabel=function(k){return HEADER_OVERRIDES[k]||k.replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});};
+				var data=[allKeys.map(headerLabel)];
+				rows.forEach(function(r){
+					data.push(allKeys.map(function(k){
+						var v=r[k];
+						return (v===null||v===undefined)?'':(AMOUNT_FIELDS[k]?(Number(v)||0):v);
+					}));
+				});
 				var ws = XLSX.utils.aoa_to_sheet(data);
 				var wb = XLSX.utils.book_new();
 				XLSX.utils.book_append_sheet(wb, ws, cfg.title.replace(/[^a-zA-Z0-9 ]/g,'').substring(0,31));
@@ -521,11 +524,10 @@ frappe.pages['nwp-dashboard'].on_page_load = function(wrapper) {
 			if(fromDate){cf.push(['invoice_date','>=',fromDate]);bf.push(['date_of_approval','>=',fromDate]);df.push(['date','>=',fromDate]);}
 			if(toDate){cf.push(['invoice_date','<=',toDate]);bf.push(['date_of_approval','<=',toDate]);df.push(['date','<=',toDate]);}
 			if(donor){cf.push(['other_donor_name','=',donor]);}
-			var cf2=['name','docstatus','prid','patient_id','organization','organization_copy','name1','age','gender','type_of_service','date_of_visit','date_of_discharge','treating_doctor_name','treatment_category','final_diagnosis','total_actual_final_bill_in_rs','does_it_require_apf_contribution','justification','total_bill_at_apf_agreed_rates_mou','existing_hospital_contribution','other_donor_contribution','other_donor_name','patient_contribution_yes','additional_hospital_contribution','apf_contribution','document_status','approval_status','comment','why_this_patient_is_eligible_for_subsidy_for_this_service','if_other_treatment_please_mention'];
 			var res=await Promise.all([
-				nwpFdb('Patient Claim Form',cf2,cf),
-				nwpFdb('Network Hospital Budget',['name','organization_name','hospital_name','date_of_approval','financial_year','start_date','end_date','grant_id','total_budget'],bf),
-				nwpFdb('Budget Disbursement',['name','date','organization','hospital_name','disbursed_amount'],df),
+				nwpFdb('Patient Claim Form',['*'],cf),
+				nwpFdb('Network Hospital Budget',['*'],bf),
+				nwpFdb('Budget Disbursement',['*'],df),
 			]);
 			NWP_C=res[0];NWP_B=res[1];NWP_D=res[2];
 			nwpRender();
