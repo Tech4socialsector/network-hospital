@@ -1,0 +1,412 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "field:identifier",
+ "creation": "2026-11-17 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "identifier",
+  "mapped_to_patient_registration",
+  "section_1",
+  "patient_id",
+  "allergy_status",
+  "gender",
+  "birthdate",
+  "birthdate_estimated",
+  "dead",
+  "column_1",
+  "death_date",
+  "cause_of_death",
+  "cause_of_death_non_coded",
+  "deathdate_estimated",
+  "birthtime",
+  "prefix",
+  "section_2",
+  "given_name",
+  "middle_name",
+  "family_name_prefix",
+  "family_name",
+  "family_name2",
+  "family_name_suffix",
+  "column_2",
+  "degree",
+  "identifier_type",
+  "address1",
+  "address2",
+  "address3",
+  "address4",
+  "section_3",
+  "address5",
+  "address6",
+  "address7",
+  "address8",
+  "address9",
+  "address10",
+  "column_3",
+  "address11",
+  "address12",
+  "address13",
+  "address14",
+  "address15",
+  "city_village",
+  "section_4",
+  "state_province",
+  "postal_code",
+  "country",
+  "county_district",
+  "latitude",
+  "longitude",
+  "column_4",
+  "address_start_date",
+  "address_end_date"
+ ],
+ "fields": [
+  {
+   "description": "Pulled from patient_identifier.identifier \u2014 used as this row's key.",
+   "fieldname": "identifier",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Identifier",
+   "read_only": 1,
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "0",
+   "description": "Set once this row has been used to create/update a Patient Registration record. A separate, later step \u2014 not this sync \u2014 does that mapping.",
+   "fieldname": "mapped_to_patient_registration",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Mapped To Patient Registration",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_1",
+   "fieldtype": "Section Break",
+   "label": "Fields 1-12",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "patient_id",
+   "fieldtype": "Int",
+   "label": "Patient Id",
+   "read_only": 1
+  },
+  {
+   "fieldname": "allergy_status",
+   "fieldtype": "Data",
+   "label": "Allergy Status",
+   "read_only": 1
+  },
+  {
+   "fieldname": "gender",
+   "fieldtype": "Data",
+   "label": "Gender",
+   "read_only": 1
+  },
+  {
+   "fieldname": "birthdate",
+   "fieldtype": "Data",
+   "label": "Birthdate",
+   "read_only": 1
+  },
+  {
+   "fieldname": "birthdate_estimated",
+   "fieldtype": "Check",
+   "label": "Birthdate Estimated",
+   "read_only": 1
+  },
+  {
+   "fieldname": "dead",
+   "fieldtype": "Check",
+   "label": "Dead",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "death_date",
+   "fieldtype": "Data",
+   "label": "Death Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cause_of_death",
+   "fieldtype": "Data",
+   "label": "Cause Of Death",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cause_of_death_non_coded",
+   "fieldtype": "Data",
+   "label": "Cause Of Death Non Coded",
+   "read_only": 1
+  },
+  {
+   "fieldname": "deathdate_estimated",
+   "fieldtype": "Check",
+   "label": "Deathdate Estimated",
+   "read_only": 1
+  },
+  {
+   "fieldname": "birthtime",
+   "fieldtype": "Data",
+   "label": "Birthtime",
+   "read_only": 1
+  },
+  {
+   "fieldname": "prefix",
+   "fieldtype": "Data",
+   "label": "Prefix",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_2",
+   "fieldtype": "Section Break",
+   "label": "Fields 13-24",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "given_name",
+   "fieldtype": "Data",
+   "label": "Given Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "middle_name",
+   "fieldtype": "Data",
+   "label": "Middle Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "family_name_prefix",
+   "fieldtype": "Data",
+   "label": "Family Name Prefix",
+   "read_only": 1
+  },
+  {
+   "fieldname": "family_name",
+   "fieldtype": "Data",
+   "label": "Family Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "family_name2",
+   "fieldtype": "Data",
+   "label": "Family Name2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "family_name_suffix",
+   "fieldtype": "Data",
+   "label": "Family Name Suffix",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "degree",
+   "fieldtype": "Data",
+   "label": "Degree",
+   "read_only": 1
+  },
+  {
+   "fieldname": "identifier_type",
+   "fieldtype": "Int",
+   "label": "Identifier Type",
+   "read_only": 1
+  },
+  {
+   "fieldname": "address1",
+   "fieldtype": "Data",
+   "label": "Address1",
+   "read_only": 1
+  },
+  {
+   "fieldname": "address2",
+   "fieldtype": "Data",
+   "label": "Address2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "address3",
+   "fieldtype": "Data",
+   "label": "Address3",
+   "read_only": 1
+  },
+  {
+   "fieldname": "address4",
+   "fieldtype": "Data",
+   "label": "Address4",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_3",
+   "fieldtype": "Section Break",
+   "label": "Fields 25-36",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "address5",
+   "fieldtype": "Data",
+   "label": "Address5",
+   "read_only": 1
+  },
+  {
+   "fieldname": "address6",
+   "fieldtype": "Data",
+   "label": "Address6",
+   "read_only": 1
+  },
+  {
+   "fieldname": "address7",
+   "fieldtype": "Data",
+   "label": "Address7",
+   "read_only": 1
+  },
+  {
+   "fieldname": "address8",
+   "fieldtype": "Data",
+   "label": "Address8",
+   "read_only": 1
+  },
+  {
+   "fieldname": "address9",
+   "fieldtype": "Data",
+   "label": "Address9",
+   "read_only": 1
+  },
+  {
+   "fieldname": "address10",
+   "fieldtype": "Data",
+   "label": "Address10",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "address11",
+   "fieldtype": "Data",
+   "label": "Address11",
+   "read_only": 1
+  },
+  {
+   "fieldname": "address12",
+   "fieldtype": "Data",
+   "label": "Address12",
+   "read_only": 1
+  },
+  {
+   "fieldname": "address13",
+   "fieldtype": "Data",
+   "label": "Address13",
+   "read_only": 1
+  },
+  {
+   "fieldname": "address14",
+   "fieldtype": "Data",
+   "label": "Address14",
+   "read_only": 1
+  },
+  {
+   "fieldname": "address15",
+   "fieldtype": "Data",
+   "label": "Address15",
+   "read_only": 1
+  },
+  {
+   "fieldname": "city_village",
+   "fieldtype": "Data",
+   "label": "City Village",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_4",
+   "fieldtype": "Section Break",
+   "label": "Fields 37-44",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "state_province",
+   "fieldtype": "Data",
+   "label": "State Province",
+   "read_only": 1
+  },
+  {
+   "fieldname": "postal_code",
+   "fieldtype": "Data",
+   "label": "Postal Code",
+   "read_only": 1
+  },
+  {
+   "fieldname": "country",
+   "fieldtype": "Data",
+   "label": "Country",
+   "read_only": 1
+  },
+  {
+   "fieldname": "county_district",
+   "fieldtype": "Data",
+   "label": "County District",
+   "read_only": 1
+  },
+  {
+   "fieldname": "latitude",
+   "fieldtype": "Data",
+   "label": "Latitude",
+   "read_only": 1
+  },
+  {
+   "fieldname": "longitude",
+   "fieldtype": "Data",
+   "label": "Longitude",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "address_start_date",
+   "fieldtype": "Data",
+   "label": "Address Start Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "address_end_date",
+   "fieldtype": "Data",
+   "label": "Address End Date",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-11-17 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "NWP",
+ "name": "Bahmni Patient Log",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0
+}

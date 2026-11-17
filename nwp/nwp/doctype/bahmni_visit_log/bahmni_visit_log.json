@@ -1,0 +1,107 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "field:visit_id",
+ "creation": "2026-11-17 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "visit_id",
+  "identifier",
+  "mapped_to_patient_registration",
+  "section_1",
+  "date_started",
+  "date_stopped",
+  "location_id",
+  "indication_concept_id",
+  "visit_type_name"
+ ],
+ "fields": [
+  {
+   "description": "Bahmni's own visit_id \u2014 used as this row's key.",
+   "fieldname": "visit_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Visit ID",
+   "read_only": 1,
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "description": "The owning patient's identifier (Bahmni Patient Log key) \u2014 NOT unique, a patient can have many visits.",
+   "fieldname": "identifier",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Patient Identifier",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "description": "Set once this row has been used to create/update a record. A separate, later step \u2014 not this sync \u2014 does that mapping.",
+   "fieldname": "mapped_to_patient_registration",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Mapped",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_1",
+   "fieldtype": "Section Break",
+   "label": "Fields 1-5",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "date_started",
+   "fieldtype": "Data",
+   "label": "Date Started",
+   "read_only": 1
+  },
+  {
+   "fieldname": "date_stopped",
+   "fieldtype": "Data",
+   "label": "Date Stopped",
+   "read_only": 1
+  },
+  {
+   "fieldname": "location_id",
+   "fieldtype": "Int",
+   "label": "Location Id",
+   "read_only": 1
+  },
+  {
+   "fieldname": "indication_concept_id",
+   "fieldtype": "Data",
+   "label": "Indication Concept Id",
+   "read_only": 1
+  },
+  {
+   "fieldname": "visit_type_name",
+   "fieldtype": "Data",
+   "label": "Visit Type Name",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-11-17 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "NWP",
+ "name": "Bahmni Visit Log",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0
+}

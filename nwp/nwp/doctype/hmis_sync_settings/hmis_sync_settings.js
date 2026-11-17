@@ -22,6 +22,10 @@ frappe.ui.form.on("HMIS Sync Settings", {
 			});
 		});
 
+		add_preview_button(frm, __("Preview Patients"), "preview_bahmni_patients", __("Metabase — Sample Patient Row"));
+		add_preview_button(frm, __("Preview Visits"), "preview_bahmni_visits", __("Metabase — Sample Visit Row"));
+		add_preview_button(frm, __("Preview Invoices"), "preview_odoo_invoices", __("Metabase — Sample Invoice Row"));
+
 		frm.add_custom_button(__("Run Now"), () => {
 			if (frm.is_dirty()) {
 				frappe.msgprint(__("Please Save first, then run."));
@@ -44,3 +48,25 @@ frappe.ui.form.on("HMIS Sync Settings", {
 		});
 	},
 });
+
+function add_preview_button(frm, label, method_name, dialog_title) {
+	frm.add_custom_button(label, () => {
+		if (frm.is_dirty()) {
+			frappe.msgprint(__("Please Save first, then preview."));
+			return;
+		}
+		frappe.call({
+			method: `nwp.nwp.doctype.hmis_sync_settings.hmis_sync_settings.${method_name}`,
+			freeze: true,
+			callback: (r) => {
+				if (!r.message) return;
+				const d = new frappe.ui.Dialog({
+					title: dialog_title,
+					fields: [{ fieldtype: "Code", fieldname: "preview", options: "JSON", read_only: 1 }],
+				});
+				d.set_value("preview", JSON.stringify(r.message, null, 2));
+				d.show();
+			},
+		});
+	});
+}
