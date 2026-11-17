@@ -1,0 +1,281 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-16 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "tab_general",
+  "enable_hmis_sync",
+  "poll_interval_minutes",
+  "batch_size",
+  "column_break_general",
+  "last_run_at",
+  "last_run_status",
+  "tab_bahmni",
+  "bahmni_db_info",
+  "bahmni_db_host",
+  "bahmni_db_port",
+  "bahmni_db_name",
+  "column_break_bahmni_db",
+  "bahmni_db_username",
+  "bahmni_db_password",
+  "tab_odoo",
+  "odoo_db_info",
+  "odoo_db_host",
+  "odoo_db_port",
+  "odoo_db_name",
+  "column_break_odoo_db",
+  "odoo_db_username",
+  "odoo_db_password",
+  "tab_watermark",
+  "watermark_info",
+  "last_bahmni_sync_on",
+  "last_odoo_sync_on",
+  "column_break_watermark",
+  "is_first_run",
+  "sync_from_date",
+  "sync_to_date",
+  "tab_patient_map",
+  "patient_map_info",
+  "match_field",
+  "tab_failure_email",
+  "send_email_on_failure",
+  "failure_email_recipient"
+ ],
+ "fields": [
+  {
+   "fieldname": "tab_general",
+   "fieldtype": "Tab Break",
+   "label": "General"
+  },
+  {
+   "default": "0",
+   "description": "Master switch for the HMIS sync agent.",
+   "fieldname": "enable_hmis_sync",
+   "fieldtype": "Check",
+   "label": "Enable HMIS Sync"
+  },
+  {
+   "default": "60",
+   "description": "How often to pull new patients/visits/bills. The background scheduler ticks every minute, so this value is rounded up to a minimum of 15 minutes.",
+   "fieldname": "poll_interval_minutes",
+   "fieldtype": "Int",
+   "label": "Poll Interval (minutes)"
+  },
+  {
+   "default": "50",
+   "description": "Max records pulled per sync run.",
+   "fieldname": "batch_size",
+   "fieldtype": "Int",
+   "label": "Batch Size"
+  },
+  {
+   "fieldname": "column_break_general",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "When the sync agent last actually ran. Updated automatically.",
+   "fieldname": "last_run_at",
+   "fieldtype": "Datetime",
+   "label": "Last Run At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_run_status",
+   "fieldtype": "Data",
+   "label": "Last Run Status",
+   "read_only": 1
+  },
+  {
+   "fieldname": "tab_bahmni",
+   "fieldtype": "Tab Break",
+   "label": "Bahmni"
+  },
+  {
+   "fieldname": "bahmni_db_info",
+   "fieldtype": "HTML",
+   "options": "<div class=\"text-muted\">Direct MySQL connection to the OpenMRS database (Bahmni's standard engine) — a DB-level login from the IT team, separate from any Bahmni application login.</div>"
+  },
+  {
+   "description": "e.g. 192.168.1.135",
+   "fieldname": "bahmni_db_host",
+   "fieldtype": "Data",
+   "label": "DB Host"
+  },
+  {
+   "default": "3306",
+   "fieldname": "bahmni_db_port",
+   "fieldtype": "Int",
+   "label": "DB Port"
+  },
+  {
+   "default": "openmrs",
+   "fieldname": "bahmni_db_name",
+   "fieldtype": "Data",
+   "label": "Database Name"
+  },
+  {
+   "fieldname": "column_break_bahmni_db",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "bahmni_db_username",
+   "fieldtype": "Data",
+   "label": "DB Username"
+  },
+  {
+   "fieldname": "bahmni_db_password",
+   "fieldtype": "Password",
+   "label": "DB Password"
+  },
+  {
+   "fieldname": "tab_odoo",
+   "fieldtype": "Tab Break",
+   "label": "Odoo"
+  },
+  {
+   "fieldname": "odoo_db_info",
+   "fieldtype": "HTML",
+   "options": "<div class=\"text-muted\">Direct PostgreSQL connection to the Odoo database (Odoo's standard engine) — a DB-level login from the IT team, separate from any Odoo application login.</div>"
+  },
+  {
+   "description": "e.g. 192.168.1.135",
+   "fieldname": "odoo_db_host",
+   "fieldtype": "Data",
+   "label": "DB Host"
+  },
+  {
+   "default": "5432",
+   "fieldname": "odoo_db_port",
+   "fieldtype": "Int",
+   "label": "DB Port"
+  },
+  {
+   "fieldname": "odoo_db_name",
+   "fieldtype": "Data",
+   "label": "Database Name"
+  },
+  {
+   "fieldname": "column_break_odoo_db",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "odoo_db_username",
+   "fieldtype": "Data",
+   "label": "DB Username"
+  },
+  {
+   "fieldname": "odoo_db_password",
+   "fieldtype": "Password",
+   "label": "DB Password"
+  },
+  {
+   "fieldname": "tab_watermark",
+   "fieldtype": "Tab Break",
+   "label": "Watermark"
+  },
+  {
+   "fieldname": "watermark_info",
+   "fieldtype": "HTML",
+   "options": "<div class=\"text-muted\">The sync only fetches records updated after the dates below, and advances them on every successful run. Leave \"Sync Records From\" blank to import all history on the first run.</div>"
+  },
+  {
+   "description": "Last Bahmni patient/visit update timestamp successfully imported. Updated automatically — do not edit manually.",
+   "fieldname": "last_bahmni_sync_on",
+   "fieldtype": "Datetime",
+   "label": "Last Bahmni Sync On",
+   "read_only": 1
+  },
+  {
+   "description": "Last Odoo invoice update timestamp successfully imported. Updated automatically — do not edit manually.",
+   "fieldname": "last_odoo_sync_on",
+   "fieldtype": "Datetime",
+   "label": "Last Odoo Sync On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_watermark",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "description": "Set automatically on the very first successful sync run.",
+   "fieldname": "is_first_run",
+   "fieldtype": "Check",
+   "label": "Is First Run"
+  },
+  {
+   "description": "Only pull records created/updated on or after this date on the first run. Leave blank to import all history. Ignored on later runs — the watermark above takes over once a run has succeeded.",
+   "fieldname": "sync_from_date",
+   "fieldtype": "Date",
+   "label": "Sync Records From"
+  },
+  {
+   "description": "Only pull records on or before this date. Leave blank for no upper bound (keeps pulling new records as they appear). Applies on every run, not just the first.",
+   "fieldname": "sync_to_date",
+   "fieldtype": "Date",
+   "label": "Sync Records To"
+  },
+  {
+   "fieldname": "tab_patient_map",
+   "fieldtype": "Tab Break",
+   "label": "Patient Map"
+  },
+  {
+   "fieldname": "patient_map_info",
+   "fieldtype": "HTML",
+   "options": "<div class=\"text-muted\">Each Bahmni patient identifier is matched to the Patient Registration record whose field below has the same value, so the same patient is updated rather than duplicated on every run.</div>"
+  },
+  {
+   "default": "patient_id",
+   "description": "Fieldname on Patient Registration matched against the Bahmni patient identifier.",
+   "fieldname": "match_field",
+   "fieldtype": "Data",
+   "label": "Match To Patient Registration Field"
+  },
+  {
+   "fieldname": "tab_failure_email",
+   "fieldtype": "Tab Break",
+   "label": "Failure Email"
+  },
+  {
+   "default": "0",
+   "description": "When on, a failure email is sent if a sync run errors.",
+   "fieldname": "send_email_on_failure",
+   "fieldtype": "Check",
+   "label": "Send Email On Failure"
+  },
+  {
+   "depends_on": "eval:doc.send_email_on_failure",
+   "fieldname": "failure_email_recipient",
+   "fieldtype": "Data",
+   "label": "Failure Email Recipient",
+   "options": "Email"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-11-16 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "NWP",
+ "name": "HMIS Sync Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

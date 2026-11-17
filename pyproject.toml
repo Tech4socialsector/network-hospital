@@ -9,6 +9,8 @@ readme = "README.md"
 dynamic = ["version"]
 dependencies = [
     # "frappe~=16.0.0" # Installed and managed by bench.
+    "pymysql~=1.1.0", # direct MySQL access to the Bahmni/OpenMRS database
+    "psycopg2-binary~=2.9.0", # direct PostgreSQL access to the Odoo database
 ]
 
 [build-system]
