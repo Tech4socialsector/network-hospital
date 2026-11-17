@@ -4,5 +4,5 @@
 from frappe.model.document import Document
 
 
-class BahmniVisitLog(Document):
+class BahmniPatientVisitLog(Document):
 	pass

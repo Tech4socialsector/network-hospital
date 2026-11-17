@@ -7,7 +7,9 @@
  "field_order": [
   "tab_general",
   "enable_hmis_sync",
+  "sync_frequency",
   "poll_interval_minutes",
+  "sync_time",
   "batch_size",
   "column_break_general",
   "last_run_at",
@@ -19,6 +21,7 @@
   "metabase_password",
   "column_break_metabase",
   "sync_days",
+  "sync_from_date",
   "tab_watermark",
   "watermark_info",
   "last_bahmni_sync_on",
@@ -46,11 +49,28 @@
    "label": "Enable HMIS Sync"
   },
   {
+   "default": "Every N Minutes",
+   "description": "\"Every N Minutes\" keeps pulling new data throughout the day. \"Daily At A Specific Time\" runs once a day, at a time you pick — useful to avoid load on the Bahmni/Odoo servers during clinic hours.",
+   "fieldname": "sync_frequency",
+   "fieldtype": "Select",
+   "label": "Sync Frequency",
+   "options": "Every N Minutes\nDaily At A Specific Time"
+  },
+  {
    "default": "60",
-   "description": "How often to pull new patients/visits/bills. The background scheduler ticks every minute, so this value is rounded up to a minimum of 15 minutes.",
+   "depends_on": "eval:doc.sync_frequency==\"Every N Minutes\"",
+   "description": "How often to pull new patients/visits/bills. The background scheduler checks every 15 minutes, so this value is rounded up to a multiple of 15.",
    "fieldname": "poll_interval_minutes",
    "fieldtype": "Int",
    "label": "Poll Interval (minutes)"
+  },
+  {
+   "default": "02:00:00",
+   "depends_on": "eval:doc.sync_frequency==\"Daily At A Specific Time\"",
+   "description": "Runs once a day, within 15 minutes of this time (the background scheduler checks every 15 minutes, so this isn't to-the-second).",
+   "fieldname": "sync_time",
+   "fieldtype": "Time",
+   "label": "Sync Time"
   },
   {
    "default": "50",
@@ -109,10 +129,16 @@
   },
   {
    "default": "3",
-   "description": "How many days back to pick up on every run.",
+   "description": "How many days back to pick up on every run. Ignored if \"Sync From Date\" below is set.",
    "fieldname": "sync_days",
    "fieldtype": "Int",
    "label": "Sync Days"
+  },
+  {
+   "description": "If set, every run pulls everything from this exact date onward instead of the rolling \"Sync Days\" window — useful for an initial historical backfill. Leave blank to go back to the rolling window.",
+   "fieldname": "sync_from_date",
+   "fieldtype": "Date",
+   "label": "Sync From Date"
   },
   {
    "fieldname": "tab_watermark",

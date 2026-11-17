@@ -1,11 +1,13 @@
 # Copyright (c) 2026, TFSS and contributors
 # For license information, please see license.txt
 
+from datetime import datetime, timedelta
+
 import frappe
 import requests
 import urllib3
 from frappe.model.document import Document
-from frappe.utils import now_datetime
+from frappe.utils import cint, get_time, getdate, now_datetime, time_diff_in_seconds
 
 # The verify=False calls below are intentional (self-signed/expired cert on
 # the Bahmni server, LAN-only) — this just stops urllib3 logging a warning
@@ -18,63 +20,72 @@ TEST_DATABASES = {
 	"Odoo": "SELECT COUNT(*) FROM sale_order",
 }
 
-# OpenMRS's standard schema, run through Metabase's native-query endpoint
-# instead of a direct DB connection — Metabase already has the DB access
-# configured, so this needs no new database port/firewall access.
-#
-# Every real (non-audit) column from patient/person/person_name/
-# patient_identifier/person_address — explicitly listed, not SELECT *,
-# so the audit/system columns every OpenMRS table carries (creator,
-# date_created, changed_by, date_changed, voided, voided_by, date_voided,
-# void_reason, uuid) are left out; they're bookkeeping, not patient data.
-# person_attribute (phone number etc.) is deliberately NOT joined here —
-# it's one row per attribute per person (EAV-shaped), so joining it would
-# multiply each patient into several rows; it needs its own design.
-BAHMNI_PATIENT_QUERY = """
-	SELECT p.patient_id, p.allergy_status,
-	       pe.gender, pe.birthdate, pe.birthdate_estimated, pe.dead, pe.death_date,
-	       pe.cause_of_death, pe.cause_of_death_non_coded, pe.deathdate_estimated, pe.birthtime,
-	       pn.prefix, pn.given_name, pn.middle_name, pn.family_name_prefix, pn.family_name,
-	       pn.family_name2, pn.family_name_suffix, pn.degree,
-	       pi.identifier, pi.identifier_type,
-	       pa.address1, pa.address2, pa.address3, pa.address4, pa.address5, pa.address6,
-	       pa.address7, pa.address8, pa.address9, pa.address10, pa.address11, pa.address12,
-	       pa.address13, pa.address14, pa.address15,
-	       pa.city_village, pa.state_province, pa.postal_code, pa.country,
-	       pa.county_district, pa.latitude, pa.longitude, pa.start_date AS address_start_date,
-	       pa.end_date AS address_end_date
-	FROM patient p
-	JOIN person pe ON pe.person_id = p.patient_id
-	LEFT JOIN person_name pn ON pn.person_id = p.patient_id AND pn.preferred = 1
-	LEFT JOIN patient_identifier pi ON pi.patient_id = p.patient_id AND pi.preferred = 1
-	LEFT JOIN person_address pa ON pa.person_id = p.patient_id AND pa.preferred = 1
-	WHERE pe.voided = 0
-"""
-
-# One row per visit (not per encounter/observation, and not joined to
-# visit_attribute — both are EAV-shaped, one row per encounter/attribute,
-# and would multiply each visit into several rows; they'd need their own
-# design). Audit/system columns left out, same reasoning as the patient
-# query above. Includes the patient's identifier so a visit can be traced
-# back to its Bahmni Patient Log row.
-BAHMNI_VISIT_QUERY = """
-	SELECT v.visit_id, v.date_started, v.date_stopped, v.location_id, v.indication_concept_id,
-	       vt.name AS visit_type_name, pi.identifier
+# One row per visit, with the patient's registration details alongside —
+# exactly the fields the team's existing Excel report uses, built from the
+# query that produces that report (not a guess). "{from_date}" is filled
+# in below (either "Sync From Date", or today minus "Sync Days") as a
+# plain 'YYYY-MM-DD' string — valid directly against both MySQL (here)
+# and PostgreSQL (the Odoo query below), unlike each engine's own
+# INTERVAL syntax, which differ.
+BAHMNI_PATIENT_VISIT_QUERY = """
+	SELECT
+	  (SELECT pi.identifier FROM patient_identifier pi
+	    WHERE pi.patient_id = v.patient_id AND pi.voided = 0
+	    ORDER BY pi.preferred DESC LIMIT 1)                     AS patient_id,
+	  v.visit_id                                                 AS visit_id,
+	  TIMESTAMPDIFF(YEAR, p.birthdate, v.date_started)           AS age,
+	  CASE p.gender WHEN 'M' THEN 'Male' WHEN 'F' THEN 'Female' ELSE 'Other' END AS gender,
+	  vt.name                                                    AS treatment_category,
+	  ad.county_district                                         AS district,
+	  ad.state_province                                          AS state,
+	  DATE(v.date_started)                                       AS date_of_visit,
+	  DATE(v.date_stopped)                                       AS date_of_discharge,
+	  CASE WHEN v.date_stopped IS NULL THEN 'Active' ELSE 'Closed' END AS visit_status,
+	  (SELECT COALESCE(cn.name, pa.value)
+	     FROM person_attribute pa
+	     JOIN person_attribute_type pat ON pat.person_attribute_type_id = pa.person_attribute_type_id
+	     LEFT JOIN concept_name cn ON pat.format = 'org.openmrs.Concept'
+	          AND cn.concept_id = pa.value AND cn.locale = 'en'
+	          AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0
+	    WHERE pa.person_id = p.person_id AND pat.name = 'status' AND pa.voided = 0
+	    LIMIT 1)                                                 AS registration_status,
+	  (SELECT GROUP_CONCAT(DISTINCT COALESCE(dn.name, o.value_text) SEPARATOR ', ')
+	     FROM encounter e
+	     JOIN obs o ON o.encounter_id = e.encounter_id AND o.voided = 0
+	     JOIN concept_name q ON q.concept_id = o.concept_id
+	          AND q.name IN ('Coded Diagnosis', 'Non-coded Diagnosis')
+	          AND q.concept_name_type = 'FULLY_SPECIFIED' AND q.voided = 0
+	     LEFT JOIN concept_name dn ON dn.concept_id = o.value_coded AND dn.locale = 'en'
+	          AND dn.concept_name_type = 'FULLY_SPECIFIED' AND dn.voided = 0
+	    WHERE e.visit_id = v.visit_id AND e.voided = 0)          AS diagnosis,
+	  (SELECT GROUP_CONCAT(CONCAT(vat.name, ': ', va.value_reference) SEPARATOR ' | ')
+	     FROM visit_attribute va
+	     JOIN visit_attribute_type vat ON vat.visit_attribute_type_id = va.attribute_type_id
+	    WHERE va.visit_id = v.visit_id AND va.voided = 0)        AS visit_details
 	FROM visit v
-	LEFT JOIN visit_type vt ON vt.visit_type_id = v.visit_type_id
-	LEFT JOIN patient_identifier pi ON pi.patient_id = v.patient_id AND pi.preferred = 1
+	JOIN person p      ON p.person_id = v.patient_id
+	JOIN visit_type vt ON vt.visit_type_id = v.visit_type_id
+	LEFT JOIN person_address ad ON ad.person_id = p.person_id AND ad.preferred = 1 AND ad.voided = 0
 	WHERE v.voided = 0
+	  AND (v.date_started >= '{from_date}'
+	       OR v.date_stopped >= '{from_date}')
+	ORDER BY v.date_started
 """
 
 # Same caveat as above — account_move and res_partner share a few column
 # names (id, create_date, write_date, company_id, etc.); the last table's
 # value wins for those. "name" (-> invoice_name) is unique to account_move.
+# Filtered on invoice_date (the bill's own date), not write_date — an old
+# invoice's write_date jumps to today on any edit (a payment update, a
+# status change), which isn't the same thing as a new bill from today and
+# was pulling in far more rows than actually billed in the window.
 ODOO_INVOICE_QUERY = """
 	SELECT am.*, rp.*
 	FROM account_move am
 	LEFT JOIN res_partner rp ON rp.id = am.partner_id
 	WHERE am.move_type = 'out_invoice'
-	ORDER BY am.write_date DESC
+	  AND am.invoice_date >= '{from_date}'
+	ORDER BY am.invoice_date DESC
 """
 
 
@@ -166,32 +177,36 @@ def _native_query(url, token, db_id, sql, limit=None):
 	return [dict(zip(cols, row)) for row in data.get("rows", [])]
 
 
+def _sync_from_date(settings):
+	"""An explicit "Sync From Date" always wins; otherwise today minus
+	"Sync Days" (both tables' queries take this same cutoff). "Sync Days"
+	= 0 means today only — cint(0) is falsy, so this can't be "or 3"
+	(that would silently turn 0 back into 3)."""
+	if settings.sync_from_date:
+		return getdate(settings.sync_from_date)
+	days = cint(settings.sync_days) if settings.sync_days not in (None, "") else 3
+	return now_datetime().date() - timedelta(days=days)
+
+
+def _bahmni_patient_visit_query(settings):
+	return BAHMNI_PATIENT_VISIT_QUERY.format(from_date=_sync_from_date(settings))
+
+
+def _odoo_invoice_query(settings):
+	return ODOO_INVOICE_QUERY.format(from_date=_sync_from_date(settings))
+
+
 @frappe.whitelist()
-def preview_bahmni_patients():
-	"""Read-only — runs the patient query with LIMIT 1 through Metabase so
-	the actual column values on this instance can be checked. Writes
-	nothing."""
+def preview_bahmni_patient_visits():
+	"""Read-only — runs the combined patient+visit query with LIMIT 1
+	through Metabase so the actual column values on this instance can be
+	checked. Writes nothing."""
 	frappe.only_for("System Manager")
 	settings = _settings()
 	url, token = _metabase_login(settings)
 	try:
 		db_id = _get_db_id(url, token, "openmrs")
-		rows = _native_query(url, token, db_id, BAHMNI_PATIENT_QUERY, limit=1)
-	finally:
-		_metabase_logout(url, token)
-	return rows[0] if rows else {"message": "No patients found to preview."}
-
-
-@frappe.whitelist()
-def preview_bahmni_visits():
-	"""Read-only — runs the visit query with LIMIT 1 through Metabase.
-	Writes nothing."""
-	frappe.only_for("System Manager")
-	settings = _settings()
-	url, token = _metabase_login(settings)
-	try:
-		db_id = _get_db_id(url, token, "openmrs")
-		rows = _native_query(url, token, db_id, BAHMNI_VISIT_QUERY, limit=1)
+		rows = _native_query(url, token, db_id, _bahmni_patient_visit_query(settings), limit=1)
 	finally:
 		_metabase_logout(url, token)
 	return rows[0] if rows else {"message": "No visits found to preview."}
@@ -206,7 +221,7 @@ def preview_odoo_invoices():
 	url, token = _metabase_login(settings)
 	try:
 		db_id = _get_db_id(url, token, "Odoo")
-		rows = _native_query(url, token, db_id, ODOO_INVOICE_QUERY, limit=1)
+		rows = _native_query(url, token, db_id, _odoo_invoice_query(settings), limit=1)
 	finally:
 		_metabase_logout(url, token)
 	return rows[0] if rows else {"message": "No invoices found to preview."}
@@ -218,49 +233,34 @@ def _sanitize_for_doctype(doctype, row):
 	e.g. an invoice with no payment term) fails at the DB level. Swap None
 	for a type-appropriate empty value using this doctype's own field
 	metadata, so any null source column lands safely regardless of which
-	table it is."""
-	numeric_fields = {
-		df.fieldname
-		for df in frappe.get_meta(doctype).fields
-		if df.fieldtype in ("Int", "Float", "Currency", "Check", "Percent")
-	}
-	return {k: (0 if v is None and k in numeric_fields else v) for k, v in row.items()}
+	table it is.
+
+	Also trims a "Date" field's value to just its date part — Metabase
+	returns MySQL DATE columns as a full ISO datetime with a timezone
+	offset (e.g. "2026-11-14T00:00:00+05:30"), which MySQL's own DATE
+	column type rejects outright.
+	"""
+	meta = frappe.get_meta(doctype)
+	numeric_fields = {df.fieldname for df in meta.fields if df.fieldtype in ("Int", "Float", "Currency", "Check", "Percent")}
+	date_fields = {df.fieldname for df in meta.fields if df.fieldtype == "Date"}
+	out = {}
+	for k, v in row.items():
+		if v is None and k in numeric_fields:
+			v = 0
+		elif v is not None and k in date_fields and isinstance(v, str):
+			v = v[:10]
+		out[k] = v
+	return out
 
 
-def sync_bahmni_patients(url, token):
-	"""Lands the raw Bahmni row in Bahmni Patient Log, as-is — no mapping
-	into Patient Registration here. A separate, later step reads this log
-	and does that mapping, once the fields/matching are confirmed."""
+def sync_bahmni_patient_visits(url, token, settings):
+	"""Lands the raw Bahmni row in Bahmni Patient Visit Log, as-is — no
+	mapping into Patient Registration here. A separate, later step reads
+	this log and does that mapping, once the fields/matching are
+	confirmed."""
 	fetched = created = updated = 0
 	db_id = _get_db_id(url, token, "openmrs")
-	rows = _native_query(url, token, db_id, BAHMNI_PATIENT_QUERY)
-	fetched = len(rows)
-
-	for row in rows:
-		identifier_value = row.get("identifier")
-		if not identifier_value:
-			continue
-
-		row = _sanitize_for_doctype("Bahmni Patient Log", row)
-		existing = frappe.db.exists("Bahmni Patient Log", identifier_value)
-		if existing:
-			frappe.db.set_value("Bahmni Patient Log", existing, row)
-			updated += 1
-		else:
-			doc = frappe.new_doc("Bahmni Patient Log")
-			doc.update(row)
-			doc.insert(ignore_permissions=True)
-			created += 1
-
-	return fetched, created, updated
-
-
-def sync_bahmni_visits(url, token):
-	"""Lands the raw Bahmni visit row in Bahmni Visit Log, as-is — no
-	mapping anywhere else here. A separate, later step reads this log."""
-	fetched = created = updated = 0
-	db_id = _get_db_id(url, token, "openmrs")
-	rows = _native_query(url, token, db_id, BAHMNI_VISIT_QUERY)
+	rows = _native_query(url, token, db_id, _bahmni_patient_visit_query(settings))
 	fetched = len(rows)
 
 	for row in rows:
@@ -268,13 +268,13 @@ def sync_bahmni_visits(url, token):
 		if not visit_id:
 			continue
 
-		row = _sanitize_for_doctype("Bahmni Visit Log", row)
-		existing = frappe.db.exists("Bahmni Visit Log", visit_id)
+		row = _sanitize_for_doctype("Bahmni Patient Visit Log", row)
+		existing = frappe.db.exists("Bahmni Patient Visit Log", visit_id)
 		if existing:
-			frappe.db.set_value("Bahmni Visit Log", existing, row)
+			frappe.db.set_value("Bahmni Patient Visit Log", existing, row)
 			updated += 1
 		else:
-			doc = frappe.new_doc("Bahmni Visit Log")
+			doc = frappe.new_doc("Bahmni Patient Visit Log")
 			doc.update(row)
 			doc.insert(ignore_permissions=True)
 			created += 1
@@ -282,13 +282,13 @@ def sync_bahmni_visits(url, token):
 	return fetched, created, updated
 
 
-def sync_odoo_invoices(url, token):
+def sync_odoo_invoices(url, token, settings):
 	"""Lands the raw Odoo row in Odoo Invoice Log, as-is — no mapping into
 	Patient Claim Form here. A separate, later step reads this log and
 	does that mapping, once the patient-matching field is confirmed."""
 	fetched = created = updated = 0
 	db_id = _get_db_id(url, token, "Odoo")
-	rows = _native_query(url, token, db_id, ODOO_INVOICE_QUERY)
+	rows = _native_query(url, token, db_id, _odoo_invoice_query(settings))
 	fetched = len(rows)
 
 	for row in rows:
@@ -382,10 +382,31 @@ def run_now():
 	return scheduled_sync(manual=True)
 
 
+def _should_run_now(settings):
+	"""The scheduler itself ticks every 15 minutes (hooks.py) — this
+	decides, on each of those ticks, whether it's actually time to hit
+	Metabase, based on the chosen Sync Frequency."""
+	if settings.sync_frequency == "Daily At A Specific Time":
+		if settings.last_run_at and getdate(settings.last_run_at) == getdate(now_datetime()):
+			return False  # already ran today
+		today = now_datetime().date()
+		target = datetime.combine(today, get_time(settings.sync_time or "02:00:00"))
+		now = datetime.combine(today, now_datetime().time())
+		return target <= now < target + timedelta(minutes=15)
+
+	interval_minutes = max(15, cint(settings.poll_interval_minutes) or 60)
+	if not settings.last_run_at:
+		return True
+	return time_diff_in_seconds(now_datetime(), settings.last_run_at) >= interval_minutes * 60
+
+
 def scheduled_sync(manual=False):
 	settings = _settings()
-	if not manual and not settings.enable_hmis_sync:
-		return
+	if not manual:
+		if not settings.enable_hmis_sync:
+			return
+		if not _should_run_now(settings):
+			return
 
 	try:
 		url, token = _metabase_login(settings)
@@ -400,28 +421,18 @@ def scheduled_sync(manual=False):
 
 	summary_lines = []
 	try:
-		fetched, created, updated = sync_bahmni_patients(url, token)
+		fetched, created, updated = sync_bahmni_patient_visits(url, token, settings)
 		_log_run("Bahmni", "Success", fetched, created, updated)
-		summary_lines.append(f"Bahmni Patient Log: {fetched} fetched, {created} created, {updated} updated")
+		summary_lines.append(f"Bahmni Patient Visit Log: {fetched} fetched, {created} created, {updated} updated")
 		settings.db_set("last_bahmni_sync_on", now_datetime())
 	except Exception:
 		error = frappe.get_traceback()
 		_log_run("Bahmni", "Failed", error=error)
-		summary_lines.append("Bahmni Patient Log: FAILED — see HMIS Sync Log")
-		_notify_failure(settings, "Bahmni Patient Log", error)
+		summary_lines.append("Bahmni Patient Visit Log: FAILED — see HMIS Sync Log")
+		_notify_failure(settings, "Bahmni Patient Visit Log", error)
 
 	try:
-		fetched, created, updated = sync_bahmni_visits(url, token)
-		_log_run("Bahmni", "Success", fetched, created, updated)
-		summary_lines.append(f"Bahmni Visit Log: {fetched} fetched, {created} created, {updated} updated")
-	except Exception:
-		error = frappe.get_traceback()
-		_log_run("Bahmni", "Failed", error=error)
-		summary_lines.append("Bahmni Visit Log: FAILED — see HMIS Sync Log")
-		_notify_failure(settings, "Bahmni Visit Log", error)
-
-	try:
-		fetched, created, updated = sync_odoo_invoices(url, token)
+		fetched, created, updated = sync_odoo_invoices(url, token, settings)
 		_log_run("Odoo", "Success", fetched, created, updated)
 		summary_lines.append(f"Odoo Invoice Log: {fetched} fetched, {created} created, {updated} updated")
 		settings.db_set("last_odoo_sync_on", now_datetime())

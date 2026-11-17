@@ -22,8 +22,7 @@ frappe.ui.form.on("HMIS Sync Settings", {
 			});
 		});
 
-		add_preview_button(frm, __("Preview Patients"), "preview_bahmni_patients", __("Metabase — Sample Patient Row"));
-		add_preview_button(frm, __("Preview Visits"), "preview_bahmni_visits", __("Metabase — Sample Visit Row"));
+		add_preview_button(frm, __("Preview Patient Visits"), "preview_bahmni_patient_visits", __("Metabase — Sample Patient Visit Row"));
 		add_preview_button(frm, __("Preview Invoices"), "preview_odoo_invoices", __("Metabase — Sample Invoice Row"));
 
 		frm.add_custom_button(__("Run Now"), () => {
