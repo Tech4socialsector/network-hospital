@@ -5,6 +5,7 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "hmis_sync_settings",
   "source",
   "status",
   "column_break_1",
@@ -15,11 +16,18 @@
  ],
  "fields": [
   {
+   "fieldname": "hmis_sync_settings",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Hospital",
+   "options": "HMIS Sync Settings"
+  },
+  {
    "fieldname": "source",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Source",
-   "options": "Bahmni\nOdoo"
+   "options": "Bahmni\nOdoo\nMapping"
   },
   {
    "fieldname": "status",

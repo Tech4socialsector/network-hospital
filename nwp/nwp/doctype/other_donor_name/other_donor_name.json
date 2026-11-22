@@ -6,12 +6,21 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "section_break_fgtq"
+  "section_break_fgtq",
+  "discount_account_head"
  ],
  "fields": [
   {
    "fieldname": "section_break_fgtq",
    "fieldtype": "Section Break"
+  },
+  {
+   "description": "The exact Odoo Discount Account Head text for this donor's bills (e.g. \"800032 Supported by Aramporul\"). The HMIS sync matches an invoice's account head against this list to decide whose Other Donor Contribution it is — add a new donor here instead of changing code.",
+   "fieldname": "discount_account_head",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Discount Account Head",
+   "unique": 1
   }
  ],
  "grid_page_length": 50,

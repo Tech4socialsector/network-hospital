@@ -7,213 +7,28 @@
  "engine": "InnoDB",
  "field_order": [
   "invoice_name",
-  "mapped_to_patient_claim_form",
-  "section_1",
-  "access_token",
-  "active",
-  "active_limit",
-  "additional_info",
-  "always_tax_exigible",
-  "amount_residual",
-  "column_1",
-  "amount_residual_signed",
-  "amount_tax",
-  "amount_tax_signed",
-  "amount_total",
-  "amount_total_in_currency_signed",
-  "amount_total_signed",
-  "section_2",
-  "amount_untaxed",
-  "amount_untaxed_signed",
-  "auto_post",
-  "auto_post_origin_id",
-  "auto_post_until",
-  "blocking_stage",
-  "column_2",
-  "campaign_id",
-  "city",
-  "color",
-  "comment",
-  "commercial_company_name",
-  "commercial_partner_id",
-  "section_3",
-  "commercial_partner_id_2",
-  "company_id",
-  "company_id_2",
-  "company_name",
-  "company_registry",
-  "country_id",
-  "column_3",
-  "create_date",
-  "create_date_2",
-  "create_uid",
-  "create_uid_2",
-  "currency_id",
-  "customer_rank",
-  "section_4",
-  "date",
-  "date_2",
-  "debit_limit",
-  "disc_acc_id",
-  "discount",
-  "discount_percentage",
-  "column_4",
-  "discount_type",
-  "display_name",
-  "district_id",
-  "doctor_name",
-  "edi_state",
-  "email",
-  "section_5",
-  "email_normalized",
-  "employee",
-  "fiscal_position_id",
-  "followup_status",
-  "function",
-  "has_due",
-  "column_5",
-  "id",
-  "id_2",
-  "inalterable_hash",
-  "industry_id",
-  "invoice_cash_rounding_id",
+  "patient_id",
   "invoice_date",
-  "section_6",
-  "invoice_date_due",
-  "invoice_incoterm_id",
-  "invoice_origin",
-  "invoice_partner_display_name",
-  "invoice_payment_term_id",
-  "invoice_source_email",
-  "column_6",
-  "invoice_user_id",
-  "invoice_warn",
-  "invoice_warn_msg",
-  "is_company",
-  "is_doctor",
-  "is_move_sent",
-  "section_7",
-  "is_storno",
-  "is_warning",
-  "journal_id",
-  "l10n_in_distance",
-  "l10n_in_edi_cancel_reason",
-  "l10n_in_edi_cancel_remarks",
-  "column_7",
-  "l10n_in_gst_treatment",
-  "l10n_in_gst_treatment_2",
-  "l10n_in_gstin",
-  "l10n_in_mode",
-  "l10n_in_reseller_partner_id",
-  "l10n_in_shipping_bill_date",
-  "section_8",
-  "l10n_in_shipping_bill_number",
-  "l10n_in_shipping_port_code_id",
-  "l10n_in_state_id",
-  "l10n_in_transportation_doc_date",
-  "l10n_in_transportation_doc_no",
-  "l10n_in_transporter_id",
-  "column_8",
-  "l10n_in_type_id",
-  "l10n_in_vehicle_no",
-  "l10n_in_vehicle_type",
-  "lang",
-  "last_reconciliation_date",
-  "last_time_entries_checked",
-  "section_9",
-  "local_name",
-  "manufacturer",
-  "medium_id",
-  "message_bounce",
-  "message_main_attachment_id",
-  "message_main_attachment_id_2",
-  "column_9",
-  "mobile",
-  "move_type",
-  "source_name",
-  "name_2",
-  "narration",
-  "notification_email_send",
-  "section_10",
-  "order_id",
-  "parent_id",
-  "partner_bank_id",
-  "partner_gid",
-  "partner_id",
-  "partner_latitude",
-  "column_10",
-  "partner_longitude",
-  "partner_share",
-  "partner_shipping_id",
-  "payment_id",
-  "payment_reference",
-  "payment_state",
-  "section_11",
-  "phone",
-  "phone_sanitized",
-  "picking_warn",
-  "picking_warn_msg",
-  "posted_before",
-  "preferred_payment_method_id",
-  "column_11",
-  "purchase_warn",
-  "purchase_warn_msg",
-  "qr_code_method",
-  "quick_edit_total_amount",
-  "recurring_ref",
-  "ref",
-  "section_12",
-  "ref_2",
-  "reversed_entry_id",
-  "round_off_amount",
-  "sale_warn",
-  "sale_warn_msg",
-  "secure_sequence_number",
-  "column_12",
-  "sequence_number",
-  "sequence_prefix",
-  "shop_id",
-  "signup_expiration",
-  "signup_token",
-  "signup_type",
-  "section_13",
-  "source_id",
-  "state",
-  "state_id",
-  "statement_line_id",
-  "stock_move_id",
-  "street",
-  "column_13",
-  "street2",
-  "subdistrict_id",
-  "supplier_rank",
-  "tax_cash_basis_origin_move_id",
-  "tax_cash_basis_rec_id",
-  "team_id",
-  "section_14",
-  "team_id_2",
-  "title",
-  "to_check",
-  "type",
-  "tz",
-  "use_parent_address",
-  "column_14",
-  "user_id",
-  "uuid",
-  "vat",
-  "village_id",
-  "warning_stage",
-  "website",
-  "section_15",
-  "write_date",
-  "write_date_2",
-  "write_uid",
-  "write_uid_2",
-  "zip"
+  "bahmni_registration_status",
+  "doctor_name",
+  "mapped_to_patient_claim_form",
+  "column_break_1",
+  "invoice_total",
+  "total_bill",
+  "discount_amount",
+  "discount_method",
+  "discount_account_head",
+  "section_nwp",
+  "patient_contribution",
+  "hospital_additional_contribution",
+  "column_break_nwp",
+  "nwp_contribution",
+  "other_donor_contribution",
+  "other_donor_name"
  ],
  "fields": [
   {
-   "description": "Pulled from account_move.name \u2014 used as this row's key.",
+   "description": "Pulled from account_move.name — used as this row's key.",
    "fieldname": "invoice_name",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -223,8 +38,40 @@
    "unique": 1
   },
   {
+   "description": "Pulled from res_partner.ref (the patient's identifier).",
+   "fieldname": "patient_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Patient ID",
+   "read_only": 1
+  },
+  {
+   "description": "account_move.invoice_date — used to match this invoice to the right Bahmni visit (by date range).",
+   "fieldname": "invoice_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Invoice Date",
+   "read_only": 1
+  },
+  {
+   "description": "Looked up from the Bahmni Patient Visit Log row for this patient_id — not from Odoo itself.",
+   "fieldname": "bahmni_registration_status",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Bahmni Registration Status",
+   "read_only": 1
+  },
+  {
+   "description": "account_move.doctor_name, resolved against res_partner — the billed invoice's own doctor reference, far more reliable than Bahmni's encounter data (most Bahmni encounters are logged under shared ward/counter accounts, not the individual doctor).",
+   "fieldname": "doctor_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Doctor Name",
+   "read_only": 1
+  },
+  {
    "default": "0",
-   "description": "Set once this row has been used to create/update a Patient Claim Form record. A separate, later step \u2014 not this sync \u2014 does that mapping.",
+   "description": "Set once this row has been used to create/update a Patient Claim Form record. A separate, later step — not this sync — does that mapping.",
    "fieldname": "mapped_to_patient_claim_form",
    "fieldtype": "Check",
    "in_list_view": 1,
@@ -232,1193 +79,103 @@
    "read_only": 1
   },
   {
-   "fieldname": "section_1",
-   "fieldtype": "Section Break",
-   "label": "Fields 1-12",
-   "collapsible": 1
-  },
-  {
-   "fieldname": "access_token",
-   "fieldtype": "Small Text",
-   "label": "Access Token",
-   "read_only": 1
-  },
-  {
-   "fieldname": "active",
-   "fieldtype": "Check",
-   "label": "Active",
-   "read_only": 1
-  },
-  {
-   "fieldname": "active_limit",
-   "fieldtype": "Small Text",
-   "label": "Active Limit",
-   "read_only": 1
-  },
-  {
-   "fieldname": "additional_info",
-   "fieldtype": "Small Text",
-   "label": "Additional Info",
-   "read_only": 1
-  },
-  {
-   "fieldname": "always_tax_exigible",
-   "fieldtype": "Check",
-   "label": "Always Tax Exigible",
-   "read_only": 1
-  },
-  {
-   "fieldname": "amount_residual",
-   "fieldtype": "Float",
-   "label": "Amount Residual",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_1",
+   "fieldname": "column_break_1",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "amount_residual_signed",
-   "fieldtype": "Float",
-   "label": "Amount Residual Signed",
+   "description": "total_bill − discount_amount — the net amount after discount (what the patient actually owes/paid).",
+   "fieldname": "invoice_total",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Invoice Total",
    "read_only": 1
   },
   {
-   "fieldname": "amount_tax",
-   "fieldtype": "Float",
-   "label": "Amount Tax",
+   "description": "account_move.amount_total — the gross bill amount, before the discount is applied.",
+   "fieldname": "total_bill",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Total Bill",
    "read_only": 1
   },
   {
-   "fieldname": "amount_tax_signed",
-   "fieldtype": "Float",
-   "label": "Amount Tax Signed",
+   "description": "account_move.discount — how much was deducted from the total bill to arrive at the invoice total.",
+   "fieldname": "discount_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Discount Amount",
    "read_only": 1
   },
   {
-   "fieldname": "amount_total",
-   "fieldtype": "Float",
-   "label": "Amount Total",
+   "description": "account_move.discount_type — e.g. \"fixed\" or \"percentage\".",
+   "fieldname": "discount_method",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Discount Method",
    "read_only": 1
   },
   {
-   "fieldname": "amount_total_in_currency_signed",
-   "fieldtype": "Float",
-   "label": "Amount Total In Currency Signed",
+   "description": "Resolved account code + name (account_account) that the discount was posted against.",
+   "fieldname": "discount_account_head",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Discount Account Head",
    "read_only": 1
   },
   {
-   "fieldname": "amount_total_signed",
-   "fieldtype": "Float",
-   "label": "Amount Total Signed",
-   "read_only": 1
-  },
-  {
-   "fieldname": "section_2",
+   "fieldname": "section_nwp",
    "fieldtype": "Section Break",
-   "label": "Fields 13-24",
-   "collapsible": 1
+   "label": "NWP Contribution Split"
   },
   {
-   "fieldname": "amount_untaxed",
-   "fieldtype": "Float",
-   "label": "Amount Untaxed",
+   "description": "Same value as Invoice Total — what the patient pays, under this label for the NWP contribution split.",
+   "fieldname": "patient_contribution",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Patient Contribution",
    "read_only": 1
   },
   {
-   "fieldname": "amount_untaxed_signed",
-   "fieldtype": "Float",
-   "label": "Amount Untaxed Signed",
+   "description": "For an NWP (800033) bill: 20% of Total Bill when the patient is Tribal, else 0. For any account head NOT matched in the Other Donor Name list: the full Discount Amount, since no scheme-specific split is defined for those yet.",
+   "fieldname": "hospital_additional_contribution",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Hospital Additional Contribution",
    "read_only": 1
   },
   {
-   "fieldname": "auto_post",
-   "fieldtype": "Small Text",
-   "label": "Auto Post",
-   "read_only": 1
-  },
-  {
-   "fieldname": "auto_post_origin_id",
-   "fieldtype": "Small Text",
-   "label": "Auto Post Origin Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "auto_post_until",
-   "fieldtype": "Small Text",
-   "label": "Auto Post Until",
-   "read_only": 1
-  },
-  {
-   "fieldname": "blocking_stage",
-   "fieldtype": "Small Text",
-   "label": "Blocking Stage",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_2",
+   "fieldname": "column_break_nwp",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "campaign_id",
-   "fieldtype": "Small Text",
-   "label": "Campaign Id",
+   "description": "Total Bill − Patient Contribution − Hospital Additional Contribution.",
+   "fieldname": "nwp_contribution",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "NWP Contribution",
    "read_only": 1
   },
   {
-   "fieldname": "city",
-   "fieldtype": "Small Text",
-   "label": "City",
+   "description": "Same value as Discount Amount, shown here only when Discount Account Head matches a donor in the Other Donor Name list.",
+   "fieldname": "other_donor_contribution",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Other Donor Contribution",
    "read_only": 1
   },
   {
-   "fieldname": "color",
-   "fieldtype": "Int",
-   "label": "Color",
-   "read_only": 1
-  },
-  {
-   "fieldname": "comment",
-   "fieldtype": "Small Text",
-   "label": "Comment",
-   "read_only": 1
-  },
-  {
-   "fieldname": "commercial_company_name",
-   "fieldtype": "Small Text",
-   "label": "Commercial Company Name",
-   "read_only": 1
-  },
-  {
-   "fieldname": "commercial_partner_id",
-   "fieldtype": "Int",
-   "label": "Commercial Partner Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "section_3",
-   "fieldtype": "Section Break",
-   "label": "Fields 25-36",
-   "collapsible": 1
-  },
-  {
-   "fieldname": "commercial_partner_id_2",
-   "fieldtype": "Int",
-   "label": "Commercial Partner Id 2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "company_id",
-   "fieldtype": "Int",
-   "label": "Company Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "company_id_2",
-   "fieldtype": "Small Text",
-   "label": "Company Id 2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "company_name",
-   "fieldtype": "Small Text",
-   "label": "Company Name",
-   "read_only": 1
-  },
-  {
-   "fieldname": "company_registry",
-   "fieldtype": "Small Text",
-   "label": "Company Registry",
-   "read_only": 1
-  },
-  {
-   "fieldname": "country_id",
-   "fieldtype": "Int",
-   "label": "Country Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_3",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "create_date",
-   "fieldtype": "Small Text",
-   "label": "Create Date",
-   "read_only": 1
-  },
-  {
-   "fieldname": "create_date_2",
-   "fieldtype": "Small Text",
-   "label": "Create Date 2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "create_uid",
-   "fieldtype": "Int",
-   "label": "Create Uid",
-   "read_only": 1
-  },
-  {
-   "fieldname": "create_uid_2",
-   "fieldtype": "Int",
-   "label": "Create Uid 2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "currency_id",
-   "fieldtype": "Int",
-   "label": "Currency Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "customer_rank",
-   "fieldtype": "Int",
-   "label": "Customer Rank",
-   "read_only": 1
-  },
-  {
-   "fieldname": "section_4",
-   "fieldtype": "Section Break",
-   "label": "Fields 37-48",
-   "collapsible": 1
-  },
-  {
-   "fieldname": "date",
-   "fieldtype": "Small Text",
-   "label": "Date",
-   "read_only": 1
-  },
-  {
-   "fieldname": "date_2",
-   "fieldtype": "Small Text",
-   "label": "Date 2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "debit_limit",
-   "fieldtype": "Small Text",
-   "label": "Debit Limit",
-   "read_only": 1
-  },
-  {
-   "fieldname": "disc_acc_id",
-   "fieldtype": "Int",
-   "label": "Disc Acc Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "discount",
-   "fieldtype": "Float",
-   "label": "Discount",
-   "read_only": 1
-  },
-  {
-   "fieldname": "discount_percentage",
-   "fieldtype": "Float",
-   "label": "Discount Percentage",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_4",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "discount_type",
-   "fieldtype": "Small Text",
-   "label": "Discount Type",
-   "read_only": 1
-  },
-  {
-   "fieldname": "display_name",
-   "fieldtype": "Small Text",
-   "label": "Display Name",
-   "read_only": 1
-  },
-  {
-   "fieldname": "district_id",
-   "fieldtype": "Int",
-   "label": "District Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "doctor_name",
-   "fieldtype": "Int",
-   "label": "Doctor Name",
-   "read_only": 1
-  },
-  {
-   "fieldname": "edi_state",
-   "fieldtype": "Small Text",
-   "label": "Edi State",
-   "read_only": 1
-  },
-  {
-   "fieldname": "email",
-   "fieldtype": "Small Text",
-   "label": "Email",
-   "read_only": 1
-  },
-  {
-   "fieldname": "section_5",
-   "fieldtype": "Section Break",
-   "label": "Fields 49-60",
-   "collapsible": 1
-  },
-  {
-   "fieldname": "email_normalized",
-   "fieldtype": "Small Text",
-   "label": "Email Normalized",
-   "read_only": 1
-  },
-  {
-   "fieldname": "employee",
-   "fieldtype": "Small Text",
-   "label": "Employee",
-   "read_only": 1
-  },
-  {
-   "fieldname": "fiscal_position_id",
-   "fieldtype": "Small Text",
-   "label": "Fiscal Position Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "followup_status",
-   "fieldtype": "Small Text",
-   "label": "Followup Status",
-   "read_only": 1
-  },
-  {
-   "fieldname": "function",
-   "fieldtype": "Small Text",
-   "label": "Function",
-   "read_only": 1
-  },
-  {
-   "fieldname": "has_due",
-   "fieldtype": "Small Text",
-   "label": "Has Due",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_5",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "id",
-   "fieldtype": "Int",
-   "label": "Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "id_2",
-   "fieldtype": "Int",
-   "label": "Id 2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "inalterable_hash",
-   "fieldtype": "Small Text",
-   "label": "Inalterable Hash",
-   "read_only": 1
-  },
-  {
-   "fieldname": "industry_id",
-   "fieldtype": "Small Text",
-   "label": "Industry Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "invoice_cash_rounding_id",
-   "fieldtype": "Small Text",
-   "label": "Invoice Cash Rounding Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "invoice_date",
-   "fieldtype": "Small Text",
-   "label": "Invoice Date",
-   "read_only": 1
-  },
-  {
-   "fieldname": "section_6",
-   "fieldtype": "Section Break",
-   "label": "Fields 61-72",
-   "collapsible": 1
-  },
-  {
-   "fieldname": "invoice_date_due",
-   "fieldtype": "Small Text",
-   "label": "Invoice Date Due",
-   "read_only": 1
-  },
-  {
-   "fieldname": "invoice_incoterm_id",
-   "fieldtype": "Small Text",
-   "label": "Invoice Incoterm Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "invoice_origin",
-   "fieldtype": "Small Text",
-   "label": "Invoice Origin",
-   "read_only": 1
-  },
-  {
-   "fieldname": "invoice_partner_display_name",
-   "fieldtype": "Small Text",
-   "label": "Invoice Partner Display Name",
-   "read_only": 1
-  },
-  {
-   "fieldname": "invoice_payment_term_id",
-   "fieldtype": "Int",
-   "label": "Invoice Payment Term Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "invoice_source_email",
-   "fieldtype": "Small Text",
-   "label": "Invoice Source Email",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_6",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "invoice_user_id",
-   "fieldtype": "Int",
-   "label": "Invoice User Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "invoice_warn",
-   "fieldtype": "Small Text",
-   "label": "Invoice Warn",
-   "read_only": 1
-  },
-  {
-   "fieldname": "invoice_warn_msg",
-   "fieldtype": "Small Text",
-   "label": "Invoice Warn Msg",
-   "read_only": 1
-  },
-  {
-   "fieldname": "is_company",
-   "fieldtype": "Check",
-   "label": "Is Company",
-   "read_only": 1
-  },
-  {
-   "fieldname": "is_doctor",
-   "fieldtype": "Small Text",
-   "label": "Is Doctor",
-   "read_only": 1
-  },
-  {
-   "fieldname": "is_move_sent",
-   "fieldtype": "Check",
-   "label": "Is Move Sent",
-   "read_only": 1
-  },
-  {
-   "fieldname": "section_7",
-   "fieldtype": "Section Break",
-   "label": "Fields 73-84",
-   "collapsible": 1
-  },
-  {
-   "fieldname": "is_storno",
-   "fieldtype": "Check",
-   "label": "Is Storno",
-   "read_only": 1
-  },
-  {
-   "fieldname": "is_warning",
-   "fieldtype": "Small Text",
-   "label": "Is Warning",
-   "read_only": 1
-  },
-  {
-   "fieldname": "journal_id",
-   "fieldtype": "Int",
-   "label": "Journal Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "l10n_in_distance",
-   "fieldtype": "Small Text",
-   "label": "L10N In Distance",
-   "read_only": 1
-  },
-  {
-   "fieldname": "l10n_in_edi_cancel_reason",
-   "fieldtype": "Small Text",
-   "label": "L10N In Edi Cancel Reason",
-   "read_only": 1
-  },
-  {
-   "fieldname": "l10n_in_edi_cancel_remarks",
-   "fieldtype": "Small Text",
-   "label": "L10N In Edi Cancel Remarks",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_7",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "l10n_in_gst_treatment",
-   "fieldtype": "Small Text",
-   "label": "L10N In Gst Treatment",
-   "read_only": 1
-  },
-  {
-   "fieldname": "l10n_in_gst_treatment_2",
-   "fieldtype": "Small Text",
-   "label": "L10N In Gst Treatment 2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "l10n_in_gstin",
-   "fieldtype": "Small Text",
-   "label": "L10N In Gstin",
-   "read_only": 1
-  },
-  {
-   "fieldname": "l10n_in_mode",
-   "fieldtype": "Small Text",
-   "label": "L10N In Mode",
-   "read_only": 1
-  },
-  {
-   "fieldname": "l10n_in_reseller_partner_id",
-   "fieldtype": "Small Text",
-   "label": "L10N In Reseller Partner Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "l10n_in_shipping_bill_date",
-   "fieldtype": "Small Text",
-   "label": "L10N In Shipping Bill Date",
-   "read_only": 1
-  },
-  {
-   "fieldname": "section_8",
-   "fieldtype": "Section Break",
-   "label": "Fields 85-96",
-   "collapsible": 1
-  },
-  {
-   "fieldname": "l10n_in_shipping_bill_number",
-   "fieldtype": "Small Text",
-   "label": "L10N In Shipping Bill Number",
-   "read_only": 1
-  },
-  {
-   "fieldname": "l10n_in_shipping_port_code_id",
-   "fieldtype": "Small Text",
-   "label": "L10N In Shipping Port Code Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "l10n_in_state_id",
-   "fieldtype": "Int",
-   "label": "L10N In State Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "l10n_in_transportation_doc_date",
-   "fieldtype": "Small Text",
-   "label": "L10N In Transportation Doc Date",
-   "read_only": 1
-  },
-  {
-   "fieldname": "l10n_in_transportation_doc_no",
-   "fieldtype": "Small Text",
-   "label": "L10N In Transportation Doc No",
-   "read_only": 1
-  },
-  {
-   "fieldname": "l10n_in_transporter_id",
-   "fieldtype": "Small Text",
-   "label": "L10N In Transporter Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_8",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "l10n_in_type_id",
-   "fieldtype": "Small Text",
-   "label": "L10N In Type Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "l10n_in_vehicle_no",
-   "fieldtype": "Small Text",
-   "label": "L10N In Vehicle No",
-   "read_only": 1
-  },
-  {
-   "fieldname": "l10n_in_vehicle_type",
-   "fieldtype": "Small Text",
-   "label": "L10N In Vehicle Type",
-   "read_only": 1
-  },
-  {
-   "fieldname": "lang",
-   "fieldtype": "Small Text",
-   "label": "Lang",
-   "read_only": 1
-  },
-  {
-   "fieldname": "last_reconciliation_date",
-   "fieldtype": "Small Text",
-   "label": "Last Reconciliation Date",
-   "read_only": 1
-  },
-  {
-   "fieldname": "last_time_entries_checked",
-   "fieldtype": "Small Text",
-   "label": "Last Time Entries Checked",
-   "read_only": 1
-  },
-  {
-   "fieldname": "section_9",
-   "fieldtype": "Section Break",
-   "label": "Fields 97-108",
-   "collapsible": 1
-  },
-  {
-   "fieldname": "local_name",
-   "fieldtype": "Small Text",
-   "label": "Local Name",
-   "read_only": 1
-  },
-  {
-   "fieldname": "manufacturer",
-   "fieldtype": "Small Text",
-   "label": "Manufacturer",
-   "read_only": 1
-  },
-  {
-   "fieldname": "medium_id",
-   "fieldtype": "Small Text",
-   "label": "Medium Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "message_bounce",
-   "fieldtype": "Int",
-   "label": "Message Bounce",
-   "read_only": 1
-  },
-  {
-   "fieldname": "message_main_attachment_id",
-   "fieldtype": "Small Text",
-   "label": "Message Main Attachment Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "message_main_attachment_id_2",
-   "fieldtype": "Small Text",
-   "label": "Message Main Attachment Id 2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_9",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "mobile",
-   "fieldtype": "Small Text",
-   "label": "Mobile",
-   "read_only": 1
-  },
-  {
-   "fieldname": "move_type",
-   "fieldtype": "Small Text",
-   "label": "Move Type",
-   "read_only": 1
-  },
-  {
-   "fieldname": "source_name",
-   "fieldtype": "Small Text",
-   "label": "Source Name (Odoo account_move.name)",
-   "read_only": 1
-  },
-  {
-   "fieldname": "name_2",
-   "fieldtype": "Small Text",
-   "label": "Name 2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "narration",
-   "fieldtype": "Small Text",
-   "label": "Narration",
-   "read_only": 1
-  },
-  {
-   "fieldname": "notification_email_send",
-   "fieldtype": "Small Text",
-   "label": "Notification Email Send",
-   "read_only": 1
-  },
-  {
-   "fieldname": "section_10",
-   "fieldtype": "Section Break",
-   "label": "Fields 109-120",
-   "collapsible": 1
-  },
-  {
-   "fieldname": "order_id",
-   "fieldtype": "Int",
-   "label": "Order Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "parent_id",
-   "fieldtype": "Small Text",
-   "label": "Parent Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "partner_bank_id",
-   "fieldtype": "Small Text",
-   "label": "Partner Bank Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "partner_gid",
-   "fieldtype": "Small Text",
-   "label": "Partner Gid",
-   "read_only": 1
-  },
-  {
-   "fieldname": "partner_id",
-   "fieldtype": "Int",
-   "label": "Partner Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "partner_latitude",
-   "fieldtype": "Small Text",
-   "label": "Partner Latitude",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_10",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "partner_longitude",
-   "fieldtype": "Small Text",
-   "label": "Partner Longitude",
-   "read_only": 1
-  },
-  {
-   "fieldname": "partner_share",
-   "fieldtype": "Check",
-   "label": "Partner Share",
-   "read_only": 1
-  },
-  {
-   "fieldname": "partner_shipping_id",
-   "fieldtype": "Int",
-   "label": "Partner Shipping Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "payment_id",
-   "fieldtype": "Small Text",
-   "label": "Payment Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "payment_reference",
-   "fieldtype": "Small Text",
-   "label": "Payment Reference",
-   "read_only": 1
-  },
-  {
-   "fieldname": "payment_state",
-   "fieldtype": "Small Text",
-   "label": "Payment State",
-   "read_only": 1
-  },
-  {
-   "fieldname": "section_11",
-   "fieldtype": "Section Break",
-   "label": "Fields 121-132",
-   "collapsible": 1
-  },
-  {
-   "fieldname": "phone",
-   "fieldtype": "Small Text",
-   "label": "Phone",
-   "read_only": 1
-  },
-  {
-   "fieldname": "phone_sanitized",
-   "fieldtype": "Small Text",
-   "label": "Phone Sanitized",
-   "read_only": 1
-  },
-  {
-   "fieldname": "picking_warn",
-   "fieldtype": "Small Text",
-   "label": "Picking Warn",
-   "read_only": 1
-  },
-  {
-   "fieldname": "picking_warn_msg",
-   "fieldtype": "Small Text",
-   "label": "Picking Warn Msg",
-   "read_only": 1
-  },
-  {
-   "fieldname": "posted_before",
-   "fieldtype": "Check",
-   "label": "Posted Before",
-   "read_only": 1
-  },
-  {
-   "fieldname": "preferred_payment_method_id",
-   "fieldtype": "Small Text",
-   "label": "Preferred Payment Method Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_11",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "purchase_warn",
-   "fieldtype": "Small Text",
-   "label": "Purchase Warn",
-   "read_only": 1
-  },
-  {
-   "fieldname": "purchase_warn_msg",
-   "fieldtype": "Small Text",
-   "label": "Purchase Warn Msg",
-   "read_only": 1
-  },
-  {
-   "fieldname": "qr_code_method",
-   "fieldtype": "Small Text",
-   "label": "Qr Code Method",
-   "read_only": 1
-  },
-  {
-   "fieldname": "quick_edit_total_amount",
-   "fieldtype": "Small Text",
-   "label": "Quick Edit Total Amount",
-   "read_only": 1
-  },
-  {
-   "fieldname": "recurring_ref",
-   "fieldtype": "Small Text",
-   "label": "Recurring Ref",
-   "read_only": 1
-  },
-  {
-   "fieldname": "ref",
-   "fieldtype": "Small Text",
-   "label": "Ref",
-   "read_only": 1
-  },
-  {
-   "fieldname": "section_12",
-   "fieldtype": "Section Break",
-   "label": "Fields 133-144",
-   "collapsible": 1
-  },
-  {
-   "fieldname": "ref_2",
-   "fieldtype": "Small Text",
-   "label": "Ref 2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "reversed_entry_id",
-   "fieldtype": "Small Text",
-   "label": "Reversed Entry Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "round_off_amount",
-   "fieldtype": "Float",
-   "label": "Round Off Amount",
-   "read_only": 1
-  },
-  {
-   "fieldname": "sale_warn",
-   "fieldtype": "Small Text",
-   "label": "Sale Warn",
-   "read_only": 1
-  },
-  {
-   "fieldname": "sale_warn_msg",
-   "fieldtype": "Small Text",
-   "label": "Sale Warn Msg",
-   "read_only": 1
-  },
-  {
-   "fieldname": "secure_sequence_number",
-   "fieldtype": "Small Text",
-   "label": "Secure Sequence Number",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_12",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "sequence_number",
-   "fieldtype": "Int",
-   "label": "Sequence Number",
-   "read_only": 1
-  },
-  {
-   "fieldname": "sequence_prefix",
-   "fieldtype": "Small Text",
-   "label": "Sequence Prefix",
-   "read_only": 1
-  },
-  {
-   "fieldname": "shop_id",
-   "fieldtype": "Small Text",
-   "label": "Shop Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "signup_expiration",
-   "fieldtype": "Small Text",
-   "label": "Signup Expiration",
-   "read_only": 1
-  },
-  {
-   "fieldname": "signup_token",
-   "fieldtype": "Small Text",
-   "label": "Signup Token",
-   "read_only": 1
-  },
-  {
-   "fieldname": "signup_type",
-   "fieldtype": "Small Text",
-   "label": "Signup Type",
-   "read_only": 1
-  },
-  {
-   "fieldname": "section_13",
-   "fieldtype": "Section Break",
-   "label": "Fields 145-156",
-   "collapsible": 1
-  },
-  {
-   "fieldname": "source_id",
-   "fieldtype": "Small Text",
-   "label": "Source Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "state",
-   "fieldtype": "Small Text",
-   "label": "State",
-   "read_only": 1
-  },
-  {
-   "fieldname": "state_id",
-   "fieldtype": "Int",
-   "label": "State Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "statement_line_id",
-   "fieldtype": "Small Text",
-   "label": "Statement Line Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "stock_move_id",
-   "fieldtype": "Small Text",
-   "label": "Stock Move Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "street",
-   "fieldtype": "Small Text",
-   "label": "Street",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_13",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "street2",
-   "fieldtype": "Small Text",
-   "label": "Street2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "subdistrict_id",
-   "fieldtype": "Int",
-   "label": "Subdistrict Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "supplier_rank",
-   "fieldtype": "Int",
-   "label": "Supplier Rank",
-   "read_only": 1
-  },
-  {
-   "fieldname": "tax_cash_basis_origin_move_id",
-   "fieldtype": "Small Text",
-   "label": "Tax Cash Basis Origin Move Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "tax_cash_basis_rec_id",
-   "fieldtype": "Small Text",
-   "label": "Tax Cash Basis Rec Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "team_id",
-   "fieldtype": "Int",
-   "label": "Team Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "section_14",
-   "fieldtype": "Section Break",
-   "label": "Fields 157-168",
-   "collapsible": 1
-  },
-  {
-   "fieldname": "team_id_2",
-   "fieldtype": "Small Text",
-   "label": "Team Id 2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "title",
-   "fieldtype": "Small Text",
-   "label": "Title",
-   "read_only": 1
-  },
-  {
-   "fieldname": "to_check",
-   "fieldtype": "Small Text",
-   "label": "To Check",
-   "read_only": 1
-  },
-  {
-   "fieldname": "type",
-   "fieldtype": "Small Text",
-   "label": "Type",
-   "read_only": 1
-  },
-  {
-   "fieldname": "tz",
-   "fieldtype": "Small Text",
-   "label": "Tz",
-   "read_only": 1
-  },
-  {
-   "fieldname": "use_parent_address",
-   "fieldtype": "Small Text",
-   "label": "Use Parent Address",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_14",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "user_id",
-   "fieldtype": "Small Text",
-   "label": "User Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "uuid",
-   "fieldtype": "Small Text",
-   "label": "Uuid",
-   "read_only": 1
-  },
-  {
-   "fieldname": "vat",
-   "fieldtype": "Small Text",
-   "label": "Vat",
-   "read_only": 1
-  },
-  {
-   "fieldname": "village_id",
-   "fieldtype": "Int",
-   "label": "Village Id",
-   "read_only": 1
-  },
-  {
-   "fieldname": "warning_stage",
-   "fieldtype": "Small Text",
-   "label": "Warning Stage",
-   "read_only": 1
-  },
-  {
-   "fieldname": "website",
-   "fieldtype": "Small Text",
-   "label": "Website",
-   "read_only": 1
-  },
-  {
-   "fieldname": "section_15",
-   "fieldtype": "Section Break",
-   "label": "Fields 169-173",
-   "collapsible": 1
-  },
-  {
-   "fieldname": "write_date",
-   "fieldtype": "Small Text",
-   "label": "Write Date",
-   "read_only": 1
-  },
-  {
-   "fieldname": "write_date_2",
-   "fieldtype": "Small Text",
-   "label": "Write Date 2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "write_uid",
-   "fieldtype": "Int",
-   "label": "Write Uid",
-   "read_only": 1
-  },
-  {
-   "fieldname": "write_uid_2",
-   "fieldtype": "Int",
-   "label": "Write Uid 2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "zip",
-   "fieldtype": "Small Text",
-   "label": "Zip",
+   "description": "Which donor (from the Other Donor Name list) this invoice's account head matched, when Other Donor Contribution is set.",
+   "fieldname": "other_donor_name",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Other Donor Name",
+   "options": "Other Donor Name",
    "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-11-17 00:00:00.000000",
+ "modified": "2026-11-18 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "NWP",
  "name": "Odoo Invoice Log",

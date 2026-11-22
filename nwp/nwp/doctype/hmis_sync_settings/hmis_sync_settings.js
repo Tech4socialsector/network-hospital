@@ -10,6 +10,7 @@ frappe.ui.form.on("HMIS Sync Settings", {
 			}
 			frappe.call({
 				method: "nwp.nwp.doctype.hmis_sync_settings.hmis_sync_settings.test_metabase_connection",
+				args: { settings_name: frm.doc.name },
 				freeze: true,
 				freeze_message: __("Connecting to Metabase..."),
 				callback(r) {
@@ -32,6 +33,7 @@ frappe.ui.form.on("HMIS Sync Settings", {
 			}
 			frappe.call({
 				method: "nwp.nwp.doctype.hmis_sync_settings.hmis_sync_settings.run_now",
+				args: { settings_name: frm.doc.name },
 				freeze: true,
 				freeze_message: __("Syncing via Metabase..."),
 				callback: (r) => {
@@ -56,6 +58,7 @@ function add_preview_button(frm, label, method_name, dialog_title) {
 		}
 		frappe.call({
 			method: `nwp.nwp.doctype.hmis_sync_settings.hmis_sync_settings.${method_name}`,
+			args: { settings_name: frm.doc.name },
 			freeze: true,
 			callback: (r) => {
 				if (!r.message) return;

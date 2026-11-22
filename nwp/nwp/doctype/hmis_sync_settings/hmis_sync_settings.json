@@ -1,11 +1,14 @@
 {
  "actions": [],
- "allow_rename": 0,
+ "allow_rename": 1,
+ "autoname": "field:hospital_name",
  "creation": "2026-11-16 00:00:00.000000",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "tab_general",
+  "hospital_name",
+  "hmis_name",
   "enable_hmis_sync",
   "sync_frequency",
   "poll_interval_minutes",
@@ -15,21 +18,29 @@
   "last_run_at",
   "last_run_status",
   "tab_metabase",
-  "metabase_info",
   "metabase_url",
   "metabase_email",
   "metabase_password",
   "column_break_metabase",
   "sync_days",
   "sync_from_date",
+  "tab_queries",
+  "patient_visit_database",
+  "patient_visit_query",
+  "column_break_queries",
+  "invoice_database",
+  "invoice_query",
+  "tab_contribution",
+  "contribution_logic",
+  "column_break_contribution",
+  "nwp_discount_account_head",
+  "tribal_hospital_contribution_rate",
   "tab_watermark",
-  "watermark_info",
   "last_bahmni_sync_on",
   "last_odoo_sync_on",
   "column_break_watermark",
   "is_first_run",
   "tab_patient_map",
-  "patient_map_info",
   "match_field",
   "tab_failure_email",
   "send_email_on_failure",
@@ -42,15 +53,27 @@
    "label": "General"
   },
   {
+   "fieldname": "hospital_name",
+   "fieldtype": "Link",
+   "label": "Hospital Name",
+   "options": "Hospital With Organization",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "hmis_name",
+   "fieldtype": "Link",
+   "label": "HMIS Name",
+   "options": "HMIS Name"
+  },
+  {
    "default": "0",
-   "description": "Master switch for the HMIS sync agent.",
    "fieldname": "enable_hmis_sync",
    "fieldtype": "Check",
    "label": "Enable HMIS Sync"
   },
   {
    "default": "Every N Minutes",
-   "description": "\"Every N Minutes\" keeps pulling new data throughout the day. \"Daily At A Specific Time\" runs once a day, at a time you pick — useful to avoid load on the Bahmni/Odoo servers during clinic hours.",
    "fieldname": "sync_frequency",
    "fieldtype": "Select",
    "label": "Sync Frequency",
@@ -59,7 +82,6 @@
   {
    "default": "60",
    "depends_on": "eval:doc.sync_frequency==\"Every N Minutes\"",
-   "description": "How often to pull new patients/visits/bills. The background scheduler checks every 15 minutes, so this value is rounded up to a multiple of 15.",
    "fieldname": "poll_interval_minutes",
    "fieldtype": "Int",
    "label": "Poll Interval (minutes)"
@@ -67,14 +89,12 @@
   {
    "default": "02:00:00",
    "depends_on": "eval:doc.sync_frequency==\"Daily At A Specific Time\"",
-   "description": "Runs once a day, within 15 minutes of this time (the background scheduler checks every 15 minutes, so this isn't to-the-second).",
    "fieldname": "sync_time",
    "fieldtype": "Time",
    "label": "Sync Time"
   },
   {
    "default": "50",
-   "description": "Max records pulled per sync run.",
    "fieldname": "batch_size",
    "fieldtype": "Int",
    "label": "Batch Size"
@@ -84,7 +104,6 @@
    "fieldtype": "Column Break"
   },
   {
-   "description": "When the sync agent last actually ran. Updated automatically.",
    "fieldname": "last_run_at",
    "fieldtype": "Datetime",
    "label": "Last Run At",
@@ -102,18 +121,11 @@
    "label": "Metabase"
   },
   {
-   "fieldname": "metabase_info",
-   "fieldtype": "HTML",
-   "options": "<div class=\"text-muted\">Pulls data via Metabase's saved questions instead of a direct database connection — Metabase already has DB access configured, so no new DB port/firewall access is needed.</div>"
-  },
-  {
-   "description": "e.g. https://your-bahmni-address/metabase",
    "fieldname": "metabase_url",
    "fieldtype": "Data",
    "label": "Metabase URL"
   },
   {
-   "description": "A separate read-only Metabase user, not admin.",
    "fieldname": "metabase_email",
    "fieldtype": "Data",
    "label": "Metabase Email"
@@ -129,16 +141,73 @@
   },
   {
    "default": "3",
-   "description": "How many days back to pick up on every run. Ignored if \"Sync From Date\" below is set.",
    "fieldname": "sync_days",
    "fieldtype": "Int",
    "label": "Sync Days"
   },
   {
-   "description": "If set, every run pulls everything from this exact date onward instead of the rolling \"Sync Days\" window — useful for an initial historical backfill. Leave blank to go back to the rolling window.",
    "fieldname": "sync_from_date",
    "fieldtype": "Date",
    "label": "Sync From Date"
+  },
+  {
+   "fieldname": "tab_queries",
+   "fieldtype": "Tab Break",
+   "label": "Queries"
+  },
+  {
+   "default": "openmrs",
+   "fieldname": "patient_visit_database",
+   "fieldtype": "Data",
+   "label": "Patient Visit Database (in Metabase)"
+  },
+  {
+   "fieldname": "patient_visit_query",
+   "fieldtype": "Long Text",
+   "label": "Patient Visit Query"
+  },
+  {
+   "fieldname": "column_break_queries",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Odoo",
+   "fieldname": "invoice_database",
+   "fieldtype": "Data",
+   "label": "Invoice Database (in Metabase)"
+  },
+  {
+   "fieldname": "invoice_query",
+   "fieldtype": "Long Text",
+   "label": "Invoice Query"
+  },
+  {
+   "fieldname": "tab_contribution",
+   "fieldtype": "Tab Break",
+   "label": "Contribution"
+  },
+  {
+   "default": "Standard NWP Split",
+   "fieldname": "contribution_logic",
+   "fieldtype": "Select",
+   "label": "Contribution Logic",
+   "options": "Standard NWP Split",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_contribution",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "nwp_discount_account_head",
+   "fieldtype": "Data",
+   "label": "NWP Discount Account Head"
+  },
+  {
+   "default": "20",
+   "fieldname": "tribal_hospital_contribution_rate",
+   "fieldtype": "Percent",
+   "label": "Tribal Hospital Contribution Rate"
   },
   {
    "fieldname": "tab_watermark",
@@ -146,19 +215,12 @@
    "label": "Watermark"
   },
   {
-   "fieldname": "watermark_info",
-   "fieldtype": "HTML",
-   "options": "<div class=\"text-muted\">Each run pulls the last \"Sync Days\" (Metabase tab) worth of data and advances the timestamps below on success — for visibility only, not editable here.</div>"
-  },
-  {
-   "description": "Last Bahmni patient/visit update timestamp successfully imported. Updated automatically — do not edit manually.",
    "fieldname": "last_bahmni_sync_on",
    "fieldtype": "Datetime",
    "label": "Last Bahmni Sync On",
    "read_only": 1
   },
   {
-   "description": "Last Odoo invoice update timestamp successfully imported. Updated automatically — do not edit manually.",
    "fieldname": "last_odoo_sync_on",
    "fieldtype": "Datetime",
    "label": "Last Odoo Sync On",
@@ -170,7 +232,6 @@
   },
   {
    "default": "1",
-   "description": "Set automatically on the very first successful sync run.",
    "fieldname": "is_first_run",
    "fieldtype": "Check",
    "label": "Is First Run"
@@ -181,13 +242,7 @@
    "label": "Patient Map"
   },
   {
-   "fieldname": "patient_map_info",
-   "fieldtype": "HTML",
-   "options": "<div class=\"text-muted\">Each Bahmni patient identifier is matched to the Patient Registration record whose field below has the same value, so the same patient is updated rather than duplicated on every run.</div>"
-  },
-  {
    "default": "patient_id",
-   "description": "Fieldname on Patient Registration matched against the Bahmni patient identifier.",
    "fieldname": "match_field",
    "fieldtype": "Data",
    "label": "Match To Patient Registration Field"
@@ -199,7 +254,6 @@
   },
   {
    "default": "0",
-   "description": "When on, a failure email is sent if a sync run errors.",
    "fieldname": "send_email_on_failure",
    "fieldtype": "Check",
    "label": "Send Email On Failure"
@@ -214,9 +268,8 @@
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
- "issingle": 1,
  "links": [],
- "modified": "2026-11-16 00:00:00.000000",
+ "modified": "2026-11-19 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "NWP",
  "name": "HMIS Sync Settings",
@@ -224,6 +277,7 @@
  "permissions": [
   {
    "create": 1,
+   "delete": 1,
    "email": 1,
    "print": 1,
    "read": 1,
