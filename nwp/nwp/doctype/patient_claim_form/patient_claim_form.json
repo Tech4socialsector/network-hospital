@@ -53,7 +53,13 @@
   "comment",
   "approver",
   "column_break_yklj",
-  "document_status"
+  "document_status",
+  "central_sync_section",
+  "pushed_to_central",
+  "central_push_error",
+  "column_break_central_sync",
+  "source_org",
+  "source_name"
  ],
  "fields": [
   {
@@ -309,6 +315,45 @@
    "fieldtype": "Link",
    "label": "Document Status",
    "options": "Document Status"
+  },
+  {
+   "fieldname": "central_sync_section",
+   "fieldtype": "Section Break",
+   "label": "Central Sync"
+  },
+  {
+   "default": "0",
+   "description": "Set once this record (on an organization's own site) has been pushed to the central site — only ever set for an Approved claim.",
+   "fieldname": "pushed_to_central",
+   "fieldtype": "Check",
+   "label": "Pushed To Central",
+   "read_only": 1
+  },
+  {
+   "description": "Why the last push attempt failed, if it did — cleared on the next successful push.",
+   "fieldname": "central_push_error",
+   "fieldtype": "Small Text",
+   "label": "Central Push Error",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_central_sync",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Which organization this record was received from — set only on the central site, from the authenticated API user, never from the pushed data itself.",
+   "fieldname": "source_org",
+   "fieldtype": "Link",
+   "label": "Source Organization",
+   "options": "Sync Partner Organization",
+   "read_only": 1
+  },
+  {
+   "description": "This record's own name on the organization's site — set only on the central site. Together with Source Organization, this is the pair central upserts by.",
+   "fieldname": "source_name",
+   "fieldtype": "Data",
+   "label": "Source Record Name",
+   "read_only": 1
   },
   {
    "fetch_from": "prid.hospital_name",

@@ -143,10 +143,14 @@ after_install = "nwp.install.after_install"
 
 scheduler_events = {
 	"cron": {
-		# Runs every 15 minutes; scheduled_sync() checks the "Enable HMIS
-		# Sync" switch itself and no-ops if it's off, so this is safe to
-		# leave registered even on an install that doesn't use it.
-		"*/15 * * * *": ["nwp.nwp.doctype.hmis_sync_settings.hmis_sync_settings.scheduled_sync"]
+		# Runs every 15 minutes; both of these check their own "Enable"
+		# switch and no-op if it's off, so safe to leave registered even
+		# on an install (central, or an org not using one of them) that
+		# doesn't need it.
+		"*/15 * * * *": [
+			"nwp.nwp.doctype.hmis_sync_settings.hmis_sync_settings.scheduled_sync",
+			"nwp.nwp.doctype.org_sync_settings.org_sync_settings.scheduled_push",
+		]
 	}
 }
 
