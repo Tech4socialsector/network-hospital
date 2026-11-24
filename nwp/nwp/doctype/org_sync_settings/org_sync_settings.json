@@ -5,6 +5,7 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "is_central_site",
   "enable_sync",
   "sync_frequency",
   "poll_interval_minutes",
@@ -26,6 +27,13 @@
   "api_secret"
  ],
  "fields": [
+  {
+   "default": "0",
+   "description": "Tick this only on the one central site that receives data from every partner organization. It changes what the Central Sync Status page shows — the central site sees data received by organization, not an outbound push status (central never pushes anywhere).",
+   "fieldname": "is_central_site",
+   "fieldtype": "Check",
+   "label": "This Is The Central Site"
+  },
   {
    "default": "0",
    "fieldname": "enable_sync",

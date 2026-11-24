@@ -12,6 +12,26 @@ class CentralSyncStatus {
 	constructor(page) {
 		this.page = page;
 		this.ensure_style();
+		frappe.call({
+			method: 'nwp.nwp.page.central_sync_status.central_sync_status.get_page_context',
+			callback: (r) => {
+				this.is_central = !!(r.message || {}).is_central;
+				this.build();
+			},
+		});
+	}
+
+	build() {
+		if (this.is_central) {
+			this.make_central_intro();
+			this.make_central_summary_panel();
+			this.make_organization_panel();
+			this.make_central_filters();
+			this.make_table_area();
+			this.refresh_central();
+			return;
+		}
+
 		this.make_intro();
 		this.make_summary_panel();
 		this.make_fields_panel();
@@ -137,6 +157,225 @@ class CentralSyncStatus {
 		`);
 	}
 
+	make_central_intro() {
+		$(`<div class="nwp-css-intro">Data received from every partner organization, all in one place.</div>`).appendTo(
+			this.page.body
+		);
+	}
+
+	make_central_summary_panel() {
+		this.$summary = $('<div class="nwp-css-panel"><div class="nwp-css-tag">Data Received</div>Loading…</div>').appendTo(
+			this.page.body
+		);
+		frappe.call({
+			method: 'nwp.nwp.page.central_sync_status.central_sync_status.get_central_summary',
+			callback: (r) => this.render_central_summary(r.message || {}),
+		});
+	}
+
+	render_central_summary(data) {
+		const counts = data.counts || {};
+
+		const card = (label, c) => `
+			<div class="nwp-stat-card">
+				<div class="nwp-stat-label">${frappe.utils.escape_html(label)}</div>
+				<div class="nwp-stat-value">${c.total}</div>
+				<div class="nwp-stat-caption">total received</div>
+				<div class="nwp-chip-row">
+					<span class="nwp-chip nwp-chip-muted">${c.this_month} this month</span>
+				</div>
+			</div>`;
+
+		const statsHtml = Object.keys(counts)
+			.map((label) => card(label, counts[label]))
+			.join('');
+
+		const byService = data.by_service || [];
+		const maxCount = Math.max(1, ...byService.map((r) => r.count));
+		const rankHtml = byService
+			.map(
+				(row) => `
+				<div class="nwp-rank-row">
+					<span class="nwp-rank-label">${frappe.utils.escape_html(row.service || 'Not set')}</span>
+					<div class="nwp-rank-track"><div class="nwp-rank-fill" style="width:${(row.count / maxCount) * 100}%"></div></div>
+					<span class="nwp-rank-value">${row.count}</span>
+				</div>`
+			)
+			.join('');
+
+		this.$summary.html(`
+			<div class="nwp-css-tag">Data Received</div>
+			<div class="nwp-stat-grid">${statsHtml}</div>
+			${
+				rankHtml
+					? `<div class="nwp-css-tag" style="margin-top:18px;">Claims By Type Of Service</div>${rankHtml}`
+					: ''
+			}
+		`);
+	}
+
+	make_organization_panel() {
+		this.$orgs = $('<div class="nwp-css-panel"><div class="nwp-css-tag">Data Received By Partner Organization</div>Loading…</div>').appendTo(
+			this.page.body
+		);
+		frappe.call({
+			method: 'nwp.nwp.page.central_sync_status.central_sync_status.get_intake_by_organization',
+			callback: (r) => {
+				this.org_rows = r.message || [];
+				this.filter_organization_panel();
+			},
+		});
+	}
+
+	filter_organization_panel() {
+		if (!this.org_rows) return;
+		const organization = this.organization_field ? this.organization_field.get_value() : '';
+		const rows = organization ? this.org_rows.filter((row) => row.organization === organization) : this.org_rows;
+		this.render_organizations(rows);
+	}
+
+	render_organizations(rows) {
+		if (!rows.length) {
+			this.$orgs.html(
+				'<div class="nwp-css-tag">Data Received By Partner Organization</div><div class="text-muted" style="font-size:13px;">No data yet.</div>'
+			);
+			return;
+		}
+
+		const list_link = (doctype, organization, count) => {
+			if (!count) return count;
+			const slug = doctype.toLowerCase().replace(/ /g, '-');
+			const route = `/desk/${slug}${frappe.utils.make_query_string({ organization })}`;
+			return `<a href="${route}" target="_blank" rel="noopener">${count}</a>`;
+		};
+
+		const body = rows
+			.map(
+				(row) => `
+				<tr>
+					<td>${frappe.utils.escape_html(row.organization || 'Not set')}</td>
+					<td>${list_link('Patient Registration', row.organization, row.registrations)}</td>
+					<td>${list_link('Patient Claim Form', row.organization, row.claims)}</td>
+					<td><b>${row.registrations + row.claims}</b></td>
+				</tr>`
+			)
+			.join('');
+
+		this.$orgs.html(`
+			<div class="nwp-css-tag">Data Received By Partner Organization</div>
+			<table class="nwp-runs-table">
+				<thead><tr><th>Organization</th><th>Registrations</th><th>Claims</th><th>Total</th></tr></thead>
+				<tbody>${body}</tbody>
+			</table>
+		`);
+	}
+
+	make_central_filters() {
+		const page = this.page;
+		this.organization_field = page.add_field({
+			fieldname: 'organization',
+			label: 'Organization',
+			fieldtype: 'Link',
+			options: 'Organization Name',
+			change: () => {
+				this.refresh_central();
+				this.filter_organization_panel();
+			},
+		});
+		this.from_date_field = page.add_field({
+			fieldname: 'from_date',
+			label: 'Received From',
+			fieldtype: 'Date',
+			change: () => this.refresh_central(),
+		});
+		this.to_date_field = page.add_field({
+			fieldname: 'to_date',
+			label: 'Received To',
+			fieldtype: 'Date',
+			change: () => this.refresh_central(),
+		});
+		page.set_secondary_action('Refresh', () => this.refresh_central());
+		page.add_menu_item('Export Visible Rows (CSV)', () => this.export_central_csv());
+	}
+
+	refresh_central() {
+		this.$count.text('Loading...');
+		frappe.call({
+			method: 'nwp.nwp.page.central_sync_status.central_sync_status.get_central_records',
+			args: {
+				filters: {
+					organization: this.organization_field.get_value(),
+					from_date: this.from_date_field.get_value(),
+					to_date: this.to_date_field.get_value(),
+				},
+			},
+			freeze: true,
+			callback: (r) => {
+				this.rows = r.message || [];
+				this.$count.text(this.rows.length + ' row(s)');
+				this.render_central_table(this.rows);
+			},
+		});
+	}
+
+	export_central_csv() {
+		const rows = this.rows || [];
+		if (!rows.length) {
+			frappe.msgprint(__('Nothing to export.'));
+			return;
+		}
+		const header = ['Record', 'Type', 'Organization', 'Received At'];
+		const lines = [
+			header,
+			...rows.map((r) => [r.record, r.type, r.organization || '', r.received_at || '']),
+		];
+		const csv = lines.map((line) => line.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+		const blob = new Blob([csv], { type: 'text/csv' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = `central-received-${frappe.datetime.now_date()}.csv`;
+		a.click();
+		URL.revokeObjectURL(url);
+	}
+
+	render_central_table(rows) {
+		const open_link = (doctype, name) => {
+			const route = frappe.utils.get_form_link(doctype, name);
+			return `<a href="${route}" target="_blank" rel="noopener">${frappe.utils.escape_html(name)}</a>`;
+		};
+
+		const columns = [
+			{ name: 'Record', width: 150, format: (v, row, col, data) => open_link(data._doctype, v) },
+			{ name: 'Type', width: 120 },
+			{ name: 'Organization', width: 220 },
+			{ name: 'Received At', width: 150 },
+		].map((c) => Object.assign({ editable: false, resizable: true }, c));
+
+		const data = rows.map((row) => ({
+			Record: row.record,
+			Type: row.type,
+			Organization: row.organization || '',
+			'Received At': row.received_at ? frappe.datetime.str_to_user(String(row.received_at).slice(0, 10)) : '',
+			_doctype: row.doctype,
+		}));
+
+		if (this.datatable) {
+			this.datatable.refresh(data, columns);
+			return;
+		}
+
+		this.datatable = new frappe.DataTable(this.$table_wrapper.get(0), {
+			columns: columns,
+			data: data,
+			layout: 'fluid',
+			cellHeight: 35,
+			serialNoColumn: true,
+			checkboxColumn: false,
+			noDataMessage: __('No records yet'),
+		});
+	}
+
 	make_fields_panel() {
 		frappe.call({
 			method: 'nwp.nwp.page.central_sync_status.central_sync_status.get_shared_fields',
@@ -214,6 +453,18 @@ class CentralSyncStatus {
 			options: '\nSent\nPending\nFailed',
 			change: () => this.refresh(),
 		});
+		this.from_date_field = page.add_field({
+			fieldname: 'from_date',
+			label: 'Sent From',
+			fieldtype: 'Date',
+			change: () => this.refresh(),
+		});
+		this.to_date_field = page.add_field({
+			fieldname: 'to_date',
+			label: 'Sent To',
+			fieldtype: 'Date',
+			change: () => this.refresh(),
+		});
 		page.set_secondary_action('Refresh', () => this.refresh());
 		page.add_menu_item('Export Visible Rows (CSV)', () => this.export_csv());
 	}
@@ -227,7 +478,13 @@ class CentralSyncStatus {
 		this.$count.text('Loading...');
 		frappe.call({
 			method: 'nwp.nwp.page.central_sync_status.central_sync_status.get_status',
-			args: { filters: { status: this.status_field.get_value() } },
+			args: {
+				filters: {
+					status: this.status_field.get_value(),
+					from_date: this.from_date_field.get_value(),
+					to_date: this.to_date_field.get_value(),
+				},
+			},
 			freeze: true,
 			callback: (r) => {
 				this.rows = r.message || [];
@@ -244,8 +501,11 @@ class CentralSyncStatus {
 			frappe.msgprint(__('Nothing to export.'));
 			return;
 		}
-		const header = ['Record', 'Type', 'Status', 'Error', 'Last Modified'];
-		const lines = [header, ...rows.map((r) => [r.record, r.type, r.status, r.error || '', r.modified || ''])];
+		const header = ['Record', 'Type', 'Status', 'Error', 'Sent At', 'Last Modified'];
+		const lines = [
+			header,
+			...rows.map((r) => [r.record, r.type, r.status, r.error || '', r.pushed_at || '', r.modified || '']),
+		];
 		const csv = lines.map((line) => line.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
 		const blob = new Blob([csv], { type: 'text/csv' });
 		const url = URL.createObjectURL(blob);
@@ -262,12 +522,18 @@ class CentralSyncStatus {
 			return `<span class="nwp-badge ${cls}">${status}</span>`;
 		};
 
+		const open_link = (doctype, name) => {
+			const route = frappe.utils.get_form_link(doctype, name);
+			return `<a href="${route}" target="_blank" rel="noopener">${frappe.utils.escape_html(name)}</a>`;
+		};
+
 		const columns = [
-			{ name: 'Record', width: 160, format: (v, row, col, data) => frappe.utils.get_form_link(data._doctype, v, true) },
-			{ name: 'Type', width: 130 },
-			{ name: 'Status', width: 110, align: 'center', format: (v) => badge(v) },
-			{ name: 'Error', width: 220 },
-			{ name: 'Last Modified', width: 150 },
+			{ name: 'Record', width: 150, format: (v, row, col, data) => open_link(data._doctype, v) },
+			{ name: 'Type', width: 110 },
+			{ name: 'Status', width: 100, align: 'center', format: (v) => badge(v) },
+			{ name: 'Error', width: 180 },
+			{ name: 'Sent At', width: 140 },
+			{ name: 'Last Modified', width: 140 },
 		].map((c) => Object.assign({ editable: false, resizable: true }, c));
 
 		const data = rows.map((row) => ({
@@ -275,6 +541,7 @@ class CentralSyncStatus {
 			Type: row.type,
 			Status: row.status,
 			Error: row.error || '',
+			'Sent At': row.pushed_at ? frappe.datetime.str_to_user(String(row.pushed_at).slice(0, 10)) : '',
 			'Last Modified': row.modified ? frappe.datetime.str_to_user(String(row.modified).slice(0, 10)) : '',
 			_doctype: row.doctype,
 		}));

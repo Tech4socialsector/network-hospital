@@ -89,9 +89,21 @@ def _attach_file(doctype, docname, fieldname, file_payload):
 	return file_doc.file_url
 
 
-def _upsert(doctype, source_org, source_name, data):
+def _upsert(doctype, source_org, source_name, data, natural_key_filters=None):
 	existing = frappe.db.get_value(doctype, {"source_org": source_org, "source_name": source_name})
+
+	if not existing and natural_key_filters:
+		# Covers data that reached central some other way before this
+		# organization ever synced it — e.g. a hand-imported Excel
+		# baseline of existing patients. Only ever matches a record with
+		# no source_org of its own (never synced via the API by anyone),
+		# so this can never reassign or overwrite another organization's
+		# already-synced record just because of a coincidentally shared
+		# Patient ID.
+		existing = frappe.db.get_value(doctype, natural_key_filters)
+
 	if existing:
+		data = dict(data, source_org=source_org, source_name=source_name)
 		frappe.db.set_value(doctype, existing, data)
 		return existing
 
@@ -128,7 +140,16 @@ def receive_record(doctype, source_name, data, files=None, source_prid=None):
 				}
 			data["prid"] = central_prid
 
-	name = _upsert(doctype, source_org, source_name, data)
+	natural_key_filters = None
+	if doctype == "Patient Registration" and data.get("patient_id"):
+		# A real patient keeps exactly one Patient Registration for life, so
+		# Patient ID is a safe natural key here. Patient Claim Form has no
+		# equivalent — one patient can have several genuinely separate
+		# claims, so a Patient ID match alone can't tell "the same claim
+		# synced twice" apart from "a new visit" — it always inserts fresh.
+		natural_key_filters = {"patient_id": data["patient_id"], "source_org": ["is", "not set"]}
+
+	name = _upsert(doctype, source_org, source_name, data, natural_key_filters)
 
 	for fieldname, file_payload in files.items():
 		file_url = _attach_file(doctype, name, fieldname, file_payload)

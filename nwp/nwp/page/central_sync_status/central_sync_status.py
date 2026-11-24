@@ -14,15 +14,91 @@ DOCTYPES = (("Patient Registration", "Registration"), ("Patient Claim Form", "Cl
 
 
 @frappe.whitelist()
+def get_page_context():
+	"""Central never pushes to itself, so pushed_to_central stays 0 on
+	every record it receives — the outbound push status view (this page's
+	default) would show everything stuck as "Pending" forever there. The
+	one site flagged as central instead gets the inbound view: how much
+	has been received, broken down by partner organization."""
+	return {"is_central": bool(frappe.db.get_single_value("Org Sync Settings", "is_central_site"))}
+
+
+@frappe.whitelist()
+def get_central_summary():
+	"""Central-side volume awareness — total records held and the service
+	mix, with no sent/pending/failed framing since that only describes an
+	outbound push, which central never does."""
+	counts = {}
+	for doctype, label in DOCTYPES:
+		counts[label] = {
+			"total": frappe.db.count(doctype),
+			"this_month": frappe.db.count(doctype, {"creation": [">=", get_first_day(now_datetime())]}),
+		}
+
+	by_service = frappe.get_all(
+		"Patient Claim Form",
+		fields=["type_of_service as service", {"COUNT": "name", "as": "count"}],
+		group_by="type_of_service",
+		order_by="count desc",
+	)
+
+	return {"counts": counts, "by_service": by_service}
+
+
+@frappe.whitelist()
+def get_central_records(filters=None):
+	"""Central-side record list — what's been received, from which
+	organization, and when, so someone on the central site can review
+	intake for a specific period or partner and open any record directly."""
+	filters = frappe.parse_json(filters) if isinstance(filters, str) else (filters or {})
+	organization = (filters.get("organization") or "").strip()
+	from_date = (filters.get("from_date") or "").strip()
+	to_date = (filters.get("to_date") or "").strip()
+
+	rows = []
+	for doctype, label in DOCTYPES:
+		doc_filters = []
+		if organization:
+			doc_filters.append(["organization", "=", organization])
+		if from_date:
+			doc_filters.append(["creation", ">=", from_date])
+		if to_date:
+			doc_filters.append(["creation", "<=", f"{to_date} 23:59:59"])
+
+		docs = frappe.get_all(
+			doctype,
+			filters=doc_filters,
+			fields=["name", "organization", "creation"],
+			order_by="creation desc",
+			limit_page_length=MAX_ROWS,
+		)
+		for d in docs:
+			rows.append(
+				{
+					"record": d.name,
+					"doctype": doctype,
+					"type": label,
+					"organization": d.organization,
+					"received_at": d.creation,
+				}
+			)
+
+	rows.sort(key=lambda r: str(r["received_at"]), reverse=True)
+	return rows[:MAX_ROWS]
+
+
+@frappe.whitelist()
 def get_status(filters=None):
 	filters = frappe.parse_json(filters) if isinstance(filters, str) else (filters or {})
 	status = (filters.get("status") or "").strip()
+	from_date = (filters.get("from_date") or "").strip()
+	to_date = (filters.get("to_date") or "").strip()
 
 	rows = []
 	for doctype, label in DOCTYPES:
 		docs = frappe.get_all(
 			doctype,
-			fields=["name", "pushed_to_central", "central_push_error", "modified"],
+			fields=["name", "pushed_to_central", "central_push_error", "central_pushed_at", "modified"],
 			order_by="modified desc",
 			limit_page_length=MAX_ROWS,
 		)
@@ -37,6 +113,19 @@ def get_status(filters=None):
 			if status and status != row_status:
 				continue
 
+			# A date range is about reviewing what was actually sent in that
+			# window, so it's checked against when the record was pushed, not
+			# when it was last edited — a record never pushed has no
+			# pushed_at at all and is naturally excluded once a range is set.
+			if from_date or to_date:
+				if not d.central_pushed_at:
+					continue
+				pushed_date = str(d.central_pushed_at)[:10]
+				if from_date and pushed_date < from_date:
+					continue
+				if to_date and pushed_date > to_date:
+					continue
+
 			rows.append(
 				{
 					"record": d.name,
@@ -44,6 +133,7 @@ def get_status(filters=None):
 					"type": label,
 					"status": row_status,
 					"error": d.central_push_error,
+					"pushed_at": d.central_pushed_at,
 					"modified": d.modified,
 				}
 			)
@@ -86,6 +176,43 @@ def get_summary():
 	)
 
 	return {"counts": counts, "by_service": by_service}
+
+
+@frappe.whitelist()
+def get_intake_by_organization():
+	"""How much data this site actually holds from each partner
+	organization — meaningful mainly on the central site, where records
+	from many organizations accumulate in one place."""
+	registration_counts = {
+		r.organization: r.count
+		for r in frappe.get_all(
+			"Patient Registration",
+			filters={"organization": ["is", "set"]},
+			fields=["organization", {"COUNT": "name", "as": "count"}],
+			group_by="organization",
+		)
+	}
+	claim_counts = {
+		r.organization: r.count
+		for r in frappe.get_all(
+			"Patient Claim Form",
+			filters={"organization": ["is", "set"]},
+			fields=["organization", {"COUNT": "name", "as": "count"}],
+			group_by="organization",
+		)
+	}
+
+	organizations = set(registration_counts) | set(claim_counts)
+	rows = [
+		{
+			"organization": org,
+			"registrations": registration_counts.get(org, 0),
+			"claims": claim_counts.get(org, 0),
+		}
+		for org in organizations
+	]
+	rows.sort(key=lambda r: r["registrations"] + r["claims"], reverse=True)
+	return rows
 
 
 @frappe.whitelist()

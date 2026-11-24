@@ -137,13 +137,33 @@ def _backfill_claim_form_fields():
 	return updated
 
 
+def _backfill_central_pushed_at(doctype):
+	"""central_pushed_at didn't exist on the first version of this sync
+	feature, so anything already pushed to central before this field was
+	added has pushed_to_central=1 but no recorded push date — leaving the
+	Central Sync Status page's "Sent At" column and date-range filter
+	blank for records that were genuinely, successfully sent. `modified`
+	is the closest available stand-in: nothing else updates a record once
+	a push has marked it done."""
+	rows = frappe.get_all(
+		doctype, filters={"pushed_to_central": 1, "central_pushed_at": ["is", "not set"]}, fields=["name", "modified"]
+	)
+	for row in rows:
+		frappe.db.set_value(doctype, row.name, "central_pushed_at", row.modified, update_modified=False)
+	return len(rows)
+
+
 def execute():
 	registrations_fixed = _backfill_registration_organization()
 	prids_resolved = _resolve_missing_prids()
 	claims_fixed = _backfill_claim_form_fields()
+	pushed_at_backfilled = _backfill_central_pushed_at("Patient Registration") + _backfill_central_pushed_at(
+		"Patient Claim Form"
+	)
 	frappe.db.commit()
 	frappe.logger().info(
 		f"backfill_organization_fields: fixed {registrations_fixed} Patient Registration, "
 		f"resolved {prids_resolved} missing prid link(s), "
-		f"fixed {claims_fixed} Patient Claim Form record(s)"
+		f"fixed {claims_fixed} Patient Claim Form record(s), "
+		f"backfilled {pushed_at_backfilled} central_pushed_at value(s)"
 	)
