@@ -259,7 +259,15 @@ def push_approved_records(settings=None):
 	frappe.db.commit()
 	summary = f"Patient Registration: {pushed_registrations} pushed | Patient Claim Form: {pushed_claims} pushed"
 	if errors:
-		summary += " | " + " | ".join(errors)
+		# The full reason for each failure is already saved on that record's
+		# own central_push_error field — this is just a short recap for the
+		# run history, so it must stay well under the column's limit even
+		# when hundreds or thousands of records fail in one run.
+		shown = errors[:20]
+		summary += " | " + " | ".join(shown)
+		if len(errors) > len(shown):
+			summary += f" | ...and {len(errors) - len(shown)} more"
+	summary = summary[:60000]
 	return {
 		"registrations_pushed": pushed_registrations,
 		"claims_pushed": pushed_claims,

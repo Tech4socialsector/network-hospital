@@ -141,13 +141,24 @@ def receive_record(doctype, source_name, data, files=None, source_prid=None):
 			data["prid"] = central_prid
 
 	natural_key_filters = None
-	if doctype == "Patient Registration" and data.get("patient_id"):
-		# A real patient keeps exactly one Patient Registration for life, so
-		# Patient ID is a safe natural key here. Patient Claim Form has no
-		# equivalent — one patient can have several genuinely separate
-		# claims, so a Patient ID match alone can't tell "the same claim
+	if doctype == "Patient Registration" and data.get("patient_id") and data.get("organization"):
+		# Patient ID alone is NOT safe as a natural key across
+		# organizations: it's often just each site's own auto-numbered
+		# PRID (PID-0001, PID-0002, ...) typed in as a stand-in MRN, and
+		# every organization's site runs that counter independently from
+		# zero — two unrelated patients at two different organizations can
+		# easily land on the exact same "PID-0001". Requiring Organization
+		# to match too means a real collision would need the same ID AND
+		# the same organization, which validate_duplicate_patient_id()
+		# already guards against on each org's own site. Patient Claim
+		# Form has no equivalent — one patient can have several genuinely
+		# separate claims, so an ID match alone can't tell "the same claim
 		# synced twice" apart from "a new visit" — it always inserts fresh.
-		natural_key_filters = {"patient_id": data["patient_id"], "source_org": ["is", "not set"]}
+		natural_key_filters = {
+			"patient_id": data["patient_id"],
+			"organization": data["organization"],
+			"source_org": ["is", "not set"],
+		}
 
 	name = _upsert(doctype, source_org, source_name, data, natural_key_filters)
 
