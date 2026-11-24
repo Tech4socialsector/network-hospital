@@ -282,8 +282,16 @@ def push_approved_records(settings=None):
 
 @frappe.whitelist()
 def run_now():
+	"""Queues the push instead of running it inline — with a large backlog,
+	each record needs a real network round-trip to central, so running
+	this directly in the web request that the Run Now button triggers can
+	easily take longer than the browser/server will wait for, showing as
+	a timeout even though the work would have kept going. Running in the
+	background removes that limit entirely; check Central Sync Status or
+	Org Sync Log shortly afterward for the result."""
 	frappe.only_for("System Manager")
-	return scheduled_push(manual=True)
+	frappe.enqueue(scheduled_push, queue="long", timeout=3600, manual=True)
+	return "Sync queued — check Central Sync Status or Org Sync Log shortly for the result."
 
 
 def _log_run(result):
