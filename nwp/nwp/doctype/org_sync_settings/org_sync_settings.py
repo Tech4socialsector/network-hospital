@@ -231,9 +231,14 @@ def push_approved_records(settings=None):
 				{"pushed_to_central": 1, "central_push_error": "", "central_pushed_at": now_datetime()},
 			)
 			pushed_registrations += 1
-		except Exception:
-			error = frappe.get_traceback()
-			frappe.db.set_value("Patient Registration", reg_name, "central_push_error", error[:140])
+		except Exception as e:
+			# str(e) is the actual reason ("A Patient Registration with
+			# Patient ID 'X' already exists.", a timeout, an HTTP error,
+			# etc) — frappe.get_traceback()[:140] kept only the stack
+			# trace's opening file-path lines and cut off before the
+			# message itself, which is always at the end, leaving nothing
+			# actionable on screen.
+			frappe.db.set_value("Patient Registration", reg_name, "central_push_error", str(e)[:2000])
 			errors.append(f"Patient Registration {reg_name}: FAILED")
 
 	for c in claims:
@@ -251,9 +256,8 @@ def push_approved_records(settings=None):
 				{"pushed_to_central": 1, "central_push_error": "", "central_pushed_at": now_datetime()},
 			)
 			pushed_claims += 1
-		except Exception:
-			error = frappe.get_traceback()
-			frappe.db.set_value("Patient Claim Form", c.name, "central_push_error", error[:140])
+		except Exception as e:
+			frappe.db.set_value("Patient Claim Form", c.name, "central_push_error", str(e)[:2000])
 			errors.append(f"Patient Claim Form {c.name}: FAILED")
 
 	frappe.db.commit()
