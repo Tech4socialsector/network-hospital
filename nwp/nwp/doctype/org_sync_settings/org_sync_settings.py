@@ -137,7 +137,12 @@ def _push(settings, doctype, name, fields, file_fields=None, source_prid=None):
 		body["source_prid"] = source_prid
 
 	url = settings.central_url.rstrip("/") + f"/api/method/{RECEIVE_RECORD_METHOD}"
-	response = requests.post(url, json=body, headers=_auth_headers(settings), timeout=30)
+	# frappe.as_json(), not json=body — a Date/Datetime field (e.g.
+	# date_of_visit) comes back from doc.get() as a real Python date
+	# object, which plain json.dumps() (what requests' own json= uses)
+	# can't serialize at all; Frappe's own as_json() already knows how.
+	headers = {**_auth_headers(settings), "Content-Type": "application/json"}
+	response = requests.post(url, data=frappe.as_json(body), headers=headers, timeout=30)
 	response.raise_for_status()
 	result = response.json().get("message", {})
 	if not result.get("ok"):
