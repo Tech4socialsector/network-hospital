@@ -112,13 +112,13 @@ def mark_claim_dirty(doc, method=None):
 
 def _auth_headers(settings):
 	api_secret = settings.get_password("api_secret", raise_exception=False)
-	return {
-		"Authorization": f"token {settings.api_key}:{api_secret}",
-		# Expect: "" — some servers (including the local dev one) mishandle
-		# the "Expect: 100-continue" header requests sends automatically,
-		# returning a 417 instead of actually processing the request.
-		"Expect": "",
-	}
+	# No Expect header here on purpose — `requests` never sends one of its
+	# own accord (confirmed by inspecting the raw request on the wire), so
+	# explicitly setting "Expect": "" doesn't suppress anything; it just
+	# puts a literal blank Expect header on every request, which is what
+	# was actually causing some servers to reject the push with a 417
+	# Expectation Failed in the first place.
+	return {"Authorization": f"token {settings.api_key}:{api_secret}"}
 
 
 def _upload_files(settings, doctype, central_name, doc, file_fields):
