@@ -16,6 +16,45 @@ def _source_org():
 	return org
 
 
+def _get_or_create_link(doctype, value, filters=None):
+	"""Central aggregates from many different organizations, each of which
+	can introduce a state/district/hospital name central has never seen
+	before — so a missing Link target here isn't an error, it just means
+	this is the first time this particular value has arrived. Creates it
+	as a bare master record (named exactly as pushed) rather than
+	rejecting the whole record."""
+	if not value:
+		return value
+	existing = frappe.db.get_value(doctype, {"name": value, **(filters or {})})
+	if existing:
+		return existing
+	doc = frappe.new_doc(doctype)
+	doc.name = value
+	if filters:
+		doc.update(filters)
+	doc.insert(ignore_permissions=True)
+	if doc.name != value:
+		# A doctype with no explicit "autoname" rule (e.g. Hospital With
+		# Organization) silently ignores a pre-set name and generates a
+		# random hash instead — force it to the intended name afterward.
+		frappe.rename_doc(doctype, doc.name, value, force=True)
+	return value
+
+
+def _resolve_registration_links(data):
+	"""Patient Registration links to State List / District List / Hospital
+	With Organization — all three can be brand new to central the first
+	time any given organization's data arrives."""
+	if data.get("state"):
+		data["state"] = _get_or_create_link("State List", data["state"])
+	if data.get("district"):
+		data["district"] = _get_or_create_link(
+			"District List", data["district"], {"state": data.get("state")} if data.get("state") else None
+		)
+	if data.get("hospital_name"):
+		data["hospital_name"] = _get_or_create_link("Hospital With Organization", data["hospital_name"])
+
+
 def _attach_file(doctype, docname, fieldname, file_payload):
 	if not file_payload:
 		return None
@@ -57,6 +96,9 @@ def receive_record(doctype, source_name, data, files=None, source_prid=None):
 	source_org = _source_org()
 	data = frappe.parse_json(data) if isinstance(data, str) else dict(data or {})
 	files = frappe.parse_json(files) if isinstance(files, str) else (files or {})
+
+	if doctype == "Patient Registration":
+		_resolve_registration_links(data)
 
 	if doctype == "Patient Claim Form":
 		if source_prid:

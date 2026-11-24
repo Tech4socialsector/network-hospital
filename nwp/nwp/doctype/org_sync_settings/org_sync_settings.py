@@ -5,12 +5,16 @@ import requests
 from frappe.model.document import Document
 from frappe.utils import cint, get_time, now_datetime, time_diff_in_seconds
 
-# The central site's own receiving endpoint — a Server Script (not our app
-# code) when central doesn't have this custom app installed, e.g. uat-nwp.
-# A Server Script's sandbox can't run "import base64", so file content never
-# travels inside this JSON payload — see _upload_files() below instead,
-# which uses Frappe's own standard, always-available upload endpoint.
-RECEIVE_RECORD_METHOD = "receive_record"
+# The central site's own receiving endpoint. Called by its full dotted
+# path (not a bare short name) — a bare name only resolves for a Server
+# Script's own "API Method" field, not a real whitelisted function like
+# this one, which every central site in use so far has installed as the
+# real app rather than a Server Script workaround.
+RECEIVE_RECORD_METHOD = "nwp.api.org_sync.receive_record"
+# upload_file and frappe.client.set_value are Frappe's own standard,
+# always-available endpoints — used for file attachments specifically,
+# since those still can't travel inside the main JSON payload (kept
+# consistent regardless of how central runs its own receiving endpoint).
 UPLOAD_FILE_METHOD = "upload_file"
 SET_VALUE_METHOD = "frappe.client.set_value"
 
