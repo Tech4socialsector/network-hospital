@@ -12,6 +12,14 @@
   "column_break_general",
   "last_run_at",
   "last_run_status",
+  "alert_email",
+  "failure_alert_threshold",
+  "tab_sharing",
+  "registration_sharing_heading",
+  "excluded_registration_fields",
+  "column_break_sharing",
+  "claim_sharing_heading",
+  "excluded_claim_fields",
   "tab_central",
   "central_url",
   "api_key",
@@ -60,6 +68,54 @@
    "fieldtype": "Small Text",
    "label": "Last Run Status",
    "read_only": 1
+  },
+  {
+   "description": "If the sync keeps failing for this many runs in a row, send a one-time warning email here.",
+   "fieldname": "alert_email",
+   "fieldtype": "Data",
+   "label": "Alert Email On Repeated Failure",
+   "options": "Email"
+  },
+  {
+   "default": "3",
+   "depends_on": "eval:doc.alert_email",
+   "fieldname": "failure_alert_threshold",
+   "fieldtype": "Int",
+   "label": "Failure Alert Threshold (Consecutive Runs)"
+  },
+  {
+   "description": "Tick any fields you do not want shared with the central site. Everything else in each list is still pushed on every sync; a few core fields (patient ID, organization, approval status) are always sent regardless, since central needs them to identify and link records correctly.",
+   "fieldname": "tab_sharing",
+   "fieldtype": "Section Break",
+   "label": "Sharing Preferences"
+  },
+  {
+   "fieldname": "registration_sharing_heading",
+   "fieldtype": "HTML",
+   "options": "<b>Patient Registration</b>"
+  },
+  {
+   "fieldname": "excluded_registration_fields",
+   "fieldtype": "Table MultiSelect",
+   "label": "Fields Not Shared With Central",
+   "link_filters": "[[\"Org Sync Shareable Field\",\"applies_to\",\"=\",\"Patient Registration\"]]",
+   "options": "Org Sync Excluded Field"
+  },
+  {
+   "fieldname": "column_break_sharing",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "claim_sharing_heading",
+   "fieldtype": "HTML",
+   "options": "<b>Patient Claim Form</b>"
+  },
+  {
+   "fieldname": "excluded_claim_fields",
+   "fieldtype": "Table MultiSelect",
+   "label": "Fields Not Shared With Central",
+   "link_filters": "[[\"Org Sync Shareable Field\",\"applies_to\",\"=\",\"Patient Claim Form\"]]",
+   "options": "Org Sync Excluded Claim Field"
   },
   {
    "fieldname": "tab_central",

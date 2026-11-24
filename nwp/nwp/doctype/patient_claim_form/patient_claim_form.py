@@ -27,6 +27,7 @@ FETCH_FROM_PRID = {
 class PatientClaimForm(Document):
 	def validate(self):
 		self.restrict_approver_to_approval_fields()
+		self.resolve_prid_from_patient_id()
 		self.sync_fields_from_registration()
 		self.validate_date_of_visit()
 		self.sync_date_of_discharge()
@@ -49,6 +50,22 @@ class PatientClaimForm(Document):
 		never overwrites a value that's already been entered."""
 		if self.date_of_discharge and not self.invoice_date:
 			self.invoice_date = self.date_of_discharge
+
+	def resolve_prid_from_patient_id(self):
+		"""Some bulk imports typed patient_id in directly but left prid (the
+		actual link field everything else fetches from) blank — found and
+		fixed once via a live data recovery, since a Data Import can write a
+		read-only field like patient_id without ever setting prid at all.
+		This is the permanent guard so it can't recur. Only resolves when
+		patient_id matches exactly one Patient Registration; an ambiguous
+		(shared) patient_id is left alone rather than guessed."""
+		if self.prid or not self.patient_id:
+			return
+		matches = frappe.get_all(
+			"Patient Registration", filters={"patient_id": self.patient_id}, pluck="name"
+		)
+		if len(matches) == 1:
+			self.prid = matches[0]
 
 	def sync_fields_from_registration(self):
 		if not self.prid:

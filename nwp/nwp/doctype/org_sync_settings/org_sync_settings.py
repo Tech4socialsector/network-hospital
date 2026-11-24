@@ -64,6 +64,52 @@ def _should_run_now(settings):
 	return time_diff_in_seconds(now_datetime(), settings.last_run_at) >= interval_minutes * 60
 
 
+def _excluded_field_names(rows):
+	"""Which fieldnames a Table MultiSelect's rows resolve to — read fresh
+	from Org Sync Settings every run, never cached, so a change here takes
+	effect on the very next push (or the very next load of the
+	transparency page) without needing a code change or redeploy."""
+	if not rows:
+		return set()
+	labels = {row.shareable_field for row in rows}
+	fields = frappe.get_all(
+		"Org Sync Shareable Field", filters={"name": ["in", list(labels)]}, fields=["field_name"]
+	)
+	return {f.field_name for f in fields}
+
+
+def excluded_registration_field_names(settings):
+	return _excluded_field_names(settings.excluded_registration_fields)
+
+
+def excluded_claim_field_names(settings):
+	return _excluded_field_names(settings.excluded_claim_fields)
+
+
+def _mark_dirty_if_shared_field_changed(doc, fields):
+	"""An edit to a field we actually share, made AFTER the record already
+	pushed, would otherwise sit on central forever unchanged — central has
+	no way to know the organization's own copy moved on. Flips the record
+	back to not-yet-pushed so the very next scheduled run re-sends it with
+	the correction. Uses db_set (not doc.save()) so this doesn't recurse
+	back into on_update, and doesn't touch `modified`/`modified_by`, since
+	this is a side-effect of the real edit, not a new edit of its own."""
+	if not doc.get("pushed_to_central") or doc.is_new():
+		return
+	if not any(doc.has_value_changed(f) for f in fields if doc.meta.has_field(f)):
+		return
+	doc.db_set("pushed_to_central", 0, update_modified=False)
+	doc.db_set("central_push_error", "", update_modified=False)
+
+
+def mark_registration_dirty(doc, method=None):
+	_mark_dirty_if_shared_field_changed(doc, REGISTRATION_FIELDS)
+
+
+def mark_claim_dirty(doc, method=None):
+	_mark_dirty_if_shared_field_changed(doc, CLAIM_FIELDS + CLAIM_FILE_FIELDS)
+
+
 def _auth_headers(settings):
 	api_secret = settings.get_password("api_secret", raise_exception=False)
 	return {
@@ -158,6 +204,11 @@ def push_approved_records(settings=None):
 	go first, since a claim's own push assumes its registration already
 	exists on central."""
 	settings = settings or frappe.get_single("Org Sync Settings")
+	excluded_registration = excluded_registration_field_names(settings)
+	excluded_claim = excluded_claim_field_names(settings)
+	registration_fields = [f for f in REGISTRATION_FIELDS if f not in excluded_registration]
+	claim_fields = [f for f in CLAIM_FIELDS if f not in excluded_claim]
+	claim_file_fields = [f for f in CLAIM_FILE_FIELDS if f not in excluded_claim]
 
 	pushed_registrations = pushed_claims = 0
 	errors = []
@@ -173,8 +224,12 @@ def push_approved_records(settings=None):
 		if frappe.db.get_value("Patient Registration", reg_name, "pushed_to_central"):
 			continue
 		try:
-			_push(settings, "Patient Registration", reg_name, REGISTRATION_FIELDS)
-			frappe.db.set_value("Patient Registration", reg_name, {"pushed_to_central": 1, "central_push_error": ""})
+			_push(settings, "Patient Registration", reg_name, registration_fields)
+			frappe.db.set_value(
+				"Patient Registration",
+				reg_name,
+				{"pushed_to_central": 1, "central_push_error": "", "central_pushed_at": now_datetime()},
+			)
 			pushed_registrations += 1
 		except Exception:
 			error = frappe.get_traceback()
@@ -189,8 +244,12 @@ def push_approved_records(settings=None):
 			# the registration push succeeds.
 			continue
 		try:
-			_push(settings, "Patient Claim Form", c.name, CLAIM_FIELDS, CLAIM_FILE_FIELDS, source_prid=c.prid)
-			frappe.db.set_value("Patient Claim Form", c.name, {"pushed_to_central": 1, "central_push_error": ""})
+			_push(settings, "Patient Claim Form", c.name, claim_fields, claim_file_fields, source_prid=c.prid)
+			frappe.db.set_value(
+				"Patient Claim Form",
+				c.name,
+				{"pushed_to_central": 1, "central_push_error": "", "central_pushed_at": now_datetime()},
+			)
 			pushed_claims += 1
 		except Exception:
 			error = frappe.get_traceback()
@@ -201,13 +260,65 @@ def push_approved_records(settings=None):
 	summary = f"Patient Registration: {pushed_registrations} pushed | Patient Claim Form: {pushed_claims} pushed"
 	if errors:
 		summary += " | " + " | ".join(errors)
-	return summary
+	return {
+		"registrations_pushed": pushed_registrations,
+		"claims_pushed": pushed_claims,
+		"failed_count": len(errors),
+		"summary": summary,
+	}
 
 
 @frappe.whitelist()
 def run_now():
 	frappe.only_for("System Manager")
 	return scheduled_push(manual=True)
+
+
+def _log_run(result):
+	status = "Success" if not result["failed_count"] else (
+		"Failed" if not (result["registrations_pushed"] or result["claims_pushed"]) else "Partial Failure"
+	)
+	frappe.get_doc(
+		{
+			"doctype": "Org Sync Log",
+			"run_at": now_datetime(),
+			"status": status,
+			"registrations_pushed": result["registrations_pushed"],
+			"claims_pushed": result["claims_pushed"],
+			"failed_count": result["failed_count"],
+			"summary": result["summary"],
+		}
+	).insert(ignore_permissions=True)
+	return status
+
+
+def _maybe_send_failure_alert(settings, status):
+	"""Fires exactly once when the failure streak first reaches the
+	threshold — not on every run after that — so a broken sync doesn't
+	spam the inbox for as long as it stays broken. A later success (which
+	breaks the streak) re-arms it for next time."""
+	if not settings.alert_email or status == "Success":
+		return
+	threshold = cint(settings.failure_alert_threshold) or 3
+	recent = frappe.get_all(
+		"Org Sync Log", fields=["status"], order_by="run_at desc", limit_page_length=threshold
+	)
+	streak = 0
+	for row in recent:
+		if row.status == "Success":
+			break
+		streak += 1
+	if streak != threshold:
+		return
+	frappe.sendmail(
+		recipients=[settings.alert_email],
+		subject="NWP: Central sync has failed for several runs in a row",
+		message=(
+			f"The push to central has now failed or partially failed {threshold} runs in a row.<br>"
+			f"Latest run: {settings.last_run_status}<br><br>"
+			"Check Central Sync Status or Org Sync Log for details."
+		),
+	)
 
 
 def scheduled_push(manual=False):
@@ -218,11 +329,20 @@ def scheduled_push(manual=False):
 		return None
 
 	try:
-		summary = push_approved_records(settings)
+		result = push_approved_records(settings)
 	except Exception:
-		summary = "FAILED — " + frappe.get_traceback()[:200]
+		result = {
+			"registrations_pushed": 0,
+			"claims_pushed": 0,
+			"failed_count": 1,
+			"summary": "FAILED — " + frappe.get_traceback()[:200],
+		}
 
 	settings.db_set("last_run_at", now_datetime())
-	settings.db_set("last_run_status", summary)
+	settings.db_set("last_run_status", result["summary"])
 	frappe.db.commit()
-	return summary
+
+	status = _log_run(result)
+	_maybe_send_failure_alert(settings, status)
+	frappe.db.commit()
+	return result["summary"]

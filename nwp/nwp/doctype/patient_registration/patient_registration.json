@@ -36,6 +36,7 @@
   "central_sync_section",
   "pushed_to_central",
   "central_push_error",
+  "central_pushed_at",
   "column_break_central_sync",
   "source_org",
   "source_name"
@@ -191,10 +192,10 @@
    "options": "Patient Registration History"
   },
   {
-   "description": "Every individual question/answer/score from each earlier assessment cycle, tagged by that cycle's assessment date — compare against the current Assessment Answers above to see exactly what changed.",
+   "description": "Every individual question/answer/score from each earlier assessment cycle, tagged by that cycle's assessment date \u2014 compare against the current Assessment Answers above to see exactly what changed.",
    "fieldname": "registration_history_answers",
    "fieldtype": "Table",
-   "label": "Registration History – Assessment Answers",
+   "label": "Registration History \u2013 Assessment Answers",
    "options": "Patient Registration History Answer"
   },
   {
@@ -211,18 +212,25 @@
    "read_only": 1
   },
   {
-   "description": "Why the last push attempt failed, if it did — cleared on the next successful push.",
+   "description": "Why the last push attempt failed, if it did \u2014 cleared on the next successful push.",
    "fieldname": "central_push_error",
    "fieldtype": "Small Text",
    "label": "Central Push Error",
    "read_only": 1
   },
   {
+   "fieldname": "central_pushed_at",
+   "fieldtype": "Datetime",
+   "label": "Central Pushed At",
+   "read_only": 1,
+   "description": "When this record last successfully pushed to central. Cleared is not necessary \u2014 only updated on each successful push."
+  },
+  {
    "fieldname": "column_break_central_sync",
    "fieldtype": "Column Break"
   },
   {
-   "description": "Which organization this record was received from — set only on the central site, from the authenticated API user, never from the pushed data itself.",
+   "description": "Which organization this record was received from \u2014 set only on the central site, from the authenticated API user, never from the pushed data itself.",
    "fieldname": "source_org",
    "fieldtype": "Link",
    "label": "Source Organization",
@@ -230,7 +238,7 @@
    "read_only": 1
   },
   {
-   "description": "This record's own name on the organization's site — set only on the central site. Together with Source Organization, this is the pair central upserts by.",
+   "description": "This record's own name on the organization's site \u2014 set only on the central site. Together with Source Organization, this is the pair central upserts by.",
    "fieldname": "source_name",
    "fieldtype": "Data",
    "label": "Source Record Name",

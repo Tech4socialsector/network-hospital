@@ -16,8 +16,20 @@ class PatientRegistration(Document):
 		if self.is_new() and not self.assessment_answers:
 			self.populate_assessment_answers()
 		self.sync_assessment_answer_fetch_fields()
+		self.sync_organization_from_hospital()
 		self.total_score = sum(flt(d.score) for d in self.assessment_answers)
 		self.validate_duplicate_patient_id()
+
+	def sync_organization_from_hospital(self):
+		"""Organization is fetch_from hospital_name.organization — that only
+		runs on a live browser field-change, so a Data Import or API-created
+		record never gets it, leaving every patient's Organization blank
+		forever (this was silently the case for every bulk-imported record
+		until a one-time backfill patch fixed the historical backlog). This
+		is the permanent fix so it never recurs for future imports."""
+		if self.organization or not self.hospital_name:
+			return
+		self.organization = frappe.db.get_value("Hospital With Organization", self.hospital_name, "organization")
 
 	def sync_assessment_answer_fetch_fields(self):
 		"""score and selected_option_label are both fetch_from selected_option

@@ -1,0 +1,88 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-24 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "run_at",
+  "status",
+  "column_break_log",
+  "registrations_pushed",
+  "claims_pushed",
+  "failed_count",
+  "summary"
+ ],
+ "fields": [
+  {
+   "fieldname": "run_at",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Run At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Success\nPartial Failure\nFailed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_log",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "registrations_pushed",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Registrations Pushed",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "claims_pushed",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Claims Pushed",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "failed_count",
+   "fieldtype": "Int",
+   "label": "Failed Count",
+   "read_only": 1
+  },
+  {
+   "fieldname": "summary",
+   "fieldtype": "Small Text",
+   "label": "Summary",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-11-24 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "NWP",
+ "name": "Org Sync Log",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "run_at",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -130,13 +130,14 @@ after_install = "nwp.install.after_install"
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+	"Patient Registration": {
+		"on_update": "nwp.nwp.doctype.org_sync_settings.org_sync_settings.mark_registration_dirty"
+	},
+	"Patient Claim Form": {
+		"on_update": "nwp.nwp.doctype.org_sync_settings.org_sync_settings.mark_claim_dirty"
+	},
+}
 
 # Scheduled Tasks
 # ---------------

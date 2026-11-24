@@ -7,3 +7,5 @@ nwp.patches.rename_assessment_question_options_to_label
 # Patches added in this section will be executed after doctypes are migrated
 nwp.patches.backfill_doctor_master
 nwp.patches.backfill_assessment_answer_labels
+nwp.patches.seed_org_sync_shareable_fields
+nwp.patches.backfill_organization_fields
