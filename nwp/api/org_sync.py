@@ -55,6 +55,21 @@ def _resolve_registration_links(data):
 		data["hospital_name"] = _get_or_create_link("Hospital With Organization", data["hospital_name"])
 
 
+def _resolve_claim_links(data):
+	"""Patient Claim Form links to Type of service / Doctor / Approve
+	Status — same situation as the registration's own links. Approval
+	Status is normally a small fixed set ("Approved" etc.) that should
+	already exist from the app's own setup, but auto-creating it here too
+	means a claim never gets rejected just because central's own fixture
+	data hasn't been seeded yet."""
+	if data.get("type_of_service"):
+		data["type_of_service"] = _get_or_create_link("Type of service", data["type_of_service"])
+	if data.get("treating_doctor_name"):
+		data["treating_doctor_name"] = _get_or_create_link("Doctor", data["treating_doctor_name"])
+	if data.get("approval_status"):
+		data["approval_status"] = _get_or_create_link("Approve Status", data["approval_status"])
+
+
 def _attach_file(doctype, docname, fieldname, file_payload):
 	if not file_payload:
 		return None
@@ -101,6 +116,7 @@ def receive_record(doctype, source_name, data, files=None, source_prid=None):
 		_resolve_registration_links(data)
 
 	if doctype == "Patient Claim Form":
+		_resolve_claim_links(data)
 		if source_prid:
 			central_prid = frappe.db.get_value(
 				"Patient Registration", {"source_org": source_org, "source_name": source_prid}
