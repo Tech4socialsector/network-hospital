@@ -1,0 +1,77 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-25 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "reference_doctype",
+  "record_name",
+  "column_break_deletion",
+  "sent_to_central",
+  "central_delete_error"
+ ],
+ "fields": [
+  {
+   "description": "Which synced doctype the deleted record belonged to.",
+   "fieldname": "reference_doctype",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Reference Doctype",
+   "options": "Patient Registration\nPatient Claim Form\nNetwork Hospital Budget\nBudget Disbursement",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "description": "This record's own name on this organization's site — the same value central knows it by as source_name.",
+   "fieldname": "record_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Record Name",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_deletion",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "Set once central has confirmed it deleted its own matching copy (or never had one to begin with).",
+   "fieldname": "sent_to_central",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Sent To Central",
+   "read_only": 1
+  },
+  {
+   "description": "Why the last delete attempt failed, if it did — cleared on the next successful attempt.",
+   "fieldname": "central_delete_error",
+   "fieldtype": "Small Text",
+   "label": "Central Delete Error",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-11-25 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "NWP",
+ "name": "Org Sync Deletion",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

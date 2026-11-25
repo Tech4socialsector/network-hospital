@@ -132,16 +132,20 @@ after_install = "nwp.install.after_install"
 
 doc_events = {
 	"Patient Registration": {
-		"on_update": "nwp.nwp.doctype.org_sync_settings.org_sync_settings.mark_registration_dirty"
+		"on_update": "nwp.nwp.doctype.org_sync_settings.org_sync_settings.mark_registration_dirty",
+		"on_trash": "nwp.nwp.doctype.org_sync_settings.org_sync_settings.log_deletion_for_sync",
 	},
 	"Patient Claim Form": {
-		"on_update": "nwp.nwp.doctype.org_sync_settings.org_sync_settings.mark_claim_dirty"
+		"on_update": "nwp.nwp.doctype.org_sync_settings.org_sync_settings.mark_claim_dirty",
+		"on_trash": "nwp.nwp.doctype.org_sync_settings.org_sync_settings.log_deletion_for_sync",
 	},
 	"Network Hospital Budget": {
-		"on_update": "nwp.nwp.doctype.org_sync_settings.org_sync_settings.mark_budget_dirty"
+		"on_update": "nwp.nwp.doctype.org_sync_settings.org_sync_settings.mark_budget_dirty",
+		"on_trash": "nwp.nwp.doctype.org_sync_settings.org_sync_settings.log_deletion_for_sync",
 	},
 	"Budget Disbursement": {
-		"on_update": "nwp.nwp.doctype.org_sync_settings.org_sync_settings.mark_disbursement_dirty"
+		"on_update": "nwp.nwp.doctype.org_sync_settings.org_sync_settings.mark_disbursement_dirty",
+		"on_trash": "nwp.nwp.doctype.org_sync_settings.org_sync_settings.log_deletion_for_sync",
 	},
 }
 

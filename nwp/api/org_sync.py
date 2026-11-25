@@ -33,6 +33,20 @@ def _get_or_create_link(doctype, value, filters=None):
 	existing = frappe.db.get_value(doctype, {"name": value, **(filters or {})})
 	if existing:
 		return existing
+
+	if filters and frappe.db.exists(doctype, value):
+		# A record with this exact name already exists — it just doesn't
+		# match on one of the extra fields filters describes (e.g. this
+		# hospital was auto-created before its Organization was ever known,
+		# so it exists but with that field blank). That's not a new value
+		# arriving, it's an old record missing a field — patch the blank
+		# field(s) in rather than trying to insert a second record under
+		# the same name, which Frappe would simply reject outright.
+		for fieldname, val in filters.items():
+			if val and not frappe.db.get_value(doctype, value, fieldname):
+				frappe.db.set_value(doctype, value, fieldname, val)
+		return value
+
 	doc = frappe.new_doc(doctype)
 	doc.name = value
 	if filters:
@@ -56,8 +70,28 @@ def _resolve_registration_links(data):
 		data["district"] = _get_or_create_link(
 			"District List", data["district"], {"state": data.get("state")} if data.get("state") else None
 		)
+	if data.get("organization"):
+		# Not a Link field on Patient Registration itself (plain Data,
+		# fetched from the hospital) — resolved here anyway, purely so the
+		# Organization Name master exists before Hospital With
+		# Organization's own "organization" Link field is set from it, just
+		# below (must run first, or that Link field fails validation
+		# against a value that doesn't exist yet).
+		_get_or_create_link("Organization Name", data["organization"])
 	if data.get("hospital_name"):
-		data["hospital_name"] = _get_or_create_link("Hospital With Organization", data["hospital_name"])
+		# Hospital With Organization has its own "organization" field — if a
+		# brand new hospital gets auto-created here without it, this
+		# registration's own Patient Registration.organization fallback
+		# (which fetches FROM this exact hospital record) finds it blank
+		# too and silently inherits the blank, permanently, since nothing
+		# re-triggers that fetch on its own. Confirmed this is why many
+		# Chinchpada registrations/claims arrived on central with Organization
+		# blank: their hospital was auto-created here before this fix.
+		data["hospital_name"] = _get_or_create_link(
+			"Hospital With Organization",
+			data["hospital_name"],
+			{"organization": data.get("organization")} if data.get("organization") else None,
+		)
 
 
 def _resolve_claim_links(data):
@@ -87,10 +121,17 @@ def _resolve_budget_links(data):
 	"""Network Hospital Budget links to Hospital With Organization /
 	Organization Name / Financial Year — all three can be brand new to
 	central the first time any given organization's budget data arrives."""
-	if data.get("hospital_name"):
-		data["hospital_name"] = _get_or_create_link("Hospital With Organization", data["hospital_name"])
 	if data.get("organization_name"):
 		data["organization_name"] = _get_or_create_link("Organization Name", data["organization_name"])
+	if data.get("hospital_name"):
+		# Must run after Organization Name is resolved above — Hospital
+		# With Organization's own "organization" Link field is set from it
+		# here, which fails validation if that record doesn't exist yet.
+		data["hospital_name"] = _get_or_create_link(
+			"Hospital With Organization",
+			data["hospital_name"],
+			{"organization": data.get("organization_name")} if data.get("organization_name") else None,
+		)
 	if data.get("financial_year"):
 		data["financial_year"] = _get_or_create_link("Financial Year", data["financial_year"])
 
@@ -98,10 +139,16 @@ def _resolve_budget_links(data):
 def _resolve_disbursement_links(data):
 	"""Budget Disbursement links to Hospital With Organization /
 	Organization Name — same reasoning as _resolve_budget_links."""
-	if data.get("hospital_name"):
-		data["hospital_name"] = _get_or_create_link("Hospital With Organization", data["hospital_name"])
 	if data.get("organization"):
 		data["organization"] = _get_or_create_link("Organization Name", data["organization"])
+	if data.get("hospital_name"):
+		# Must run after Organization Name is resolved above — see
+		# _resolve_budget_links for why the order matters here.
+		data["hospital_name"] = _get_or_create_link(
+			"Hospital With Organization",
+			data["hospital_name"],
+			{"organization": data.get("organization")} if data.get("organization") else None,
+		)
 
 
 def _attach_file(doctype, docname, fieldname, file_payload):
@@ -209,3 +256,26 @@ def receive_record(doctype, source_name, data, files=None, source_prid=None):
 
 	frappe.db.commit()
 	return {"ok": True, "name": name}
+
+
+@frappe.whitelist(methods=["POST"])
+def delete_record(doctype, source_name):
+	"""The other half of keeping central in sync with deletions — a record
+	removed on the organization's own site after it already reached central
+	would otherwise leave a stale copy here forever, since this sync only
+	ever pushed new/changed data and had no way to express "this is gone
+	now". Matched the same way every update is: by (source_org,
+	source_name), never by central's own name for it. Finding nothing to
+	delete is not an error — it just means central never had a copy, or
+	already removed it on an earlier attempt; either way the organization's
+	own record is gone, which is the actual goal."""
+	if doctype not in ALLOWED_DOCTYPES:
+		return {"ok": False, "error": f"'{doctype}' is not synced to central."}
+
+	source_org = _source_org()
+	name = frappe.db.get_value(doctype, {"source_org": source_org, "source_name": source_name})
+	if name:
+		frappe.delete_doc(doctype, name, force=True, ignore_permissions=True)
+
+	frappe.db.commit()
+	return {"ok": True, "deleted": bool(name)}

@@ -12,6 +12,7 @@ from frappe.utils import cint, get_time, now_datetime, time_diff_in_seconds
 # this one, which every central site in use so far has installed as the
 # real app rather than a Server Script workaround.
 RECEIVE_RECORD_METHOD = "nwp.api.org_sync.receive_record"
+DELETE_RECORD_METHOD = "nwp.api.org_sync.delete_record"
 # upload_file and frappe.client.set_value are Frappe's own standard,
 # always-available endpoints — used for file attachments specifically,
 # since those still can't travel inside the main JSON payload (kept
@@ -133,6 +134,24 @@ def mark_disbursement_dirty(doc, method=None):
 	_mark_dirty_if_shared_field_changed(doc, DISBURSEMENT_FIELDS)
 
 
+def log_deletion_for_sync(doc, method=None):
+	"""A record deleted here after it already reached central would
+	otherwise leave a stale copy on central forever — this sync only ever
+	pushed new/changed data, nothing ever told central a record was gone.
+	Only logs it if central actually has a copy to remove (central_pushed_at
+	set at some point); a record deleted before it ever synced needs no
+	message sent anywhere."""
+	if not doc.get("central_pushed_at"):
+		return
+	frappe.get_doc(
+		{
+			"doctype": "Org Sync Deletion",
+			"reference_doctype": doc.doctype,
+			"record_name": doc.name,
+		}
+	).insert(ignore_permissions=True)
+
+
 def _auth_headers(settings):
 	api_secret = settings.get_password("api_secret", raise_exception=False)
 	# No Expect header here on purpose — `requests` never sends one of its
@@ -144,6 +163,33 @@ def _auth_headers(settings):
 	return {"Authorization": f"token {settings.api_key}:{api_secret}"}
 
 
+def _validate_files(doc, file_fields):
+	"""Checked and must raise BEFORE anything is sent to central — a file
+	problem has to block the claim's entire push, not just its own file
+	field. Run too late (after the main record already pushed, which is
+	how this worked originally), a wrong file value still left the rest
+	of the claim's data sitting on central even though the push as a
+	whole showed "Failed" locally — a quiet partial success masquerading
+	as a full failure. Pure validation, no network calls, so it's safe to
+	run first."""
+	for fieldname in file_fields:
+		file_url = doc.get(fieldname)
+		if not file_url:
+			# Genuinely blank is "nothing uploaded yet", not bad data —
+			# allowed through same as always.
+			continue
+		if not frappe.db.exists("File", {"file_url": file_url}):
+			# Seen in real data: a bad import once put something that
+			# isn't a real file path (e.g. a date) into an attachment
+			# field.
+			label = doc.meta.get_label(fieldname)
+			frappe.throw(
+				f"'{label}' does not have a valid file attached (found {file_url!r} instead of "
+				f"a real document). Please re-upload the correct file on this claim before it "
+				f"can sync to central."
+			)
+
+
 def _upload_files(settings, doctype, central_name, doc, file_fields):
 	"""Sends each attached file through Frappe's own standard, always-
 	available file-upload endpoint — never through our custom JSON payload,
@@ -151,7 +197,9 @@ def _upload_files(settings, doctype, central_name, doc, file_fields):
 	installed) can't decode base64 content at all. Uploading alone only
 	creates the File record; it doesn't link it back to the parent's own
 	field (confirmed — same standard endpoint the Desk UI itself uses), so
-	a second, equally standard call sets that field explicitly."""
+	a second, equally standard call sets that field explicitly. Files are
+	already known-valid by the time this runs — _validate_files() checked
+	before the main record was ever pushed."""
 	upload_url = settings.central_url.rstrip("/") + f"/api/method/{UPLOAD_FILE_METHOD}"
 	set_value_url = settings.central_url.rstrip("/") + f"/api/method/{SET_VALUE_METHOD}"
 
@@ -159,19 +207,6 @@ def _upload_files(settings, doctype, central_name, doc, file_fields):
 		file_url = doc.get(fieldname)
 		if not file_url:
 			continue
-		if not frappe.db.exists("File", {"file_url": file_url}):
-			# Seen in real data: a bad import once put something that
-			# isn't a real file path (e.g. a date) into an attachment
-			# field. Deliberately NOT skipped — central should never
-			# receive a claim whose supporting document is missing or
-			# corrupted; this must block the push with a message the
-			# hospital staff can actually act on, not a technical one.
-			label = doc.meta.get_label(fieldname)
-			frappe.throw(
-				f"'{label}' does not have a valid file attached (found {file_url!r} instead of "
-				f"a real document). Please re-upload the correct file on this claim before it "
-				f"can sync to central."
-			)
 		file_doc = frappe.get_doc("File", {"file_url": file_url})
 		content = file_doc.get_content()
 		if isinstance(content, str):
@@ -229,6 +264,10 @@ def _extract_error_message(response):
 
 def _push(settings, doctype, name, fields, file_fields=None, source_prid=None):
 	doc = frappe.get_doc(doctype, name)
+	if file_fields:
+		# Must happen before any network call — a bad file blocks the
+		# WHOLE push, not just its own field (see _validate_files).
+		_validate_files(doc, file_fields)
 	payload = {f: doc.get(f) for f in fields}
 
 	body = {"doctype": doctype, "source_name": name, "data": payload}
@@ -323,6 +362,43 @@ def _push_unsent_simple(settings, doctype, fields, notify_user, done_steps, tota
 	return pushed, done_steps, errors
 
 
+def _push_deletions(settings, notify_user, done_steps, total_steps):
+	"""Tells central to remove its own copy of anything deleted here after
+	it already synced — this sync otherwise only ever pushes new/changed
+	data, so a deletion would silently leave a stale copy on central
+	forever with nothing to ever clean it up."""
+	pending = frappe.get_all(
+		"Org Sync Deletion", filters={"sent_to_central": 0}, fields=["name", "reference_doctype", "record_name"]
+	)
+	url = settings.central_url.rstrip("/") + f"/api/method/{DELETE_RECORD_METHOD}"
+	sent = 0
+	errors = []
+
+	for i, d in enumerate(pending):
+		if i % 50 == 0:
+			frappe.db.commit()
+		done_steps += 1
+		_notify_progress(notify_user, done_steps, total_steps)
+		try:
+			response = requests.post(
+				url,
+				data={"doctype": d.reference_doctype, "source_name": d.record_name},
+				headers={**_auth_headers(settings), "Connection": "close"},
+				timeout=30,
+			)
+			response.raise_for_status()
+			result = response.json().get("message", {})
+			if not result.get("ok"):
+				raise Exception(result.get("error") or "Central site rejected the delete.")
+			frappe.db.set_value("Org Sync Deletion", d.name, {"sent_to_central": 1, "central_delete_error": ""})
+			sent += 1
+		except Exception as e:
+			frappe.db.set_value("Org Sync Deletion", d.name, "central_delete_error", str(e)[:2000])
+			errors.append(f"{d.reference_doctype} {d.record_name}: delete FAILED")
+
+	return sent, done_steps, errors
+
+
 def push_approved_records(settings=None, notify_user=None):
 	"""Pushes every not-yet-pushed, Approved Patient Claim Form (and the
 	Patient Registration it links to) to the central site, plus every
@@ -349,7 +425,8 @@ def push_approved_records(settings=None, notify_user=None):
 	registration_names = list({c.prid for c in claims if c.prid})
 	budget_count = frappe.db.count("Network Hospital Budget", filters={"pushed_to_central": 0})
 	disbursement_count = frappe.db.count("Budget Disbursement", filters={"pushed_to_central": 0})
-	total_steps = len(registration_names) + len(claims) + budget_count + disbursement_count
+	deletion_count = frappe.db.count("Org Sync Deletion", filters={"sent_to_central": 0})
+	total_steps = len(registration_names) + len(claims) + budget_count + disbursement_count + deletion_count
 	done_steps = 0
 
 	for i, reg_name in enumerate(registration_names):
@@ -414,10 +491,14 @@ def push_approved_records(settings=None, notify_user=None):
 	)
 	errors += disbursement_errors
 
+	pushed_deletions, done_steps, deletion_errors = _push_deletions(settings, notify_user, done_steps, total_steps)
+	errors += deletion_errors
+
 	frappe.db.commit()
 	summary = (
 		f"Patient Registration: {pushed_registrations} pushed | Patient Claim Form: {pushed_claims} pushed"
 		f" | Network Hospital Budget: {pushed_budgets} pushed | Budget Disbursement: {pushed_disbursements} pushed"
+		f" | Deletions: {pushed_deletions} sent"
 	)
 	if errors:
 		# The full reason for each failure is already saved on that record's
@@ -436,11 +517,13 @@ def push_approved_records(settings=None, notify_user=None):
 	short_summary = (
 		f"Patient Registration: {pushed_registrations} pushed | Patient Claim Form: {pushed_claims} pushed"
 		f" | Budget: {pushed_budgets} pushed | Disbursement: {pushed_disbursements} pushed"
+		f" | Deletions: {pushed_deletions} sent"
 	)
 	if errors:
 		short_summary += f" | {len(errors)} failed"
 	return {
 		"registrations_pushed": pushed_registrations,
+		"deletions_pushed": pushed_deletions,
 		"claims_pushed": pushed_claims,
 		"budgets_pushed": pushed_budgets,
 		"disbursements_pushed": pushed_disbursements,
@@ -550,6 +633,7 @@ def _log_run(result):
 		or result["claims_pushed"]
 		or result["budgets_pushed"]
 		or result["disbursements_pushed"]
+		or result["deletions_pushed"]
 	)
 	status = "Success" if not result["failed_count"] else ("Failed" if not pushed_anything else "Partial Failure")
 	frappe.get_doc(
@@ -561,6 +645,7 @@ def _log_run(result):
 			"claims_pushed": result["claims_pushed"],
 			"budgets_pushed": result["budgets_pushed"],
 			"disbursements_pushed": result["disbursements_pushed"],
+			"deletions_pushed": result["deletions_pushed"],
 			"failed_count": result["failed_count"],
 			"summary": result["summary"],
 		}
@@ -613,6 +698,7 @@ def scheduled_push(manual=False, notify_user=None):
 			"claims_pushed": 0,
 			"budgets_pushed": 0,
 			"disbursements_pushed": 0,
+			"deletions_pushed": 0,
 			"failed_count": 1,
 			"summary": error_summary,
 			"short_summary": error_summary,

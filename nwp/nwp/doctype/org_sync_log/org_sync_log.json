@@ -12,6 +12,7 @@
   "claims_pushed",
   "budgets_pushed",
   "disbursements_pushed",
+  "deletions_pushed",
   "failed_count",
   "summary"
  ],
@@ -63,6 +64,13 @@
    "fieldname": "disbursements_pushed",
    "fieldtype": "Int",
    "label": "Disbursements Pushed",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "deletions_pushed",
+   "fieldtype": "Int",
+   "label": "Deletions Pushed",
    "read_only": 1
   },
   {
