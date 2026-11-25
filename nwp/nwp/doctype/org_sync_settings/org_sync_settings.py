@@ -1,3 +1,4 @@
+import time
 from datetime import datetime, timedelta
 
 import frappe
@@ -211,6 +212,10 @@ def _push(settings, doctype, name, fields, file_fields=None, source_prid=None):
 		except requests.exceptions.HTTPError as e:
 			last_error = e
 			if e.response is not None and e.response.status_code == 417 and attempt < 2:
+				# A zero-delay retry gives a transient infrastructure
+				# hiccup no time to clear — worth a short, real pause
+				# between attempts instead of hammering it instantly.
+				time.sleep(2)
 				continue
 			raise
 	else:
