@@ -41,6 +41,15 @@ CLAIM_FIELDS = [
 
 CLAIM_FILE_FIELDS = ["upload_prescription", "upload_final_bill"]
 
+# Budgets and disbursements have no approval workflow of their own (unlike
+# claims) — every not-yet-pushed row is eligible to push, every run.
+BUDGET_FIELDS = [
+	"hospital_name", "organization_name", "date_of_approval",
+	"financial_year", "start_date", "end_date", "grant_id", "total_budget",
+]
+
+DISBURSEMENT_FIELDS = ["date", "hospital_name", "organization", "disbursed_amount"]
+
 
 class OrgSyncSettings(Document):
 	pass
@@ -114,6 +123,14 @@ def mark_registration_dirty(doc, method=None):
 
 def mark_claim_dirty(doc, method=None):
 	_mark_dirty_if_shared_field_changed(doc, CLAIM_FIELDS + CLAIM_FILE_FIELDS)
+
+
+def mark_budget_dirty(doc, method=None):
+	_mark_dirty_if_shared_field_changed(doc, BUDGET_FIELDS)
+
+
+def mark_disbursement_dirty(doc, method=None):
+	_mark_dirty_if_shared_field_changed(doc, DISBURSEMENT_FIELDS)
 
 
 def _auth_headers(settings):
@@ -277,11 +294,42 @@ def _notify_progress(notify_user, done, total):
 	)
 
 
+def _push_unsent_simple(settings, doctype, fields, notify_user, done_steps, total_steps):
+	"""Pushes every not-yet-pushed row of a doctype that — unlike claims —
+	has no approval gate and no dependency on another record already being
+	on central (budgets and disbursements are both this simple: just push
+	whatever hasn't gone yet)."""
+	pushed = 0
+	errors = []
+	names = frappe.get_all(doctype, filters={"pushed_to_central": 0}, pluck="name")
+
+	for i, name in enumerate(names):
+		if i % 50 == 0:
+			frappe.db.commit()
+		done_steps += 1
+		_notify_progress(notify_user, done_steps, total_steps)
+		try:
+			_push(settings, doctype, name, fields)
+			frappe.db.set_value(
+				doctype,
+				name,
+				{"pushed_to_central": 1, "central_push_error": "", "central_pushed_at": now_datetime()},
+			)
+			pushed += 1
+		except Exception as e:
+			frappe.db.set_value(doctype, name, "central_push_error", str(e)[:2000])
+			errors.append(f"{doctype} {name}: FAILED")
+
+	return pushed, done_steps, errors
+
+
 def push_approved_records(settings=None, notify_user=None):
 	"""Pushes every not-yet-pushed, Approved Patient Claim Form (and the
-	Patient Registration it links to) to the central site. Registrations
-	go first, since a claim's own push assumes its registration already
-	exists on central."""
+	Patient Registration it links to) to the central site, plus every
+	not-yet-pushed Network Hospital Budget and Budget Disbursement row (no
+	approval gate on those — they push every run). Registrations go first,
+	since a claim's own push assumes its registration already exists on
+	central."""
 	settings = settings or frappe.get_single("Org Sync Settings")
 	excluded_registration = excluded_registration_field_names(settings)
 	excluded_claim = excluded_claim_field_names(settings)
@@ -299,7 +347,9 @@ def push_approved_records(settings=None, notify_user=None):
 	)
 
 	registration_names = list({c.prid for c in claims if c.prid})
-	total_steps = len(registration_names) + len(claims)
+	budget_count = frappe.db.count("Network Hospital Budget", filters={"pushed_to_central": 0})
+	disbursement_count = frappe.db.count("Budget Disbursement", filters={"pushed_to_central": 0})
+	total_steps = len(registration_names) + len(claims) + budget_count + disbursement_count
 	done_steps = 0
 
 	for i, reg_name in enumerate(registration_names):
@@ -354,8 +404,21 @@ def push_approved_records(settings=None, notify_user=None):
 			frappe.db.set_value("Patient Claim Form", c.name, "central_push_error", str(e)[:2000])
 			errors.append(f"Patient Claim Form {c.name}: FAILED")
 
+	pushed_budgets, done_steps, budget_errors = _push_unsent_simple(
+		settings, "Network Hospital Budget", BUDGET_FIELDS, notify_user, done_steps, total_steps
+	)
+	errors += budget_errors
+
+	pushed_disbursements, done_steps, disbursement_errors = _push_unsent_simple(
+		settings, "Budget Disbursement", DISBURSEMENT_FIELDS, notify_user, done_steps, total_steps
+	)
+	errors += disbursement_errors
+
 	frappe.db.commit()
-	summary = f"Patient Registration: {pushed_registrations} pushed | Patient Claim Form: {pushed_claims} pushed"
+	summary = (
+		f"Patient Registration: {pushed_registrations} pushed | Patient Claim Form: {pushed_claims} pushed"
+		f" | Network Hospital Budget: {pushed_budgets} pushed | Budget Disbursement: {pushed_disbursements} pushed"
+	)
 	if errors:
 		# The full reason for each failure is already saved on that record's
 		# own central_push_error field — this is just a short recap for the
@@ -370,12 +433,17 @@ def push_approved_records(settings=None, notify_user=None):
 	# itself — just the counts, nothing to scroll through. Full detail
 	# (per-record reasons) belongs in Central Sync Status / Org Sync Log,
 	# not repeated here.
-	short_summary = f"Patient Registration: {pushed_registrations} pushed | Patient Claim Form: {pushed_claims} pushed"
+	short_summary = (
+		f"Patient Registration: {pushed_registrations} pushed | Patient Claim Form: {pushed_claims} pushed"
+		f" | Budget: {pushed_budgets} pushed | Disbursement: {pushed_disbursements} pushed"
+	)
 	if errors:
 		short_summary += f" | {len(errors)} failed"
 	return {
 		"registrations_pushed": pushed_registrations,
 		"claims_pushed": pushed_claims,
+		"budgets_pushed": pushed_budgets,
+		"disbursements_pushed": pushed_disbursements,
 		"failed_count": len(errors),
 		"summary": summary,
 		"short_summary": short_summary,
@@ -477,9 +545,13 @@ def _retry_failed_slowly(notify_user=None):
 
 
 def _log_run(result):
-	status = "Success" if not result["failed_count"] else (
-		"Failed" if not (result["registrations_pushed"] or result["claims_pushed"]) else "Partial Failure"
+	pushed_anything = (
+		result["registrations_pushed"]
+		or result["claims_pushed"]
+		or result["budgets_pushed"]
+		or result["disbursements_pushed"]
 	)
+	status = "Success" if not result["failed_count"] else ("Failed" if not pushed_anything else "Partial Failure")
 	frappe.get_doc(
 		{
 			"doctype": "Org Sync Log",
@@ -487,6 +559,8 @@ def _log_run(result):
 			"status": status,
 			"registrations_pushed": result["registrations_pushed"],
 			"claims_pushed": result["claims_pushed"],
+			"budgets_pushed": result["budgets_pushed"],
+			"disbursements_pushed": result["disbursements_pushed"],
 			"failed_count": result["failed_count"],
 			"summary": result["summary"],
 		}
@@ -537,6 +611,8 @@ def scheduled_push(manual=False, notify_user=None):
 		result = {
 			"registrations_pushed": 0,
 			"claims_pushed": 0,
+			"budgets_pushed": 0,
+			"disbursements_pushed": 0,
 			"failed_count": 1,
 			"summary": error_summary,
 			"short_summary": error_summary,

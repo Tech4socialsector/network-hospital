@@ -10,7 +10,19 @@ from nwp.nwp.doctype.org_sync_settings.org_sync_settings import (
 )
 
 MAX_ROWS = 2000
-DOCTYPES = (("Patient Registration", "Registration"), ("Patient Claim Form", "Claim Form"))
+# Label, which field on that doctype holds the organization (Network
+# Hospital Budget calls it "organization_name" — fetched from its hospital —
+# everything else calls it "organization"), and which group it belongs to on
+# the page. Patient and financial records are split into their own stat
+# cards and their own table, each with its own MAX_ROWS cap — Budget and
+# Disbursement are low-volume and were getting crowded out of a single
+# combined, capped list by thousands of claims and registrations.
+DOCTYPES = (
+	("Patient Registration", "Registration", "organization", "patient"),
+	("Patient Claim Form", "Claim Form", "organization", "patient"),
+	("Network Hospital Budget", "Budget", "organization_name", "financial"),
+	("Budget Disbursement", "Disbursement", "organization", "financial"),
+)
 
 
 @frappe.whitelist()
@@ -29,7 +41,7 @@ def get_central_summary():
 	mix, with no sent/pending/failed framing since that only describes an
 	outbound push, which central never does."""
 	counts = {}
-	for doctype, label in DOCTYPES:
+	for doctype, label, _org_field, _group in DOCTYPES:
 		counts[label] = {
 			"total": frappe.db.count(doctype),
 			"this_month": frappe.db.count(doctype, {"creation": [">=", get_first_day(now_datetime())]}),
@@ -56,10 +68,10 @@ def get_central_records(filters=None):
 	to_date = (filters.get("to_date") or "").strip()
 
 	rows = []
-	for doctype, label in DOCTYPES:
+	for doctype, label, org_field, _group in DOCTYPES:
 		doc_filters = []
 		if organization:
-			doc_filters.append(["organization", "=", organization])
+			doc_filters.append([org_field, "=", organization])
 		if from_date:
 			doc_filters.append(["creation", ">=", from_date])
 		if to_date:
@@ -68,7 +80,7 @@ def get_central_records(filters=None):
 		docs = frappe.get_all(
 			doctype,
 			filters=doc_filters,
-			fields=["name", "organization", "creation"],
+			fields=["name", f"{org_field} as organization", "creation"],
 			order_by="creation desc",
 			limit_page_length=MAX_ROWS,
 		)
@@ -93,9 +105,12 @@ def get_status(filters=None):
 	status = (filters.get("status") or "").strip()
 	from_date = (filters.get("from_date") or "").strip()
 	to_date = (filters.get("to_date") or "").strip()
+	group = (filters.get("group") or "").strip()
 
 	rows = []
-	for doctype, label in DOCTYPES:
+	for doctype, label, _org_field, doc_group in DOCTYPES:
+		if group and group != doc_group:
+			continue
 		docs = frappe.get_all(
 			doctype,
 			fields=["name", "pushed_to_central", "central_push_error", "central_pushed_at", "modified"],
@@ -145,11 +160,10 @@ def get_status(filters=None):
 @frappe.whitelist()
 def get_summary():
 	"""Volume-level awareness, not just a per-record table — how much has
-	actually gone to central, broken down by status, by service type, and
-	by month, so an organization can sense the scale without counting rows
-	themselves."""
+	actually gone to central, broken down by status and by month, so an
+	organization can sense the scale without counting rows themselves."""
 	counts = {}
-	for doctype, label in DOCTYPES:
+	for doctype, label, _org_field, group in DOCTYPES:
 		total = frappe.db.count(doctype)
 		sent = frappe.db.count(doctype, {"pushed_to_central": 1})
 		failed = frappe.db.count(doctype, {"pushed_to_central": 0, "central_push_error": ["is", "set"]})
@@ -162,20 +176,10 @@ def get_summary():
 			"failed": failed,
 			"pending": total - sent - failed,
 			"this_month": this_month,
+			"group": group,
 		}
 
-	# Only what's actually reached central — this answers "how much have we
-	# sent", not overall local volume (that's what the stat tiles above
-	# already show via total/pending/failed).
-	by_service = frappe.get_all(
-		"Patient Claim Form",
-		filters={"pushed_to_central": 1},
-		fields=["type_of_service as service", {"COUNT": "name", "as": "count"}],
-		group_by="type_of_service",
-		order_by="count desc",
-	)
-
-	return {"counts": counts, "by_service": by_service}
+	return {"counts": counts}
 
 
 @frappe.whitelist()
@@ -219,7 +223,10 @@ def get_intake_by_organization():
 def get_recent_runs():
 	return frappe.get_all(
 		"Org Sync Log",
-		fields=["run_at", "status", "registrations_pushed", "claims_pushed", "failed_count", "summary"],
+		fields=[
+			"run_at", "status", "registrations_pushed", "claims_pushed",
+			"budgets_pushed", "disbursements_pushed", "failed_count", "summary",
+		],
 		order_by="run_at desc",
 		limit_page_length=10,
 	)

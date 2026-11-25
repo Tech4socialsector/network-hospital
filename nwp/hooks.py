@@ -137,6 +137,12 @@ doc_events = {
 	"Patient Claim Form": {
 		"on_update": "nwp.nwp.doctype.org_sync_settings.org_sync_settings.mark_claim_dirty"
 	},
+	"Network Hospital Budget": {
+		"on_update": "nwp.nwp.doctype.org_sync_settings.org_sync_settings.mark_budget_dirty"
+	},
+	"Budget Disbursement": {
+		"on_update": "nwp.nwp.doctype.org_sync_settings.org_sync_settings.mark_disbursement_dirty"
+	},
 }
 
 # Scheduled Tasks

@@ -10,6 +10,8 @@
   "column_break_log",
   "registrations_pushed",
   "claims_pushed",
+  "budgets_pushed",
+  "disbursements_pushed",
   "failed_count",
   "summary"
  ],
@@ -47,6 +49,20 @@
    "fieldtype": "Int",
    "in_list_view": 1,
    "label": "Claims Pushed",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "budgets_pushed",
+   "fieldtype": "Int",
+   "label": "Budgets Pushed",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "disbursements_pushed",
+   "fieldtype": "Int",
+   "label": "Disbursements Pushed",
    "read_only": 1
   },
   {

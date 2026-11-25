@@ -2,7 +2,12 @@ import base64
 
 import frappe
 
-ALLOWED_DOCTYPES = {"Patient Registration", "Patient Claim Form"}
+ALLOWED_DOCTYPES = {
+	"Patient Registration",
+	"Patient Claim Form",
+	"Network Hospital Budget",
+	"Budget Disbursement",
+}
 
 
 def _source_org():
@@ -78,6 +83,27 @@ def _resolve_claim_links(data):
 		data["other_donor_name"] = _get_or_create_link("Other Donor Name", data["other_donor_name"])
 
 
+def _resolve_budget_links(data):
+	"""Network Hospital Budget links to Hospital With Organization /
+	Organization Name / Financial Year — all three can be brand new to
+	central the first time any given organization's budget data arrives."""
+	if data.get("hospital_name"):
+		data["hospital_name"] = _get_or_create_link("Hospital With Organization", data["hospital_name"])
+	if data.get("organization_name"):
+		data["organization_name"] = _get_or_create_link("Organization Name", data["organization_name"])
+	if data.get("financial_year"):
+		data["financial_year"] = _get_or_create_link("Financial Year", data["financial_year"])
+
+
+def _resolve_disbursement_links(data):
+	"""Budget Disbursement links to Hospital With Organization /
+	Organization Name — same reasoning as _resolve_budget_links."""
+	if data.get("hospital_name"):
+		data["hospital_name"] = _get_or_create_link("Hospital With Organization", data["hospital_name"])
+	if data.get("organization"):
+		data["organization"] = _get_or_create_link("Organization Name", data["organization"])
+
+
 def _attach_file(doctype, docname, fieldname, file_payload):
 	if not file_payload:
 		return None
@@ -134,6 +160,12 @@ def receive_record(doctype, source_name, data, files=None, source_prid=None):
 
 	if doctype == "Patient Registration":
 		_resolve_registration_links(data)
+
+	if doctype == "Network Hospital Budget":
+		_resolve_budget_links(data)
+
+	if doctype == "Budget Disbursement":
+		_resolve_disbursement_links(data)
 
 	if doctype == "Patient Claim Form":
 		_resolve_claim_links(data)
