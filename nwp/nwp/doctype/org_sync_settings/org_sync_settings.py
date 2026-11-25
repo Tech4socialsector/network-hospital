@@ -229,7 +229,21 @@ def _push(settings, doctype, name, fields, file_fields=None, source_prid=None):
 		_upload_files(settings, doctype, result["name"], doc, file_fields)
 
 
-def push_approved_records(settings=None):
+def _notify_progress(notify_user, done, total):
+	if not notify_user or not total:
+		return
+	frappe.publish_realtime(
+		"progress",
+		{
+			"title": "Pushing to central",
+			"progress": [done, total],
+			"description": f"{done} of {total} records processed",
+		},
+		user=notify_user,
+	)
+
+
+def push_approved_records(settings=None, notify_user=None):
 	"""Pushes every not-yet-pushed, Approved Patient Claim Form (and the
 	Patient Registration it links to) to the central site. Registrations
 	go first, since a claim's own push assumes its registration already
@@ -250,8 +264,19 @@ def push_approved_records(settings=None):
 		fields=["name", "prid"],
 	)
 
-	registration_names = {c.prid for c in claims if c.prid}
-	for reg_name in registration_names:
+	registration_names = list({c.prid for c in claims if c.prid})
+	total_steps = len(registration_names) + len(claims)
+	done_steps = 0
+
+	for i, reg_name in enumerate(registration_names):
+		if i % 50 == 0:
+			# Commit as we go, not just once at the very end — a large
+			# backlog can take long enough that the job gets stopped
+			# before finishing; without this, none of that work would be
+			# saved even though it genuinely succeeded.
+			frappe.db.commit()
+		done_steps += 1
+		_notify_progress(notify_user, done_steps, total_steps)
 		if frappe.db.get_value("Patient Registration", reg_name, "pushed_to_central"):
 			continue
 		try:
@@ -272,7 +297,11 @@ def push_approved_records(settings=None):
 			frappe.db.set_value("Patient Registration", reg_name, "central_push_error", str(e)[:2000])
 			errors.append(f"Patient Registration {reg_name}: FAILED")
 
-	for c in claims:
+	for i, c in enumerate(claims):
+		if i % 50 == 0:
+			frappe.db.commit()
+		done_steps += 1
+		_notify_progress(notify_user, done_steps, total_steps)
 		if c.prid and frappe.db.get_value("Patient Registration", c.prid, "central_push_error"):
 			# This claim's own registration just failed to push — pushing
 			# the claim now would arrive with no registration to link to
@@ -329,8 +358,10 @@ def run_now():
 	background removes that limit entirely; check Central Sync Status or
 	Org Sync Log shortly afterward for the result."""
 	frappe.only_for("System Manager")
-	frappe.enqueue(scheduled_push, queue="long", timeout=3600, manual=True)
-	return "Sync queued — check Central Sync Status or Org Sync Log shortly for the result."
+	frappe.enqueue(
+		scheduled_push, queue="long", timeout=3600, manual=True, notify_user=frappe.session.user
+	)
+	return "Sync queued — watch the progress bar, or check Central Sync Status / Org Sync Log shortly for the result."
 
 
 def _log_run(result):
@@ -380,7 +411,7 @@ def _maybe_send_failure_alert(settings, status):
 	)
 
 
-def scheduled_push(manual=False):
+def scheduled_push(manual=False, notify_user=None):
 	settings = frappe.get_single("Org Sync Settings")
 	if not settings.enable_sync:
 		return None
@@ -388,7 +419,7 @@ def scheduled_push(manual=False):
 		return None
 
 	try:
-		result = push_approved_records(settings)
+		result = push_approved_records(settings, notify_user=notify_user)
 	except Exception:
 		error_summary = "FAILED — " + frappe.get_traceback()[:200]
 		result = {
@@ -408,4 +439,11 @@ def scheduled_push(manual=False):
 	status = _log_run(result)
 	_maybe_send_failure_alert(settings, status)
 	frappe.db.commit()
+
+	if notify_user:
+		frappe.publish_realtime(
+			"msgprint",
+			f"<b>Push complete</b><br>{result['short_summary']}",
+			user=notify_user,
+		)
 	return result["summary"]
