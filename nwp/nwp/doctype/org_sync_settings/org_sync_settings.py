@@ -49,9 +49,14 @@ def _should_run_now(settings):
 	"""Same tick-and-window scheduling rule as HMIS Sync Settings — kept
 	as its own small copy here since Org Sync Settings is a Single
 	doctype (one org talks to one central site) and doesn't share the
-	HMIS doctype's per-hospital record shape."""
+	HMIS doctype's per-hospital record shape.
+
+	Gated on last_scheduled_run_at, never on last_run_at — the latter
+	also updates on a manual "Run Now" click, which would otherwise make
+	the scheduler think today's (or this interval's) automatic run had
+	already happened and skip it entirely."""
 	if settings.sync_frequency == "Daily At A Specific Time":
-		if settings.last_run_at and settings.last_run_at.date() == now_datetime().date():
+		if settings.last_scheduled_run_at and settings.last_scheduled_run_at.date() == now_datetime().date():
 			return False
 		today = now_datetime().date()
 		target = datetime.combine(today, get_time(settings.sync_time or "05:00:00"))
@@ -59,9 +64,9 @@ def _should_run_now(settings):
 		return target <= now < target + timedelta(minutes=15)
 
 	interval_minutes = max(15, cint(settings.poll_interval_minutes) or 60)
-	if not settings.last_run_at:
+	if not settings.last_scheduled_run_at:
 		return True
-	return time_diff_in_seconds(now_datetime(), settings.last_run_at) >= interval_minutes * 60
+	return time_diff_in_seconds(now_datetime(), settings.last_scheduled_run_at) >= interval_minutes * 60
 
 
 def _excluded_field_names(rows):
@@ -188,8 +193,29 @@ def _push(settings, doctype, name, fields, file_fields=None, source_prid=None):
 	# object, which plain json.dumps() (what requests' own json= uses)
 	# can't serialize at all; Frappe's own as_json() already knows how.
 	headers = {**_auth_headers(settings), "Content-Type": "application/json"}
-	response = requests.post(url, data=frappe.as_json(body), headers=headers, timeout=30)
-	response.raise_for_status()
+	data = frappe.as_json(body)
+
+	# A handful of pushes have been seen failing with a 417 that doesn't
+	# reproduce on retry with a brand new connection — "Connection: close"
+	# forces that (no reused keep-alive socket), and trying up to 3 times
+	# means a one-off hiccup on the infrastructure in between doesn't need
+	# a whole extra sync run to clear.
+	last_error = None
+	for attempt in range(3):
+		try:
+			response = requests.post(
+				url, data=data, headers={**headers, "Connection": "close"}, timeout=30
+			)
+			response.raise_for_status()
+			break
+		except requests.exceptions.HTTPError as e:
+			last_error = e
+			if e.response is not None and e.response.status_code == 417 and attempt < 2:
+				continue
+			raise
+	else:
+		raise last_error
+
 	result = response.json().get("message", {})
 	if not result.get("ok"):
 		raise Exception(result.get("error") or "Central site rejected the record.")
@@ -272,11 +298,19 @@ def push_approved_records(settings=None):
 		if len(errors) > len(shown):
 			summary += f" | ...and {len(errors) - len(shown)} more"
 	summary = summary[:60000]
+	# A short, one-line version for "Last Run Status" on the settings form
+	# itself — just the counts, nothing to scroll through. Full detail
+	# (per-record reasons) belongs in Central Sync Status / Org Sync Log,
+	# not repeated here.
+	short_summary = f"Patient Registration: {pushed_registrations} pushed | Patient Claim Form: {pushed_claims} pushed"
+	if errors:
+		short_summary += f" | {len(errors)} failed"
 	return {
 		"registrations_pushed": pushed_registrations,
 		"claims_pushed": pushed_claims,
 		"failed_count": len(errors),
 		"summary": summary,
+		"short_summary": short_summary,
 	}
 
 
@@ -351,15 +385,19 @@ def scheduled_push(manual=False):
 	try:
 		result = push_approved_records(settings)
 	except Exception:
+		error_summary = "FAILED — " + frappe.get_traceback()[:200]
 		result = {
 			"registrations_pushed": 0,
 			"claims_pushed": 0,
 			"failed_count": 1,
-			"summary": "FAILED — " + frappe.get_traceback()[:200],
+			"summary": error_summary,
+			"short_summary": error_summary,
 		}
 
 	settings.db_set("last_run_at", now_datetime())
-	settings.db_set("last_run_status", result["summary"])
+	settings.db_set("last_run_status", result["short_summary"])
+	if not manual:
+		settings.db_set("last_scheduled_run_at", now_datetime())
 	frappe.db.commit()
 
 	status = _log_run(result)

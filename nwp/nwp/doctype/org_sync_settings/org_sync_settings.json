@@ -13,6 +13,7 @@
   "column_break_general",
   "last_run_at",
   "last_run_status",
+  "last_scheduled_run_at",
   "alert_email",
   "failure_alert_threshold",
   "tab_sharing",
@@ -75,6 +76,14 @@
    "fieldname": "last_run_status",
    "fieldtype": "Small Text",
    "label": "Last Run Status",
+   "read_only": 1
+  },
+  {
+   "description": "When the automatic daily/interval schedule itself last actually fired — separate from Last Run At, which also updates on a manual Run Now click. Keeps a manual test run from making the scheduler think today's run is already done.",
+   "fieldname": "last_scheduled_run_at",
+   "fieldtype": "Datetime",
+   "hidden": 1,
+   "label": "Last Scheduled Run At",
    "read_only": 1
   },
   {
