@@ -176,6 +176,27 @@ def _upload_files(settings, doctype, central_name, doc, file_fields):
 		response.raise_for_status()
 
 
+def _extract_error_message(response):
+	"""Frappe's own error responses carry the real, specific reason in
+	the response body (usually under _server_messages) — requests' own
+	HTTPError string never includes it, only the generic status line."""
+	try:
+		body = response.json()
+	except ValueError:
+		return (response.text or str(response.status_code))[:500]
+
+	server_messages = body.get("_server_messages")
+	if server_messages:
+		try:
+			parsed = [frappe.parse_json(m).get("message", m) for m in frappe.parse_json(server_messages)]
+			if parsed:
+				return " | ".join(parsed)
+		except Exception:
+			pass
+
+	return body.get("exception") or body.get("message") or str(response.status_code)
+
+
 def _push(settings, doctype, name, fields, file_fields=None, source_prid=None):
 	doc = frappe.get_doc(doctype, name)
 	payload = {f: doc.get(f) for f in fields}
@@ -196,11 +217,10 @@ def _push(settings, doctype, name, fields, file_fields=None, source_prid=None):
 	headers = {**_auth_headers(settings), "Content-Type": "application/json"}
 	data = frappe.as_json(body)
 
-	# A handful of pushes have been seen failing with a 417 that doesn't
-	# reproduce on retry with a brand new connection — "Connection: close"
-	# forces that (no reused keep-alive socket), and trying up to 3 times
-	# means a one-off hiccup on the infrastructure in between doesn't need
-	# a whole extra sync run to clear.
+	# Up to 3 attempts with a fresh connection each time ("Connection:
+	# close") — cheap insurance against an occasional real network blip,
+	# though the actual cause of most failures turned out to be a real
+	# validation error (see _resolve_claim_links), not a transient one.
 	last_error = None
 	for attempt in range(3):
 		try:
@@ -210,14 +230,15 @@ def _push(settings, doctype, name, fields, file_fields=None, source_prid=None):
 			response.raise_for_status()
 			break
 		except requests.exceptions.HTTPError as e:
-			last_error = e
+			# requests' own HTTPError message ("417 Client Error: ...")
+			# never includes the response BODY — which is exactly where
+			# Frappe puts the real, specific reason for the failure. This
+			# is what kept the actual cause hidden for a long time.
+			last_error = Exception(_extract_error_message(e.response) if e.response is not None else str(e))
 			if e.response is not None and e.response.status_code == 417 and attempt < 2:
-				# A zero-delay retry gives a transient infrastructure
-				# hiccup no time to clear — worth a short, real pause
-				# between attempts instead of hammering it instantly.
 				time.sleep(2)
 				continue
-			raise
+			raise last_error
 	else:
 		raise last_error
 
@@ -436,8 +457,8 @@ def _retry_failed_slowly(notify_user=None):
 
 	if notify_user:
 		frappe.publish_realtime(
-			"msgprint",
-			f"<b>Slow retry complete</b><br>{succeeded} of {total} succeeded this time.",
+			"org_sync_push_complete",
+			{"title": "Slow Retry Complete", "message": f"{succeeded} of {total} succeeded this time."},
 			user=notify_user,
 		)
 
@@ -520,8 +541,8 @@ def scheduled_push(manual=False, notify_user=None):
 
 	if notify_user:
 		frappe.publish_realtime(
-			"msgprint",
-			f"<b>Push complete</b><br>{result['short_summary']}",
+			"org_sync_push_complete",
+			{"title": "Push Complete", "message": result["short_summary"]},
 			user=notify_user,
 		)
 	return result["summary"]

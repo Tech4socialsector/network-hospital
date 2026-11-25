@@ -57,17 +57,25 @@ def _resolve_registration_links(data):
 
 def _resolve_claim_links(data):
 	"""Patient Claim Form links to Type of service / Doctor / Approve
-	Status — same situation as the registration's own links. Approval
-	Status is normally a small fixed set ("Approved" etc.) that should
-	already exist from the app's own setup, but auto-creating it here too
-	means a claim never gets rejected just because central's own fixture
-	data hasn't been seeded yet."""
+	Status / Organization / Other Donor Name — all five can be brand new
+	to central. Organization and Other Donor Name were missing from this
+	list entirely, which is the real cause behind a whole class of
+	claims failing: most claims succeed by updating a central record
+	that already exists from an earlier sync (which skips link
+	validation), but any genuinely new claim whose Organization or Other
+	Donor Name central has never seen goes through full validation on
+	insert and was rejected outright, every time, since nothing ever
+	created that missing master record."""
 	if data.get("type_of_service"):
 		data["type_of_service"] = _get_or_create_link("Type of service", data["type_of_service"])
 	if data.get("treating_doctor_name"):
 		data["treating_doctor_name"] = _get_or_create_link("Doctor", data["treating_doctor_name"])
 	if data.get("approval_status"):
 		data["approval_status"] = _get_or_create_link("Approve Status", data["approval_status"])
+	if data.get("organization"):
+		data["organization"] = _get_or_create_link("Organization Name", data["organization"])
+	if data.get("other_donor_name"):
+		data["other_donor_name"] = _get_or_create_link("Other Donor Name", data["other_donor_name"])
 
 
 def _attach_file(doctype, docname, fieldname, file_payload):
