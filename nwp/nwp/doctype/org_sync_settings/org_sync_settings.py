@@ -364,6 +364,84 @@ def run_now():
 	return "Sync queued — watch the progress bar, or check Central Sync Status / Org Sync Log shortly for the result."
 
 
+@frappe.whitelist()
+def retry_failed_slowly():
+	"""Diagnostic/recovery tool for records still failing after a normal
+	run — re-attempts only those, one at a time, with a real pause
+	between each, well away from the speed of a big bulk push. Tells
+	apart "these specific records have a genuine, lasting problem" from
+	"sending this many requests this fast is itself what central/its
+	infrastructure doesn't like" — the two look identical in a bulk
+	run's results, but call for completely different fixes."""
+	frappe.only_for("System Manager")
+	frappe.enqueue(_retry_failed_slowly, queue="long", timeout=3600, notify_user=frappe.session.user)
+	return "Retrying currently-failing records slowly, one at a time — watch the progress bar for the result."
+
+
+def _retry_failed_slowly(notify_user=None):
+	settings = frappe.get_single("Org Sync Settings")
+	if not settings.enable_sync:
+		return
+	excluded_registration = excluded_registration_field_names(settings)
+	excluded_claim = excluded_claim_field_names(settings)
+	registration_fields = [f for f in REGISTRATION_FIELDS if f not in excluded_registration]
+	claim_fields = [f for f in CLAIM_FIELDS if f not in excluded_claim]
+	claim_file_fields = [f for f in CLAIM_FILE_FIELDS if f not in excluded_claim]
+
+	failing_regs = frappe.get_all(
+		"Patient Registration",
+		filters={"pushed_to_central": 0, "central_push_error": ["is", "set"]},
+		pluck="name",
+	)
+	failing_claims = frappe.get_all(
+		"Patient Claim Form",
+		filters={"pushed_to_central": 0, "central_push_error": ["is", "set"]},
+		fields=["name", "prid"],
+	)
+
+	total = len(failing_regs) + len(failing_claims)
+	done = succeeded = 0
+
+	for reg_name in failing_regs:
+		done += 1
+		_notify_progress(notify_user, done, total)
+		try:
+			_push(settings, "Patient Registration", reg_name, registration_fields)
+			frappe.db.set_value(
+				"Patient Registration",
+				reg_name,
+				{"pushed_to_central": 1, "central_push_error": "", "central_pushed_at": now_datetime()},
+			)
+			succeeded += 1
+		except Exception as e:
+			frappe.db.set_value("Patient Registration", reg_name, "central_push_error", str(e)[:2000])
+		frappe.db.commit()
+		time.sleep(5)
+
+	for c in failing_claims:
+		done += 1
+		_notify_progress(notify_user, done, total)
+		try:
+			_push(settings, "Patient Claim Form", c.name, claim_fields, claim_file_fields, source_prid=c.prid)
+			frappe.db.set_value(
+				"Patient Claim Form",
+				c.name,
+				{"pushed_to_central": 1, "central_push_error": "", "central_pushed_at": now_datetime()},
+			)
+			succeeded += 1
+		except Exception as e:
+			frappe.db.set_value("Patient Claim Form", c.name, "central_push_error", str(e)[:2000])
+		frappe.db.commit()
+		time.sleep(5)
+
+	if notify_user:
+		frappe.publish_realtime(
+			"msgprint",
+			f"<b>Slow retry complete</b><br>{succeeded} of {total} succeeded this time.",
+			user=notify_user,
+		)
+
+
 def _log_run(result):
 	status = "Success" if not result["failed_count"] else (
 		"Failed" if not (result["registrations_pushed"] or result["claims_pushed"]) else "Partial Failure"
