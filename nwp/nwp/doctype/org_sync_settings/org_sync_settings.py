@@ -142,6 +142,19 @@ def _upload_files(settings, doctype, central_name, doc, file_fields):
 		file_url = doc.get(fieldname)
 		if not file_url:
 			continue
+		if not frappe.db.exists("File", {"file_url": file_url}):
+			# Seen in real data: a bad import once put something that
+			# isn't a real file path (e.g. a date) into an attachment
+			# field. Deliberately NOT skipped — central should never
+			# receive a claim whose supporting document is missing or
+			# corrupted; this must block the push with a message the
+			# hospital staff can actually act on, not a technical one.
+			label = doc.meta.get_label(fieldname)
+			frappe.throw(
+				f"'{label}' does not have a valid file attached (found {file_url!r} instead of "
+				f"a real document). Please re-upload the correct file on this claim before it "
+				f"can sync to central."
+			)
 		file_doc = frappe.get_doc("File", {"file_url": file_url})
 		content = file_doc.get_content()
 		if isinstance(content, str):
