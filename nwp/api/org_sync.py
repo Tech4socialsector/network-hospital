@@ -113,6 +113,16 @@ def _resolve_claim_links(data):
 		data["approval_status"] = _get_or_create_link("Approve Status", data["approval_status"])
 	if data.get("organization"):
 		data["organization"] = _get_or_create_link("Organization Name", data["organization"])
+	if data.get("organization_copy"):
+		# Despite its name, this field holds the HOSPITAL, not the
+		# organization (fetched from the claim's own registration's
+		# hospital_name) — must run after Organization above is resolved,
+		# same reasoning as _resolve_registration_links/_resolve_budget_links.
+		data["organization_copy"] = _get_or_create_link(
+			"Hospital With Organization",
+			data["organization_copy"],
+			{"organization": data.get("organization")} if data.get("organization") else None,
+		)
 	if data.get("other_donor_name"):
 		data["other_donor_name"] = _get_or_create_link("Other Donor Name", data["other_donor_name"])
 

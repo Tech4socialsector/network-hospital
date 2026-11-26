@@ -214,9 +214,7 @@ class CentralSyncStatus {
 	}
 
 	make_central_summary_panel() {
-		this.$summary = $('<div class="nwp-css-panel"><div class="nwp-css-tag">Data Received</div>Loading…</div>').appendTo(
-			this.page.body
-		);
+		this.$summary = $('<div></div>').appendTo(this.page.body);
 		frappe.call({
 			method: 'nwp.nwp.page.central_sync_status.central_sync_status.get_central_summary',
 			callback: (r) => this.render_central_summary(r.message || {}),
@@ -226,42 +224,22 @@ class CentralSyncStatus {
 	render_central_summary(data) {
 		const counts = data.counts || {};
 
-		const card = (label, c) => `
-			<div class="nwp-stat-card">
-				<div class="nwp-stat-label">${frappe.utils.escape_html(label)}</div>
-				<div class="nwp-stat-value">${c.total}</div>
-				<div class="nwp-stat-caption">total received</div>
-				<div class="nwp-chip-row">
-					<span class="nwp-chip nwp-chip-muted">${c.this_month} this month</span>
-				</div>
-			</div>`;
+		const card = (label, c) => {
+			const style = TYPE_STYLE[label] || { bg: '#f1f2f8', fg: '#6b6880', icon: '' };
+			return `
+				<div class="nwp-stat-card" style="background:${style.bg}; border-color:transparent;">
+					<div class="nwp-stat-card-head">
+						<div class="nwp-stat-icon" style="background:rgba(255,255,255,.65);">${svg_icon(style.icon, style.fg, 18)}</div>
+						<span class="nwp-stat-label">${frappe.utils.escape_html(label)}</span>
+					</div>
+					<div class="nwp-stat-value">${c.total}</div>
+					<div class="nwp-stat-caption">total received</div>
+					<span class="nwp-chip" style="background:rgba(255,255,255,.65); color:${style.fg};">${c.this_month} this month</span>
+				</div>`;
+		};
 
-		const statsHtml = Object.keys(counts)
-			.map((label) => card(label, counts[label]))
-			.join('');
-
-		const byService = data.by_service || [];
-		const maxCount = Math.max(1, ...byService.map((r) => r.count));
-		const rankHtml = byService
-			.map(
-				(row) => `
-				<div class="nwp-rank-row">
-					<span class="nwp-rank-label">${frappe.utils.escape_html(row.service || 'Not set')}</span>
-					<div class="nwp-rank-track"><div class="nwp-rank-fill" style="width:${(row.count / maxCount) * 100}%"></div></div>
-					<span class="nwp-rank-value">${row.count}</span>
-				</div>`
-			)
-			.join('');
-
-		this.$summary.html(`
-			<div class="nwp-css-tag">Data Received</div>
-			<div class="nwp-stat-grid">${statsHtml}</div>
-			${
-				rankHtml
-					? `<div class="nwp-css-tag" style="margin-top:18px;">Claims By Type Of Service</div>${rankHtml}`
-					: ''
-			}
-		`);
+		const labels = Object.keys(counts);
+		this.$summary.html(`<div class="nwp-stat-grid nwp-stat-grid-4">${labels.map((l) => card(l, counts[l])).join('')}</div>`);
 	}
 
 	make_organization_panel() {
@@ -332,6 +310,13 @@ class CentralSyncStatus {
 				this.filter_organization_panel();
 			},
 		});
+		this.hospital_field = page.add_field({
+			fieldname: 'hospital',
+			label: 'Hospital',
+			fieldtype: 'Link',
+			options: 'Hospital With Organization',
+			change: () => this.refresh_central(),
+		});
 		this.from_date_field = page.add_field({
 			fieldname: 'from_date',
 			label: 'Received From',
@@ -355,6 +340,7 @@ class CentralSyncStatus {
 			args: {
 				filters: {
 					organization: this.organization_field.get_value(),
+					hospital: this.hospital_field.get_value(),
 					from_date: this.from_date_field.get_value(),
 					to_date: this.to_date_field.get_value(),
 				},
@@ -374,10 +360,10 @@ class CentralSyncStatus {
 			frappe.msgprint(__('Nothing to export.'));
 			return;
 		}
-		const header = ['Record', 'Type', 'Organization', 'Received At'];
+		const header = ['Record', 'Type', 'Organization', 'Hospital', 'Received At'];
 		const lines = [
 			header,
-			...rows.map((r) => [r.record, r.type, r.organization || '', r.received_at || '']),
+			...rows.map((r) => [r.record, r.type, r.organization || '', r.hospital || '', r.received_at || '']),
 		];
 		const csv = lines.map((line) => line.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
 		const blob = new Blob([csv], { type: 'text/csv' });
@@ -397,15 +383,17 @@ class CentralSyncStatus {
 
 		const columns = [
 			{ name: 'Record', width: 150, format: (v, row, col, data) => open_link(data._doctype, v) },
-			{ name: 'Type', width: 120 },
-			{ name: 'Organization', width: 220 },
-			{ name: 'Received At', width: 150 },
+			{ name: 'Type', width: 110 },
+			{ name: 'Organization', width: 190 },
+			{ name: 'Hospital', width: 190 },
+			{ name: 'Received At', width: 130 },
 		].map((c) => Object.assign({ editable: false, resizable: true }, c));
 
 		const data = rows.map((row) => ({
 			Record: row.record,
 			Type: row.type,
 			Organization: row.organization || '',
+			Hospital: row.hospital || '',
 			'Received At': row.received_at ? frappe.datetime.str_to_user(String(row.received_at).slice(0, 10)) : '',
 			_doctype: row.doctype,
 		}));

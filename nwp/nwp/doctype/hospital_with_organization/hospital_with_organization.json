@@ -2,6 +2,7 @@
  "actions": [],
  "allow_import": 1,
  "allow_rename": 1,
+ "autoname": "prompt",
  "creation": "2026-06-15 15:29:16.424966",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -23,6 +24,7 @@
  "modified_by": "Administrator",
  "module": "NWP",
  "name": "Hospital With Organization",
+ "naming_rule": "Set by user",
  "owner": "Administrator",
  "permissions": [
   {

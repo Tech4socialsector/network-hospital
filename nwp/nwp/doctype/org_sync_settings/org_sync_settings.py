@@ -30,7 +30,7 @@ REGISTRATION_FIELDS = [
 ]
 
 CLAIM_FIELDS = [
-	"patient_id", "name1", "gender", "age", "organization",
+	"patient_id", "name1", "gender", "age", "organization", "organization_copy",
 	"type_of_service", "date_of_visit", "date_of_discharge",
 	"treating_doctor_name", "final_diagnosis",
 	"total_actual_final_bill_in_rs", "does_it_require_apf_contribution",
