@@ -286,6 +286,82 @@ def delete_record(doctype, source_name):
 	name = frappe.db.get_value(doctype, {"source_org": source_org, "source_name": source_name})
 	if name:
 		frappe.delete_doc(doctype, name, force=True, ignore_permissions=True)
+		# Central had no visibility at all into deletions before this —
+		# logged purely so a central user can SEE what was removed and by
+		# which organization, never read back by the delete flow itself.
+		frappe.get_doc(
+			{
+				"doctype": "Central Sync Deletion Log",
+				"reference_doctype": doctype,
+				"organization": source_org,
+				"record_name": source_name,
+				"deleted_at": frappe.utils.now_datetime(),
+			}
+		).insert(ignore_permissions=True)
 
 	frappe.db.commit()
 	return {"ok": True, "deleted": bool(name)}
+
+
+@frappe.whitelist(methods=["POST"])
+def report_sync_status(summaries, details=None):
+	"""Central only ever sees what's actually ARRIVED — it has no way to
+	know how much an organization's own site holds in total, or why
+	anything still sitting there hasn't come across yet. This is the other
+	half: each organization's own site calls this after every sync run with
+	its own counts and the reasons behind anything pending/failed, so
+	central can show it without ever touching that site directly. A
+	snapshot, not live — only as fresh as the organization's last run."""
+	source_org = _source_org()
+	summaries = frappe.parse_json(summaries) if isinstance(summaries, str) else (summaries or [])
+	details = frappe.parse_json(details) if isinstance(details, str) else (details or [])
+
+	now = frappe.utils.now_datetime()
+	for s in summaries:
+		doctype = s.get("reference_doctype")
+		if doctype not in ALLOWED_DOCTYPES:
+			continue
+		name = f"{source_org}-{doctype}"
+		values = {
+			"total": s.get("total", 0),
+			"sent": s.get("sent", 0),
+			"pending": s.get("pending", 0),
+			"failed": s.get("failed", 0),
+			"reported_at": now,
+		}
+		if frappe.db.exists("Org Sync Status Summary", name):
+			frappe.db.set_value("Org Sync Status Summary", name, values)
+		else:
+			doc = frappe.new_doc("Org Sync Status Summary")
+			doc.name = name
+			doc.organization = source_org
+			doc.reference_doctype = doctype
+			doc.update(values)
+			doc.insert(ignore_permissions=True)
+
+	# Individual pending/failed records are replaced wholesale on every
+	# report, per doctype actually reported this time — never accumulated,
+	# since a record that's since gone Sent (or been deleted) must not
+	# keep showing up here just because an old row was never cleared.
+	reported_doctypes = {s.get("reference_doctype") for s in summaries if s.get("reference_doctype")}
+	for doctype in reported_doctypes:
+		frappe.db.delete("Org Sync Status Detail", {"organization": source_org, "reference_doctype": doctype})
+
+	for d in details:
+		doctype = d.get("reference_doctype")
+		if doctype not in ALLOWED_DOCTYPES:
+			continue
+		frappe.get_doc(
+			{
+				"doctype": "Org Sync Status Detail",
+				"organization": source_org,
+				"reference_doctype": doctype,
+				"record_name": d.get("record_name"),
+				"status": d.get("status"),
+				"reason": (d.get("reason") or "")[:500],
+				"reported_at": now,
+			}
+		).insert(ignore_permissions=True)
+
+	frappe.db.commit()
+	return {"ok": True}

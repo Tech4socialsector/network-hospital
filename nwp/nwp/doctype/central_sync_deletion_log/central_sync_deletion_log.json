@@ -1,0 +1,77 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-26 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "reference_doctype",
+  "organization",
+  "record_name",
+  "column_break_csdl",
+  "deleted_at"
+ ],
+ "fields": [
+  {
+   "description": "Which synced doctype the deleted record belonged to.",
+   "fieldname": "reference_doctype",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Reference Doctype",
+   "options": "Patient Registration\nPatient Claim Form\nNetwork Hospital Budget\nBudget Disbursement",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "description": "Which partner organization deleted this record on their own site.",
+   "fieldname": "organization",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Organization",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "description": "The record's name on the organization's own site (source_name) — central's own copy may have had a different name of its own.",
+   "fieldname": "record_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Record Name",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_csdl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "deleted_at",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Deleted At",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-11-26 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "NWP",
+ "name": "Central Sync Deletion Log",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

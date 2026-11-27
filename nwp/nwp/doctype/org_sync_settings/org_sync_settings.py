@@ -13,6 +13,7 @@ from frappe.utils import cint, get_time, now_datetime, time_diff_in_seconds
 # real app rather than a Server Script workaround.
 RECEIVE_RECORD_METHOD = "nwp.api.org_sync.receive_record"
 DELETE_RECORD_METHOD = "nwp.api.org_sync.delete_record"
+REPORT_STATUS_METHOD = "nwp.api.org_sync.report_sync_status"
 # upload_file and frappe.client.set_value are Frappe's own standard,
 # always-available endpoints — used for file attachments specifically,
 # since those still can't travel inside the main JSON payload (kept
@@ -50,6 +51,17 @@ BUDGET_FIELDS = [
 ]
 
 DISBURSEMENT_FIELDS = ["date", "hospital_name", "organization", "disbursed_amount"]
+
+# Central never knows how much a doctype holds on an organization's own
+# site, only what's actually arrived — this drives the separate "status
+# report" push (_push_status_report), covering all 4 synced doctypes
+# regardless of their own push mechanics.
+STATUS_DOCTYPES = ["Patient Registration", "Patient Claim Form", "Network Hospital Budget", "Budget Disbursement"]
+# A backlog of thousands of not-yet-approved claims is normal, not a
+# problem to enumerate in full — this caps how many individual pending/
+# failed rows travel per doctype; the summary counts (sent via the same
+# report) already carry the true totals regardless of this cap.
+MAX_STATUS_DETAIL_ROWS = 300
 
 
 class OrgSyncSettings(Document):
@@ -399,6 +411,71 @@ def _push_deletions(settings, notify_user, done_steps, total_steps):
 	return sent, done_steps, errors
 
 
+def status_detail_reason(doctype, row):
+	if row.get("central_push_error"):
+		return row["central_push_error"][:500]
+	if doctype == "Patient Claim Form" and row.get("approval_status") != "Approved":
+		return "Not yet approved on their own site — only Approved claims are pushed"
+	return "Awaiting next scheduled run"
+
+
+def _collect_status_report():
+	"""Central-side visibility into what THIS site holds, independent of
+	what's actually reached central — the summary counts always cover
+	every record, while the individual pending/failed rows are capped
+	(MAX_STATUS_DETAIL_ROWS) since a large not-yet-approved backlog is
+	normal, not something to enumerate in full."""
+	summaries = []
+	details = []
+	for doctype in STATUS_DOCTYPES:
+		total = frappe.db.count(doctype)
+		sent = frappe.db.count(doctype, {"pushed_to_central": 1})
+		failed = frappe.db.count(doctype, {"pushed_to_central": 0, "central_push_error": ["is", "set"]})
+		pending = total - sent - failed
+		summaries.append(
+			{"reference_doctype": doctype, "total": total, "sent": sent, "pending": pending, "failed": failed}
+		)
+
+		fields = ["name", "central_push_error"]
+		if doctype == "Patient Claim Form":
+			fields.append("approval_status")
+		rows = frappe.get_all(
+			doctype,
+			filters={"pushed_to_central": 0},
+			fields=fields,
+			order_by="modified desc",
+			limit_page_length=MAX_STATUS_DETAIL_ROWS,
+		)
+		for row in rows:
+			details.append(
+				{
+					"reference_doctype": doctype,
+					"record_name": row.name,
+					"status": "Failed" if row.get("central_push_error") else "Pending",
+					"reason": status_detail_reason(doctype, row),
+				}
+			)
+	return summaries, details
+
+
+def _push_status_report(settings):
+	"""Best-effort only — a failure here must never break the real data
+	push above it, since this is pure visibility for central, nothing
+	central's own data depends on."""
+	try:
+		summaries, details = _collect_status_report()
+		url = settings.central_url.rstrip("/") + f"/api/method/{REPORT_STATUS_METHOD}"
+		response = requests.post(
+			url,
+			data=frappe.as_json({"summaries": summaries, "details": details}),
+			headers={**_auth_headers(settings), "Content-Type": "application/json", "Connection": "close"},
+			timeout=30,
+		)
+		response.raise_for_status()
+	except Exception:
+		frappe.log_error(title="Org Sync: status report to central failed")
+
+
 def push_approved_records(settings=None, notify_user=None):
 	"""Pushes every not-yet-pushed, Approved Patient Claim Form (and the
 	Patient Registration it links to) to the central site, plus every
@@ -493,6 +570,8 @@ def push_approved_records(settings=None, notify_user=None):
 
 	pushed_deletions, done_steps, deletion_errors = _push_deletions(settings, notify_user, done_steps, total_steps)
 	errors += deletion_errors
+
+	_push_status_report(settings)
 
 	frappe.db.commit()
 	summary = (
